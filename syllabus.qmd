@@ -1,0 +1,63 @@
+---
+title: "**CSCI 145: Syllabus**"
+output:
+  html_document:
+    css: styles.css
+---
+
+**Course Description:**
+Data mining is the process of discovering patterns in large data sets using techniques from mathematics, computer science and statistics with applications ranging from biology and neuroscience to history and economics. The goal of the course is to teach students fundamental data mining techniques that are commonly used in practice. Students will learn advanced data mining techniques (including linear classifiers, clustering, dimension reduction, transductive learning and topic modeling).
+
+**Prerequisites:** Linear Algebra (MATH 60 or CSCI 48 or equivalent), Data Structures and Advanced Programming (CSCI 62 or equivalent).
+
+**Structure:** We will meet on Tuesdays and Thursdays from 4:15 to 5:30pm in Kravis 164.
+
+**Resources**: Most of the material we cover comes from either Chris Musco's phenomenal [machine learning course](https://www.chrismusco.com/machinelearning2024_grad/), or Chinmay Hegde's fantastic [deep learning course](https://chinmayhegde.github.io/dl-notes/). While we do not have a textbook, we do have typed notes; I **highly** recommend you read the notes before each class.
+
+**Electronic Devices**: Phones and computers are distracting to you and your peers. Please do not use them during class.
+
+**Communication**: Please post all your course related questions on [discord](https://discord.gg/dES3fSPEeC), either in the appropriate channel or as a direct message to me.
+
+### **Grading**
+
+Your grade in the class will be based on the number of points $P$ that you earn. You will receive an A if $P \geq 93$, an A- if $93 > P \geq 90$, a B+ if $90 > P \geq 87$, and so on. You may earn points through the following assignments:
+
+- **Problem Sets (10 Points):**
+Learning requires practice. Your main opportunity to practice the concepts we cover in this class will be on the problem sets. Your grade will be based on turning in solutions to each problem and, so that you engage with the solutions, a self grade of your own work. Because I do not want to incentivize the use of LLMs, I will not grade your solutions for correctness; instead, your problem set grade is based on completion and the accuracy of your own self grade.
+
+- **Quizzes (20 Points):**
+In lieu of grading for correctness on the problem sets, I will give short quizzes at the beginning of randomly selected classes. These quizzes will be based on the problem sets and will test your understanding of the concepts we cover in class. The quizzes will be short (5 minutes) and will be graded for correctness.
+
+- **Exams (50 Points):**
+The two exams will be in-person, and cover the material from the first and second halves of the course, respectively. You may bring a double-sided cheat sheet, but you will not be allowed to use any electronic devices. The exams will be graded for correctness.
+
+- **Project (20 Points):**
+The final project will be a chance for you to apply the concepts we have covered in class to a real-world problem. You will select a topic we cover in class and implement an algorithm we discussed on a data set of your choosing. You will write a report describing your results and what you learned. You will also give a presentation showcasing your results to the class. Except in special circumstances, you will complete your project as an individual. 
+
+- **Extra Credit:**
+My typed notes are work in progress, and I would love your help improving them! If you find an issue in the notes *on the day of the lecture or later*, please open an issue on the [repo](https://github.com/rtealwitter/rads2026). I will give extra credit to the first person to correct each typo (worth 1/4 point), and mistake (worth 1/2 point).
+
+**Late Policy:**
+Most assignments will have a no-questions-asked late policy of 24 hours (refer to Gradescope for details on each specific assignment). I will not accept assignments more than 24 hours late.
+
+### **Honor Code**
+Academic integrity is an important part of your learning experience. You are welcome to use online material and discuss problems with others but you must explicitly acknowledge the outside resources (website, person, or LLM) on the work you submit.
+
+**Large Language Models:** LLMs are a powerful tool. However, while they are very good at producing human-like text, they have no inherent sense of 'correctness'. You may use LLMs (as detailed below) but you are wholly responsible for the material you submit.
+
+You may use LLMs for:
+
+- Implementing short blocks of code that you can easily check.
+
+- Answering simple questions whose answers you can easily verify.
+
+Do not use LLMS for:
+
+- Implementing extensive blocks of code or code that you don't understand.
+
+- Answering complicated questions (like those on the problem sets) that you cannot easily verify. 
+
+Ultimately, the point of the assignments is for you to practice the concepts. If you use an LLM in lieu of practice, then you deny yourself the chance to learn.
+
+### **Academic Accommodations**
+If you have a Letter of Accommodation, please contact me as early in the semester as possible. If you do not have a Letter of Accommodation and you believe you are eligible, please reach out to Accessibility Services at [accessibilityservices@cmc.edu](mailto:accessibilityservices@cmc.edu).

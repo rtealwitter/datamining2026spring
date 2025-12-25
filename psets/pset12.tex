@@ -1,0 +1,105 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+\usepackage{amsmath, amsfonts}
+\usepackage{hyperref, graphicx}
+\usepackage{tikz, bbm, mathtools}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\title{CSCI 145 Problem Set 12}
+\author{} % TODO: Put your name here
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\subsection*{Submission Instructions}
+
+Please upload \textit{your} work by
+\textbf{11:59pm Sunday November 23, 2025.}
+\begin{itemize}
+\item You are encouraged to discuss ideas
+and work with your classmates. However, you
+\textbf{must acknowledge} your collaborators
+at the top of each solution on which
+you collaborated with others 
+and you \textbf{must write} your solutions
+independently.
+\item Your solutions to theory questions must
+be written legibly, or typeset in LaTeX or markdown.
+If you would like to use LaTeX, you can import the source of this document (available from the course webpage) to Overleaf.
+\item I recommend that you write your solutions to coding questions in a Jupyter notebook using Google Colab.
+\item You should submit your solutions as a \textbf{single PDF} via the assignment on Gradescope.
+\end{itemize}
+
+\noindent
+\textbf{Grading:} The point of the problem set is for \textit{you} to learn. To this end, I hope to disincentivize the use of LLMs by \textbf{not} grading your work for correctness. Instead, you will grade your own work by comparing it to my solutions. This self-grade is due the \textbf{Monday} \textit{after} the problem set is due, also on Gradescope.
+
+\newpage
+\section*{Problem 1: Mean Estimation}
+
+Consider $n$ real numbers $y_1, \ldots, y_n$.
+The mean is defined as
+\begin{align}
+    \bar{y} = \frac1n \sum_{i=1}^n y_i.
+\end{align}
+In this problem, we will estimate the mean with a subset of $m$ samples $S \subseteq \{1, \ldots, n\}$.
+
+Suppose we have covariates $\mathbf{x}_i \in \mathbb{R}^d$ for each point $i$.
+It is expensive to compute $y_i$, but we know how to learn a function $f: \mathbb{R}^d \to \mathbb{R}$ so that $f(\mathbf{x}_i) \approx y_i$, from cheaper training data.
+Define the mean of the function so that
+\begin{align}
+    \bar{f} = \frac1n \sum_{i=1}^nf(\mathbf{x}_i).
+\end{align}
+Our estimate for the mean will be
+\begin{align}
+    \hat{y} = \bar{f} + \frac1{m} \sum_{i \in S} (y_i - f(\mathbf{x}_i)).
+\end{align}
+
+\noindent \textbf{Note:} For parts A and B, assume your samples are drawn \textit{without} replacement.
+
+\subsection*{Part A: Unbiased}
+
+Show that $\mathbb{E}[\hat{y}] = \bar{y}.$
+
+\subsection*{Part B: Variance}
+
+Carefully derive an upper bound on $\text{Var}(\hat{y})$.
+
+\subsection*{Part C: Empirical Estimation}
+
+Load a regression dataset of your choice, and train a function $f$ on the training set.
+Now, we'll compare several estimators for the mean:
+\begin{itemize}
+    \item Monte Carlo with replacement: $ \frac1m \sum_{i \in S} y_i$ where samples in $S$ are drawn \textit{with} replacement,
+    \item Regression adjustment with replacement: $ \bar{f} + \frac1m \sum_{i \in S} (y_i - f(\mathbf{x}_i)$ where samples in $S$ are drawn \textit{with} replacement,
+    \item Monte Carlo without replacement: $ \frac1m \sum_{i \in S} y_i$ where samples in $S$ are drawn \textit{without} replacement, and
+    \item Monte Carlo without replacement: $ \bar{f} + \frac1m \sum_{i \in S} (y_i - f(\mathbf{x}_i)$ where samples in $S$ are drawn \textit{without} replacement.
+\end{itemize}
+For variance budgets $m \leq n$, plot the MSE between each estimate and the mean.
+The horizontal access should be $m$, and the vertical access should be the MSE.
+
+%\input{solutions/solution12_1}
+
+\newpage
+\section*{Problem 2: SHAP}
+
+\subsection*{Part A: Data, Training, SHAP}
+
+Using \texttt{shap}, load (a subset of) the California dataset.
+Using \texttt{sklearn}, train a linear regression and neural network model on the data.
+Using \texttt{shap}, apply an explainer of your choice to each model and the dataset.
+
+\subsection*{Part B: Waterfall Plot}
+
+For the same observation in the dataset, make a waterfall plot with the Shapley values for both models. What do you notice?
+
+\subsection*{Part C: Beeswarm Plot}
+Make a beeswarm plot with the Shapley values for both models. What do you notice?
+
+%\input{solutions/solution12_2}
+
+\end{document}

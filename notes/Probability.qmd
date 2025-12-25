@@ -1,0 +1,111 @@
+---
+title: "**Probability**"
+format:
+  html:
+    toc: true
+    math: mathjax
+    include-after-body: readtime.html
+---
+
+Instead of predicting a continuous value, there are many applications where we want to predict a discrete value. For example, we might want to predict whether an email is spam or not, whether a patient has a disease or not, or whether an image contains a cat or not. In these cases, we can use a **classification** model instead of a regression model.
+
+We will review some basic concepts of probability that are useful for understanding classification models. We will also introduce Bayes' Rule, and see how useful it can be for making predictions.
+
+Let $A$ and $B$ be two events. For example, $A$ could be the event that it rains tomorrow, and $B$ could be the event that I carry an umbrella tomorrow.
+We will use the following notation:  
+- $\Pr(A)$ represents the probability that event $A$ occurs,  
+- $\Pr(A \cup B)$ represents the probability that either event $A$ or event $B$ occurs,  
+- $\Pr(A \cap B)$ represents the probability that both events $A$ and $B$ occur,  
+- $\Pr(A | B)$ represents the probability that event $A$ occurs given that event $B$ has occurred.
+
+<center><img src="images/classification_probability.svg" class="responsive-img"></center>
+
+We can reason through several properties of probabilities:
+
+**Probability Range** The probability of an event is always between 0 and 1, i.e., $0 \leq \Pr(A) \leq 1$ for all events $A$. An event with probability 0 never occurs, while an event with probability 1 is certain to occur.  
+
+**Conditional Probabilities** We can write the probability of both events $A$ and $B$ occurring in terms of conditional probabilities:
+  $$\Pr(A \cap B) = \Pr(B) \Pr(A | B)  = \Pr(A) \Pr(B | A).$$
+  This means that the probability of both events occurring is the product of the probability of one event and the conditional probability of the other event given that the first event has occurred.
+
+**Union of Events** The probability that either event $A$ or event $B$ occurs is given by:
+  $$\Pr(A \cup B) = \Pr(A) + \Pr(B) - \Pr(A \cap B).$$
+  This means that the probability of either event occurring is the sum of the probabilities of each event minus the probability of both events occurring together (we subtract the event that both occur because it is counted twice in the sum).
+
+**Complement Rule** The *complement* of an event $A$ is the event that $A$ does not occur, denoted as $\neg A$. Since either $A$ occurs or $\neg A$ occurs, we have that $Pr(A) + \Pr(\neg A) = 1$. Rearranging this gives us that $\Pr(\neg A) = 1 - \Pr(A)$.  
+
+**Independence** Two events $A$ and $B$ are *independent* if the occurrence of one event does not affect the probability of the other event occurring. In this case, we have that $\Pr(A \cap B) = \Pr(A) \Pr(B)$. Equivalently, $\Pr(A | B) = \Pr(A)$ and $\Pr(B | A) = \Pr(B)$, do you see why this follows?
+
+We will often model random events with *random variables*. A random variable is a function that maps outcomes to real numbers. For example, we could define a random variable $X$ that takes the outcome of a die roll and maps it to the number on the die. The probability distribution of a random variable describes the probabilities of each possible outcome. In our die example, if we roll a fair six-sided die, the probability distribution of the random variable $X$ is given by $\Pr(X = x) = \frac{1}{6}$ for $x \in \{1, 2, 3, 4, 5, 6\}$.
+
+**Bayes' Rule** is a particularly useful rule in machine learning: For any two events $A$ and $B$ with $\Pr(B) > 0$,
+$$\Pr(A | B) = \frac{\Pr(B | A) \Pr(A)}{\Pr(B)}.$$
+
+Based on what we have seen so far, can you prove Bayes' Rule?
+
+### Maximum A Posteriori (MAP) Estimation
+
+When we justified the mean squared error loss for regression, we said that it was the maximum likelihood estimate (MLE) of the parameters of a linear model. We can extend this idea to classification models as well.
+Suppose we have a *binary classification* problem, where we want to predict whether the random variable $Y=0$ or $Y=1$.
+We observe evidence $\mathbf{X} = \mathbf{x}$, e.g., $\mathbf{X}$ is the random variable that takes on the value of the features of an email, and we want to predict whether the email is spam or not.
+We will compare the posteriors
+$$\Pr(Y = 1 | \mathbf{X} = \mathbf{x})$$
+and
+$$\Pr(Y = 0 | \mathbf{X} = \mathbf{x})$$
+to determine which class is more likely given the evidence.
+
+However, it's not immediately clear how to compute these probabilities.
+Luckily, we can use Bayes' Rule to rewrite the posteriors.
+Without loss of generality, consider the event that $Y = 1$.
+Then
+$$
+\begin{align*}
+\Pr(Y = 1 | \mathbf{X} = \mathbf{x})
+&= \frac{\Pr(\mathbf{X} = \mathbf{x} | Y = 1) \Pr(Y = 1)}{\Pr(\mathbf{X} = \mathbf{x})} \\
+&= \frac{\textnormal{likelihood} \cdot \textnormal{prior}}{\textnormal{evidence}}
+\end{align*}.
+$$
+
+Let's get some familiarity through a medical example.
+Suppose we have a medical test that can detect whether a patient has a particular disease.
+The disease is rare, affecting only 1% of the population.
+The test is unfortunately not perfect: it has a false positive rate of 5% and a false negative rate of 10%.
+Suppose $X=1$ i.e., the test is positive.
+Is it more likely that the patient has the disease or not?
+
+In this medical example, we were explicitly given the likelihood of the disease. What can we do when our only information is the labelled data?
+
+### Naive Bayes Classifier
+
+The **Naive Bayes Classifier** is a simple yet effective classification algorithm that uses Bayes' Rule to make predictions. The key assumption of the Naive Bayes Classifier is that the features are conditionally independent given the class label. This means that the presence or absence of a feature does not affect the presence or absence of another feature, given the class label.
+
+Let's see an example with a spam classifier.
+Suppose we have a dataset of emails, each labelled as either spam or not spam. We want to predict whether a new email is spam or not based on its features, such as the presence of certain words.
+In particular, let $\mathbf{X} = (X_1, X_2, \ldots, X_d)$ be the features of the email, where $X_i$ is a binary variable indicating whether the $i$th word is present in the email.
+Let $p_i^{(1)} = \Pr(X_i=1 | Y=1)$ be the probability that the $i$th word is present in a spam email, while $p_i^{(0)} = \Pr(X_i=1 | Y=0)$ be the probability that the $i$th word is present in a non-spam email.
+We will use the independence assumption to compute the likelihood of the features given the class label.
+For example,
+$$
+\Pr(\mathbf{X} = (0, 1, 0, 0, 1) | Y = 1) =
+(1-p_1^{(1)}) p_2^{(1)} (1-p_3^{(1)}) (1-p_4^{(1)}) p_5^{(1)}.
+$$
+
+Beyond the likelihood, we also need the prior probability of the class label.
+This is even easier to compute, e.g., we can simply compute the fraction of spam and non-spam emails in the training set.
+Then we can use Bayes' Rule to determine whether the posterior probability of the email being spam is greater than the posterior probability of the email being non-spam.
+
+More formally, we can use the Naive Bayes Classifier by
+
+1. Computing $\Pr(Y = 1)$ and $\Pr(Y = 0)$ from the training data.
+
+2. Computing the observed probabilities $\Pr(X_i = 1 | Y = 1)$ and $\Pr(X_i = 1 | Y = 0)$ for each feature $X_i$ from the training data.
+
+3. Computing the likelihoods $\Pr(\mathbf{X} = \mathbf{x} | Y=1)$ and $\Pr(\mathbf{X} = \mathbf{x} | Y=0)$ using the independence assumption e.g.,
+$$
+\Pr(\mathbf{X} = \mathbf{x} | Y=1) = \prod_{i=1}^d \Pr(X_i = x_i | Y=1).
+$$
+
+4. Using Bayes' Rule to compute the posteriors, and predicting the class label $y \in \{0,1\}$ with the highest posterior probability:
+$$
+\Pr(Y = y | \mathbf{X} = \mathbf{x}) = \frac{\Pr(\mathbf{X} = \mathbf{x} | Y=y) \Pr(Y=y)}{\Pr(\mathbf{X} = \mathbf{x})}.
+$$

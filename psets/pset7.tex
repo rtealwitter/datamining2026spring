@@ -1,0 +1,154 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+\usepackage{amsmath, amsfonts}
+\usepackage{hyperref, graphicx}
+\usepackage{tikz}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\title{CSCI 145 Problem Set 7}
+\author{} % TODO: Put your name here
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\subsection*{Submission Instructions}
+
+Please upload \textit{your} work by
+\textbf{11:59pm Wednesday October 15, 2025.}
+\begin{itemize}
+\item You are encouraged to discuss ideas
+and work with your classmates. However, you
+\textbf{must acknowledge} your collaborators
+at the top of each solution on which
+you collaborated with others 
+and you \textbf{must write} your solutions
+independently.
+\item Your solutions to theory questions must
+be written legibly, or typeset in LaTeX or markdown.
+If you would like to use LaTeX, you can import the source of this document (available from the course webpage) to Overleaf.
+\item I recommend that you write your solutions to coding questions in a Jupyter notebook using Google Colab.
+\item You should submit your solutions as a \textbf{single PDF} via the assignment on Gradescope.
+\end{itemize}
+
+\noindent
+\textbf{Grading:} The point of the problem set is for \textit{you} to learn. To this end, I hope to disincentivize the use of LLMs by \textbf{not} grading your work for correctness. Instead, you will grade your own work by comparing it to my solutions. This self-grade is due the Friday \textit{after} the problem set is due, also on Gradescope.
+
+\newpage
+\section*{Problem 1: Using and Interpreting CNNs}
+
+In this problem, we will explore convolutional neural networks (CNNs) and an interpetability tool called class activation maps (CAM).
+\href{https://ezyang.github.io/convolution-visualizer/}{This} tool from class may be helpful for visualizations.
+
+\subsection*{Part A: Kernels by Hand}
+Write down one $3 \times 3$ kernel for blurring, one $3 \times 3$ kernel for detecting \textit{horizontal} edges, and one $3 \times 3$ kernel for detecting \textit{diagonal} edges.
+Confirm your kernels work as intended on example $2D$ matrices.
+
+\subsection*{Part B: Pretrained CNN}
+Using \texttt{torch}, load a ResNet50 architecture (example code \href{https://pytorch.org/hub/nvidia_deeplearningexamples_resnet50/}{here}).
+Preprocess an animal photo of your choice, pass it to the model, and inspect the predictions made by the model.
+In particular, print the five largest probabilities (apply softmax to the logits), and the corresponding human-readable labels.
+
+\subsection*{Part C: Explaining Predictions via CAM}
+
+\paragraph{Setup.}
+Let the last convolutional activation tensor be
+\[
+\mathbf{A}\in\mathbb{R}^{B\times C\times H\times W},
+\]
+where $B$ is batch size, $C$ the number of channels, and $H\times W$ the spatial resolution.
+
+Apply \emph{global adaptive average pooling} (GAP) over the spatial dimensions to obtain
+\[
+\mathbf{z}=\mathrm{GAP}(\mathbf{A})\in\mathbb{R}^{B\times C},\qquad
+z_{b,c}=\frac{1}{HW}\sum_{x=1}^{H}\sum_{y=1}^{W} A_{b,c,x,y}.
+\]
+
+The final fully connected (linear) classifier has weights
+\[
+\mathbf{W}\in\mathbb{R}^{K\times C},\quad \mathbf{b}\in\mathbb{R}^{K},
+\]
+with $K$ classes and row-vectors $\mathbf{w}_k^\top$ ($k=1,\dots,K$). The class logits are
+\[
+\mathbf{s}=\mathbf{z}\,\mathbf{W}^\top+\mathbf{b}\in\mathbb{R}^{B\times K},\qquad
+s_{b,k}=\sum_{c=1}^{C} w_{k,c}\, z_{b,c}+b_k.
+\]
+
+\paragraph{Class Activation Map (CAM).}
+For class $k$, the CAM before pooling is defined (per sample $b$) as
+\[
+M_{b,k}(x,y)=\sum_{c=1}^{C} w_{k,c}\, A_{b,c,x,y},
+\]
+so that $\mathbf{M}_k\in\mathbb{R}^{B\times H\times W}$. For the \emph{predicted} class of sample $b$,
+\[
+k_b^\ast=\arg\max_{k} s_{b,k},\qquad
+M_{b,k_b^\ast}(x,y)=\sum_{c=1}^{C} w_{k_b^\ast,c}\, A_{b,c,x,y}.
+\]
+
+\paragraph{Procedure (what to implement).}
+\begin{enumerate}
+  \item Run a forward pass on the input image(s) and extract $\mathbf{A}$ (e.g., via a forward hook at the last conv layer).
+  \item Compute logits $\mathbf{s}$ and, for each sample $b$, find $k_b^\ast=\arg\max_k s_{b,k}$.
+  \item For each sample $b$, form the CAM using the corresponding classifier weights:
+  \[
+  \mathbf{M}_{b} = \sum_{c=1}^{C} w_{k_b^\ast,c}\,\mathbf{A}_{b,c,\cdot,\cdot}\;\in\;\mathbb{R}^{H\times W}.
+  \]
+  \item Upsample $\mathbf{M}_{b}$ to the input image resolution $(H_0,W_0)$ using \texttt{torch.nn.functional.interpolate} (e.g., \texttt{mode='bilinear', align\_corners=False}):
+  \[
+  \tilde{\mathbf{M}}_{b}=\mathrm{Interp}\!\left(\mathbf{M}_{b};\,\text{size}=(H_0,W_0)\right).
+  \]
+  \item Normalize $\tilde{\mathbf{M}}_{b}$ to $[0,1]$ (e.g., min--max) and overlay it as a heatmap on the corresponding input image.
+\end{enumerate}
+
+
+After overlaying the CAM on the input image, what regions appear most responsible for the model's prediction? What do you notice?
+
+%\input{solutions/solution7_1}
+
+\newpage
+\section*{Problem 2: Transformers}
+
+\subsection*{Part A: Self-attention by Hand}
+You are given a sequence of $T=3$ tokens with $d_{\text{model}}=2$:
+\[
+\mathbf{X}=
+\begin{bmatrix}
+1 & 0\\
+0 & 1\\
+1 & 1
+\end{bmatrix}.
+\]
+Let $d_k=d_v=2$ and
+\[
+\mathbf{W}_Q=\mathbf{W}_K=\mathbf{W}_V=\mathbf{I}_2.
+\]
+\begin{enumerate}
+  \item Compute $\mathbf{Q}=\mathbf{X}\mathbf{W}_Q,\ \mathbf{K}=\mathbf{X}\mathbf{W}_K,\ \mathbf{V}=\mathbf{X}\mathbf{W}_V$.
+  \item Form the unnormalized score matrix $\mathbf{S}=\mathbf{Q}\mathbf{K}^\top/\sqrt{2}$.
+  \item Apply a \emph{causal mask} (token $t$ may only attend to $\{1,\dots,t\}$; set masked entries to $-\infty$).
+  \item Apply \texttt{softmax} row-wise to obtain attention weights $\mathbf{A}$.
+  \item Compute outputs $\mathbf{Y}=\mathbf{A}\mathbf{V}$.
+\end{enumerate}
+Report $\mathbf{S}$ (masked), $\mathbf{A}$, and $\mathbf{Y}$.
+
+\subsection*{Part B: Self-attention Activations}
+
+Consider a pretrained transformer model.
+Select a text input of your choice.
+Plot the self-attention weights at several layers (both early and later) in your transformer model.
+What patterns do you notice?
+
+\subsection*{Part C: Cross-attention Activations}
+
+Consider a pretrained transformer model for translation.
+Select a text input of your choice and translate it.
+Now feed the original and translated text to a translation model and plot the cross-attention weights at several layers (both early and later). 
+What patterns do you notice?
+
+%\input{solutions/solution7_2}
+
+\end{document}

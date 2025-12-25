@@ -1,0 +1,116 @@
+.container {
+  max-width: 100% !important; /* Override Bootstrap's container width */
+  width: 100%;
+  padding: 0 1rem; /* Optional: Adjust padding for readability */
+}
+
+.navbar {
+  background-color: #84182b;
+}
+
+.navbar .navbar-brand, .nav-link {
+  color: #FFFFFF;
+}
+
+table, th, td {
+  border: 2px solid;
+  border-color: #FFFFFF;
+}
+
+table tr:first-of-type {
+  color: white;
+  background-color: #84182b; /* Unique color for the first row */
+  font-weight: bold; /* Optional bold text */
+}
+
+tr:nth-child(even), th {
+  background-color: #f2d6d9;
+}
+
+table td, table th {
+  padding-left: 10px; /* Adjust the value as needed for desired spacing */
+}
+
+h1 {
+  text-align: center;
+}
+
+.section-header {
+  background-color: #b24b5a!important;
+  text-align: center;
+  font-weight: bold;
+  color: white !important;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap; /* Ensures responsiveness */
+  gap: 20px; /* Adds space between columns */
+}
+
+.col {
+  flex: 1; /* Allows columns to adjust to available space */
+  min-width: 300px; /* Ensures columns don't shrink too much */
+  box-sizing: border-box; /* Includes padding in width */
+}
+
+/* Images resize responsively */
+
+.responsive-img {
+  display: block;
+  margin: 1em auto;
+  max-width: 100%;
+  width: 100%;
+  height: auto;
+}
+@media (min-width: 768px) {
+  .responsive-img {
+    width: 700px;
+  }
+}
+
+/* Math for long equations */
+/* Scrollable block math on small screens */
+mjx-container[jax="SVG"] {
+  overflow-x: auto;
+  overflow-y: hidden;
+  display: block;
+  max-width: 100%;
+}
+
+/* Optional: prevent SVGs from exceeding container */
+mjx-container[jax="SVG"] > svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Collapsible proof block */
+.proof-block details {
+  margin: 1em 0;
+  padding: 0.5em 1em;
+  border-left: 4px solid #4b8bbe; /* nice blue accent */
+  background: #f8f9fa;
+  border-radius: 6px;
+}
+
+.proof-block summary {
+  font-weight: bold;
+  cursor: pointer;
+  list-style: none;
+}
+
+.proof-block summary::-webkit-details-marker {
+  display: none; /* hide default marker */
+}
+
+.proof-block summary::before {
+  content: "▶ ";
+  transition: transform 0.2s ease;
+}
+
+.proof-block[open] summary::before,
+.proof-block details[open] summary::before {
+  transform: rotate(90deg);
+  display: inline-block;
+}
+

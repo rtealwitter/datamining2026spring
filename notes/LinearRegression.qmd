@@ -1,0 +1,297 @@
+---
+title: "**Linear Regression and Optimization**"
+format:
+  html:
+    toc: true
+    math: mathjax
+    include-after-body: readtime.html
+---
+
+## Supervised Learning
+
+Machine learning is incredibly popular. The area has seen extensive progress in the past several decades, and especially recently with the advent of generative AI. There are many problems that fall under the umbrella of machine learning. For example:
+
+- Predicting temperature based on present weather conditions,
+
+- Identifying objects in an image, and
+
+- Generating the next word in a sentence.
+
+This course covers how to solve these problems.
+The first half of the course will cover *supervised learning*, where we are given labeled data, and our goal is to train a function to approximately match the labels.
+
+Concretely, we are given $n$ data points $\mathbf{x}^{(1)}, \ldots, \mathbf{x}^{(n)} \in \mathbb{R}^d$, each with $d$ dimensions, and associated labels $y^{(1)}, y^{(2)}, \ldots, y^{(n)} \in \mathbb{R}$.
+Our goal is to learn a function $f: \mathbb{R}^d \to \mathbb{R}$ so that $f(\mathbf{x}^{(i)}) \approx y^{(i)}$ for all data points $i \in \{1,2,\ldots,n\}$.
+
+Our general approach to solving supervised learning problems will be to use *empirical risk minimization*, which gives a flexible scaffolding that encompasses many of the topics we'll discuss in this course.
+Given a function class, the idea is to select the function that most closely explains the data.
+In particular, there are three components to empirical risk minimization:
+
+- **Function Class:** The function class $\mathcal{F}$ from which we will select the function $f$ that most closely fits the observed data.
+
+- **Loss:** The loss function that measures how well a function $f$ fits the observed data. (Without loss of generality, we will assume that lower is better.)
+
+- **Optimizer:** The method of selecting the function from the function class.
+
+Empirical risk minimization is an abstract idea.
+Luckily, we will revisit it again and again.
+Our first example will be *linear regression*, where the function class is the set of linear functions and the loss is the squared difference between the true label and our prediction.
+Let's dive in!
+
+## Univariate Linear Regression
+
+Linear regression is a simple but powerful tool that we will use to understand the basics of machine learning.
+For simplicity, we will first consider the *univariate* case where the inputs are all one-dimensional i.e., $x^{(1)}, \ldots, x^{(n)} \in \mathbb{R}$.
+
+### Linear functions
+
+As its name suggests, linear regression uses a linear function to process the input into an approximation of the output.
+Let $w \in \mathbb{R}$ be a weight parameter.
+The linear function (for one-dimensional inputs) is given by $f(x) = wx$.
+
+Unlike many machine learning functions, we can visualize the linear function since it is given by a line.
+In the plot, we have $n=10$ data points plotted in two dimensions.
+There is one linear function $f(x) = 2x$ that closely approximates the data and another linear function $f(x)=\frac12 x$ that poorly approximates the data.
+
+<center><img src="images/regression_1d.svg" class="responsive-img"></center>
+
+Our goal is to learn how to find a linear function that fits the data well. Before we can do this, though, we will need to define what a "good" fit means.
+
+### Mean Squared Error Loss
+
+Our goal for the loss function is to measure how closely the data fits the prediction made by our function.
+Intuitively, we should take the difference between the prediction and the true outcome $f(x^{(i)})-y^{(i)}$.
+
+The issue with this approach is that $f(x^{(i)})-y^{(i)}$ can be small (negative) even when $f(x^{(i)}) \neq y^{(i)}$.
+A natural fix is to take the absolute value $|f(x^{(i)}) - y^{(i)}|$.
+The benefit of the absolute value is that the loss is $0$ if and only if $f(x^{(i)}) = y^{(i)}$.
+However, the absolute value function is not differentiable, which is a property we'll need for optimization.
+Instead, we use the squared loss:
+
+$$
+\mathcal{L}(w) = \frac1{n} \sum_{i=1}^n (f(x^{(i)}) - y^{(i)})^2.
+$$
+
+Here, we use the mean squared error loss, which is the average squared difference between the prediction and the true output over the dataset.
+Unlike the absolute value function, the squared function is differentiable everywhere.
+In addition, the squared error disproportionately penalizes predictions that are far from the true labels, a property that may be desirable when we want *all* of our predictions to be reasonably accurate.
+
+<center><img src="images/regression_losses.svg" class="responsive-img"></center>
+
+The plot above compares the squared function to the absolute value function.
+While both are $0$ if and only if their input is $0$, the squared function is differentiable everywhere and penalizes large errors more.
+
+### Exact Optimization
+
+We now have our function class and loss function: linear functions and mean squared error loss.
+The question becomes how to update the weights of the function to minimize the loss.
+In particular, we want to find $w$ that minimizes $\mathcal{L}(w)$.
+While the language we're using is new, the problem is not.
+We've actually been studying how to do this since pre-calculus!
+
+The squared loss is convex (a bowl facing up versus the downward facing *cave* of con*cave*, see the plot above).
+In this case, we know there is only one minimum.
+Not only that but we can find the minimum by setting the derivative to $0$.
+
+Our game plan is to set $\frac{\partial \mathcal{L}}{\partial w}$ to $0$ and solve for $w$.
+Recall that $f(x) = wx$.
+We will use the linearity of the derivative, the chain rule, and the power rule to compute the derivative of $\mathcal{L}$ with respect to $w$:
+
+$$
+\begin{align}
+\frac{\partial}{\partial w}[\mathcal{L}(w)]
+&= \frac1{n} \sum_{i=1}^n \frac{\partial}{\partial w} [(w x^{(i)} - y^{(i)})^2]
+\notag \\&= \frac1{n} \sum_{i=1}^n 2(w x^{(i)} - y^{(i)}) \frac{\partial}{\partial w} [(w x^{(i)} - y^{(i)})]
+\notag \\&= \frac1{n} \sum_{i=1}^n 2(w x^{(i)} - y^{(i)}) x^{(i)}.
+\end{align}
+$$
+
+Setting the derivative to $0$ and solving for $w$, we get $\frac2{n} \sum_{i=1}^n w \cdot (x^{(i)})^2 = \frac2{n} \sum_{i=1}^n y^{(i)} x^{(i)}$ and so
+$$
+w = \frac{\sum_{i=1}^n y^{(i)} \cdot x^{(i)}}{\sum_{i=1}^n (x^{(i)})^2}.
+$$
+
+This is the exact solution to the univariate linear regression problem!
+We can now use this formula to find the best linear function for our univariate data.
+However, we'll have to work slightly harder for the general case with multidimensional data.
+
+## Multivariate Linear Regression
+
+Consider the more general setting where the input is $d$-dimensional.
+As before, we observe $n$ training observations $(\mathbf{x}^{(1)}, y^{(1)}), \ldots, (\mathbf{x}^{(n)}, y^{(n)})$ but now $\mathbf{x}^{(i)} \in \mathbb{R}^d$.
+We will generalize the ideas from univariate linear regression to the multivariate setting.
+
+### Linear function
+
+Instead of using a single weight $w \in \mathbb{R}$, we will use $d$ weights $\mathbf{w} \in \mathbb{R}^d$.
+Then the function is given by $f(x) = \langle \mathbf{w}, \mathbf{x} \rangle$.
+
+Instead of using a *line* to fit the data, we use a *hyperplane*.
+While visualizing the function is difficult in high dimensions, we can still plot the function when $d=2$.
+
+<center><img src="images/regression_2d.svg" class="responsive-img"></center>
+
+In the plot above, we have $n=10$ data points in 3 dimensions.
+There is one linear function $\mathbf{w} = \begin{bmatrix} 2 \\ \frac12 \end{bmatrix}$ that closely approximates the data and another linear function $\mathbf{w} = \begin{bmatrix} \frac12 \\ 0 \end{bmatrix}$ that poorly approximates the data.
+
+### Mean Squared Error
+
+Since the output of $f$ is still a single real number, we do not have to change the loss function. However, we can use our linear algebra notation to write the mean squared error in an elegant way.
+
+Let $\mathbf{X} \in \mathbb{R}^{n \times d}$ be the data matrix where the $i$th row is $(\mathbf{x}^{(i)})^\top$.
+Similarly, let $\mathbf{y} \in \mathbb{R}^n$ be the target vector where the $i$th entry is $y^{(i)}$.
+We can then write the mean squared error loss as
+$$
+\mathcal{L}(\mathbf{w}) = \frac1{n} \| \mathbf{X w - y} \|_2^2.
+$$
+
+### Exact Optimization
+
+Just like computing the derivative and setting it to $0$, we can compute the gradient and set it to the zero vector $\mathbf{0} \in \mathbb{R}^d$.
+In mathematical notation, we will set $\nabla_\mathbf{w} \mathcal{L}(\mathbf{w}^*) = \mathbf{0}$ and solve for $\mathbf{w}^*$.
+The intuition is that such a point is a local minimum in every direction; that is, we cannot improve the loss by moving in any of the dimensions.
+Since the loss is convex, there can be only one minima.
+
+As you may recall from multivariate calculus, the gradient $\nabla_\mathbf{w} \mathcal{L}(\mathbf{w})$ is simply a vector with the same dimension as $\mathbf{w}$; the value in the $i$th dimension is $\frac{\partial \mathcal{L}(\mathbf{w})}{\partial w_i}$.
+
+Let's compute this quantity
+$$
+\begin{align}
+\frac{\partial \mathcal{L}(\mathbf{w})}{\partial w_i}
+&= \lim_{\Delta \to 0} \frac{\mathcal{L}(\mathbf{w}+\Delta \mathbf{e}_i) - \mathcal{L}(\mathbf{w})}{\Delta}
+\\&=\lim_{\Delta \to 0} \frac{\| \mathbf{X} (\mathbf{w}+\Delta \mathbf{e}_i) - \mathbf{y}\|^2 - \| \mathbf{X} \mathbf{w} - \mathbf{y}\|^2 }{\Delta}.
+\end{align}
+$$
+Let $\mathbf{a}, \mathbf{b}$ be two vectors in the same dimensional space.
+We have $\|\mathbf{a} + \mathbf{b} \|^2 = \langle \mathbf{a} + \mathbf{b} , \mathbf{a} + \mathbf{b} \rangle = \| \mathbf{a} \|^2 + 2\langle \mathbf{a}, \mathbf{b} \rangle + \| \mathbf{b}\|^2$,
+where we foiled to reach the final equality, and used that $\langle \mathbf{a}, \mathbf{b} \rangle = \langle \mathbf{b}, \mathbf{a} \rangle$.
+By letting $\mathbf{a} = \mathbf{X w - y}$ and $\mathbf{b} = \Delta \mathbf{X} \mathbf{e}_i$, we reach
+$$
+\begin{align}
+\frac{\partial \mathcal{L}(\mathbf{w})}{\partial w_i}
+&=\lim_{\Delta \to 0} \frac{\| \mathbf{X} \mathbf{w} - \mathbf{y}\|^2 
++ 2 \langle \mathbf{X} \mathbf{w} - \mathbf{y}, \Delta \mathbf{X e}_i \rangle
++\|\Delta \mathbf{X e}_i\|^2 
+- \| \mathbf{X} \mathbf{w} - \mathbf{y}\|^2 }{\Delta}.
+\\&= \lim_{\Delta \to 0} \frac{2 \Delta \langle \mathbf{X} \mathbf{w} - \mathbf{y}, \mathbf{X e}_i \rangle
++\Delta^2 \|\mathbf{X e}_i\|^2}{\Delta}
+\\&=2\langle \mathbf{X} \mathbf{w} - \mathbf{y}, \mathbf{X e}_i \rangle.
+\end{align}
+$$
+Let $\mathbf{X}_i = \mathbf{Xe}_i$ be the $i$th column of $\mathbf{X}$.
+Then, the full gradient is given by
+$$
+\begin{align}
+\nabla_\mathbf{w}\mathcal{L}(\mathbf{w})
+= 2 \begin{bmatrix}
+\mathbf{X}_1^\top (\mathbf{X} \mathbf{w} - \mathbf{y}) \\ \mathbf{X}_2^\top (\mathbf{X} \mathbf{w} - \mathbf{y}) \\ \vdots
+\end{bmatrix}
+\end{align}
+= 2 \mathbf{X}^\top (\mathbf{X} \mathbf{w} - \mathbf{y}).
+$$
+
+By the convexity of the loss function $\mathcal{L}$, we know that $\nabla_\mathbf{w}\mathcal{L}(\mathbf{w}^*)=0$ at the optimal weights $\mathbf{w}^*$.
+Solving for $\mathbf{w}^*$ yields
+$$
+\begin{align}
+\nabla_\mathbf{w}\mathcal{L}(\mathbf{w}^*)
+&= 2 \mathbf{X}^\top (\mathbf{X} \mathbf{w}^* - \mathbf{y})
+= 0
+\\ \Leftrightarrow
+\mathbf{X}^\top \mathbf{X} \mathbf{w}^* &= \mathbf{X}^\top \mathbf{y}
+\\ \Leftrightarrow
+\mathbf{w}^* &= (\mathbf{X}^\top \mathbf{X})^+ \mathbf{X}^\top \mathbf{y}
+\end{align}
+$$
+where $(\cdot)^+$ is the pseudoinverse.
+
+### Singular Value Decomposition
+
+Even when a matrix is not square, we can still use a generalization of the eigendecomposition.
+Suppose $\mathbf{X} = \sum_{i=1}^d \sigma_i \mathbf{u}_i \mathbf{v}_i^\top$ is the singular value decomposition (SVD) of $\mathbf{X}$, where $\mathbf{u}_i \in \mathbb{R}^n$ are the left singular vectors, $\mathbf{v}_i \in \mathbb{R}^d$ are the right singular vectors, and $\sigma_i \in \mathbb{R}$ are the singular values.
+(We'll assume that all the columns of $\mathbf{X}$ are linearly independent; otherwise, we could simply remove one without changing the optimization problem.)
+The pseudoinverse is 
+$$
+\mathbf{X}^+ = \sum_{i=1}^d \frac{1}{\sigma_i} \mathbf{v}_i \mathbf{u}_i^\top.
+$$
+
+For our equation, we can compute $\mathbf{X}^\top \mathbf{X} = \sum_{i=1}^d \sigma_i^2 \mathbf{v}_i \mathbf{v}_i^\top$.
+So $(\mathbf{X}^\top \mathbf{X})^+ = \sum_{i=1}^d \frac{1}{\sigma_i^2} \mathbf{v}_i \mathbf{v}_i^\top$.
+Together, we have
+$$
+(\mathbf{X}^\top \mathbf{X})^+ \mathbf{X}^\top
+= \left( \sum_{i=1}^d \frac{1}{\sigma_i^2} \mathbf{v}_i \mathbf{v}_i^\top\right) 
+\sum_{j=1}^d \sigma_j \mathbf{v}_j \mathbf{u}_j^\top
+= \sum_{i=1}^d \frac{1}{\sigma_i} \mathbf{v}_i \mathbf{u}_i^\top
+= \mathbf{X}^+.
+$$
+
+## Empirical Risk Minimization
+
+We have now seen how to fit a linear function to data using the mean squared error loss.
+However, we have not given a satisfying answer to the question:
+
+<center>*Why use mean squared error as our loss function?*</center><br>
+
+So far, our answer has been that the quadratic function is differentiable (which we use to find the optimal solution), and that it naturally penalizes predictions which are farther away more.
+The first point is one of convenience and, a priori, should not be particularly persuasive.
+The second seems somewhat arbitrary, why penalize at a quadratic rate rather than an e.g., quartic rate?
+We'll now consider a more compelling answer.
+
+On our way to the answer, let's take a step back and consider another question:
+
+<center>*Why fit the data with a linear function?*</center><br>
+
+Well, we may do so when we expect the data truly has a linear relationship with the labels.
+To make things interesting, we will assume that there is random noise added to the labels, but that this noise is mean-centered so that, on average, the labels come from the linear model.
+Concretely, we observe some point $\mathbf{x}$ with a label that comes from a linear model $\mathbf{w}^*$ but with added noise, i.e.,
+$$
+y= \langle \mathbf{w}^*, \mathbf{x} \rangle + \eta.
+$$
+We will model this noise as distributed from a normal distribution, i.e., $\eta \sim \mathcal{N}(0, \sigma^2)$ for some unknown standard deviation $\sigma$.
+(To justify this choice, we imagine the noise as a sum of random variables from some other distribution(s) which, by the law of large numbers, will follow the normal distribution when the sum contains sufficiently many terms.)
+
+Recall that the goal of our empirical risk minimization strategy is to find the function which most closely aligns with the data, or, put differently, we want the **function that most likely generated the data we observed**.
+In order to compute this likelihood, we will use the probability density function of the normal distribution:
+The probability we observe a random variable $y$ drawn from a normal distribution with mean $\mu$ and standard deviation $\sigma$ is given by
+$$
+\frac1{\sqrt{2\pi \sigma}} \exp\left( - \frac{(y- \mu)^2}{2\sigma^2} \right).
+$$
+If the noisy linear model $\mathbf{w}$ *did* generate the training data $(\mathbf{x}^{(i)}, y^{(i)})$, then the expectation of the generation would be $\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle$.
+Then, combined with the assumption that the training data was drawn independently, the probability of observing the training data is given by the product of the probabilities of each individual observation:
+$$
+\prod_{i=1}^n 
+\frac1{\sqrt{2\pi \sigma}} \exp\left( - \frac{(y^{(i)}- \langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)^2}{2\sigma^2} \right).
+$$
+Our goal is to find the function $\mathbf{w}$ that maximizes this likelihood i.e.,
+$$
+\begin{align}
+&{\arg\max}_{\mathbf{w} \in \mathbb{R}^d}
+\prod_{i=1}^n 
+\frac{1}{\sqrt{2\pi \sigma}} \exp\left( - \frac{(y^{(i)}- \langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)^2}{2\sigma^2} \right)
+\notag \\
+&= {\arg\min}_{\mathbf{w} \in \mathbb{R}^d}
+- \log \left( 
+\frac{1}{\sqrt{2\pi \sigma}} \exp\left(\sum_{i=1}^n - \frac{(y^{(i)}- \langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)^2}{2\sigma^2} \right)\right)
+\notag \\
+&= {\arg\min}_{\mathbf{w} \in \mathbb{R}^d}
+- \sum_{i=1}^n - (y^{(i)}- \langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)^2.
+\end{align}
+$$
+Here, we used the following facts: maximizing an objective is equivalent to minimizing the negative of that objective, the logarithmic function is monotonically increasing so minimizing the likelihood is equivalent to minimizing the log-likelihood, the product of exponentials is the exponential of the sum, and removing a constant scalar factor or additive constant does not change the minimum.
+
+The punchline is that the function $\mathbf{w}$ that maximizes the likelihood of observing the training data is the same function that minimizes the mean squared error loss.
+This is a powerful result that justifies our use of the mean squared error loss.
+
+## Looking Forward
+
+While we have seen the benefits of exactly optimizing linear regression functions, there are several limitations that we will address.
+
+**Computational Complexity**
+We saw that the exact solution to linear regression is given by $\mathbf{w}^* = (\mathbf{X}^\top \mathbf{X})^{-1} \mathbf{X}^\top \mathbf{y}$.
+This requires building the matrix $\mathbf{X}^\top \mathbf{X}$, which takes $O(nd^2)$ time, and then inverting it, which takes $O(d^3)$.
+When we have a large number of data points $n$ and/or a large number of features $d$, this can be prohibitively expensive.
+
+**Function Class Misspecification**
+We have assumed that the data has a linear relationship (or close to linear relationship) with the labels.
+What happens when this is not true? That is, even the best linear function gives a poor approximation?

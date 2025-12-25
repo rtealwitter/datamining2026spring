@@ -1,0 +1,114 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+\usepackage{amsmath, amsfonts}
+\usepackage{hyperref, graphicx}
+\usepackage{tikz, bbm, mathtools}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\title{CSCI 145 Problem Set 11}
+\author{} % TODO: Put your name here
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\subsection*{Submission Instructions}
+
+Please upload \textit{your} work by
+\textbf{11:59pm Monday November 17, 2025.}
+\begin{itemize}
+\item You are encouraged to discuss ideas
+and work with your classmates. However, you
+\textbf{must acknowledge} your collaborators
+at the top of each solution on which
+you collaborated with others 
+and you \textbf{must write} your solutions
+independently.
+\item Your solutions to theory questions must
+be written legibly, or typeset in LaTeX or markdown.
+If you would like to use LaTeX, you can import the source of this document (available from the course webpage) to Overleaf.
+\item I recommend that you write your solutions to coding questions in a Jupyter notebook using Google Colab.
+\item You should submit your solutions as a \textbf{single PDF} via the assignment on Gradescope.
+\end{itemize}
+
+\noindent
+\textbf{Grading:} The point of the problem set is for \textit{you} to learn. To this end, I hope to disincentivize the use of LLMs by \textbf{not} grading your work for correctness. Instead, you will grade your own work by comparing it to my solutions. This self-grade is due the Friday \textit{after} the problem set is due, also on Gradescope.
+
+\newpage
+\section*{Problem 1: Concentration}
+
+Consider $n$ \textit{independent} random variables $X_1, \ldots, X_n$.
+Each random variable is bounded between 0 and 1, i.e., $X_i \in [0,1]$
+Define the empirical mean
+\begin{align}
+    \bar{X} = \frac1n \sum_{i=1}^n X_i.
+\end{align}
+
+In this problem, we will analyze $\bar{X}$.
+
+\subsection*{Part A: Variance}
+
+Prove that $\text{Var}(\bar{X}) \leq \frac1n$.
+
+\textbf{Hint:} Use the linearity of variance for independent random variables.
+
+\subsection*{Part B: Concentration Inequalities}
+
+Apply Markov's, Chebyshev's, and Hoeffding's inequality to bound how $\bar{X}$ deviates from its mean $\mathbb{E}[\bar{X}]$.
+Rearrange the inequalities so that the probabilities are at most $\frac1{\epsilon}, \frac1{\epsilon^2}$, and $\frac1{e^\epsilon}$ respectively.
+
+Note: Use part A when manipulating Chebyshev's inequality.
+
+\subsection*{Part C: Union Bound}
+
+In the prior part, we saw that---except for the probability bound---Chebyshev's is quite similar to Hoeffding's.
+Consider $m$ different empirical means $\bar{X}^{(1)}, \ldots, \bar{X}^{(m)}$, each with their own $n$ independent random variables $X_1^{(j)}, \ldots, X_n^{(j)}$ for $j=1, \ldots, m.$
+
+Use Hoeffding's and the Union Bound to upper bound the probability that, for \textit{any} $j$, we have
+\begin{align}
+\bar{X}^{(j)} -\mathbb{E}[\bar{X}^{(j)}] > \frac{\epsilon}{\sqrt{2n}}.
+\end{align}
+How should we set $\epsilon$ if we want this probability to be $\frac1{100}$?
+
+
+%\input{solutions/solution11_1}
+
+\newpage
+\section*{Multi-armed Bandits}
+
+In this problem, we will explore some of the ideas from lecture in more detail.
+Before working on these problems, familiarize yourself with the proof of the regret theorem.
+
+\subsection*{Part A: Integral Upper Bound}
+In the proof of the regret theorem, we used several elegant mathematical bounds.
+Prove that
+\begin{align}
+    \sum_{i=1}^n \frac1{\sqrt{i}}
+    \leq 2\sqrt{n}.
+\end{align}
+Hint: Upper bound the summation with an integral $\int f(x) dx$ for an appropriately chosen function $f$.
+
+\subsection*{Part B: Cauchy-Schwarz Inequality}
+The Cauchy-Schwarz inequality is an incredibly useful tool.
+For vectors $\mathbf{a}, \mathbf{b} \in \mathbb{R}^k$, Cauchy-Schwarz tells us that
+\begin{align}
+    \langle \mathbf{a}, \mathbf{b} \rangle^2 \leq \| \mathbf{a} \|_2^2 \| \mathbf{b} \|_2^2.
+\end{align}
+Recall that $\sum_{a=1}^k n_{a}^{(T)}=T $.
+Use Cauchy-Schwarz to show that
+\begin{align}
+    \sum_{a=1}^k \sqrt{n_{a}^{(T)}} \leq \sqrt{k T}.
+\end{align}
+
+\subsection*{Part C: Another Agent}
+
+Develop another agent for solving the multi-armed bandit problem.
+Using the code from class, implement your agent and compare its performance to the greedy, random, and UCB agents we tried.
+
+%\input{solutions/solution11_2}
+
+\end{document}

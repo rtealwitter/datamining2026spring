@@ -1,0 +1,178 @@
+---
+title: "**Logistic Regression**"
+format:
+  html:
+    toc: true
+    math: mathjax
+    include-after-body: readtime.html
+---
+
+With a little probability, we saw how the Naive Bayes Classifier can be used to make predictions.
+However, the Naive Bayes Classifier assumes that the value of each feature is independent of the others, which is often not the case in practice (e.g., if the word "discount" appears in an email, it is more likely that the word "sale" also appears).
+As an alternative approach to classification problems, we will see how we can generalize linear regression, with a little non-linearity.
+
+Our setup will be the standard supervised learning setting, where we have labelled data $(\mathbf{x}^{(1)}, y^{(1)}), \ldots, (\mathbf{x}^{(n)}, y^{(n)})$, for $\mathbf{x}^{(i)} \in \mathbb{R}^d$ the feature vector for the $i$th example. 
+However, unlike regression where we predict a continuous value $y^{(i)} \in \mathbb{R}$, we will now predict a binary value $y^{(i)} \in \{0, 1\}$.
+We can use the same linear model as before, i.e., we will predict the output as $\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle$, where $\mathbf{w} \in \mathbb{R}^d$ is the weight vector.
+But, we run into an issue: the output of the linear model can take on any real value, but we want to predict a binary value.
+
+### Model and Loss
+
+We'll explore several attempts to convert our linear model into a binary classifier.
+
+Attempt #1: We could simply apply a step function to the output of the linear model, i.e., predict $y^{(i)} = 1$ if $\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle > 0$ and $y^{(i)} = 0$ otherwise. The loss could be the difference between the predicted value and the true value, i.e., $\mathcal{L}(\mathbf{w}) = \sum_{i=1}^n |y^{(i)} - \langle \mathbf{w}, \mathbf{x}^{(i)} \rangle|$. However, this loss is not differentiable, so we cannot use gradient descent to optimize it.
+
+Attempt #2: We could use the mean squared error loss, i.e., $\mathcal{L}(\mathbf{w}) = \sum_{i=1}^n (y^{(i)} - \langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)^2$. This loss is differentiable, but it does not work well for classification problems: if we have a large positive value for $\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle$, the loss will be large even if $y^{(i)} = 1$.
+
+Attempt #3: We can apply the *sigmoid function* to the output of the linear model to map it to the range $(0, 1)$, i.e., we will predict $f(\mathbf{x}^{(i)}) = \sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)$, where $\sigma(z) = \frac{1}{1 + e^{-z}}$ is the sigmoid function. The sigmoid function is a smooth, non-linear function that maps any real number to the range $(0, 1)$. We can then interpret $f(\mathbf{x}^{(i)})$ as the probability that $y^{(i)} = 1$ given the features $\mathbf{x}^{(i)}$. If we need to report a class label, we can threshold the predicted probability, e.g., predict $y^{(i)} = 1$ if $f(\mathbf{x}^{(i)}) > \frac12$ and $y^{(i)} = 0$ otherwise.
+
+<center><img src="images/classification_outputs.svg" class="responsive-img"></center>
+
+To train our model, we need a loss function that measures how well our predicted probabilities match the true labels. A common choice is the *binary cross-entropy loss*, which is defined as
+$$\mathcal{L}(\mathbf{w}) = - \sum_{i=1}^n \left[y^{(i)} \log(f(\mathbf{x}^{(i)})) + (1 - y^{(i)}) \log(1 - f(\mathbf{x}^{(i)}))\right].$$
+This loss function measures the distance (in a sense we'll explore later in the course) between the predicted probabilities and the true labels. It is differentiable, so we can use gradient descent to optimize it.
+
+<center><img src="images/classification_loss.svg" class="responsive-img"></center>
+
+### Optimization
+
+Once we have a model and loss function, we have seen two ways to optimize the model:
+*Exact optimization*, where we compute the gradient of the loss function with respect to the model parameters and set the gradient to zero to find the optimal parameters.
+*Gradient descent*, where we iteratively update the model parameters in the direction of the negative gradient of the loss function.
+Both approaches require the gradient of the loss function with respect to the model parameters, so let's compute the gradient of $\mathcal{L}(\mathbf{w})$ with respect to $\mathbf{w}$.
+
+Plugging in the sigmoid function, we have
+$$
+\begin{align*}
+\mathcal{L}(\mathbf{w}) &= - \sum_{i=1}^n \left[y^{(i)} \log\left(\frac{1}{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}\right) + (1 - y^{(i)}) \log\left(1 - \frac{1}{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}\right)\right] \\
+\end{align*}
+$$
+
+Observe that $\frac1{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} = \frac{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} + 1}$, so $1-\frac1{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} = \frac{1}{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} + 1}$.
+
+Then, we can rewrite the loss as
+$$
+\begin{align*}
+\mathcal{L}(\mathbf{w}) &= \sum_{i=1}^n \left[y^{(i)} \log\left(1+e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} \right) + (1 - y^{(i)}) \log\left(e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} + 1\right) \right].
+\end{align*}
+$$
+
+Let's compute the partial derivative of the loss with respect to $w_j$. Applying the chain rule, we have
+$$
+\begin{align*}
+\frac{\partial}{\partial w_j} \mathcal{L}(\mathbf{w}) &= \sum_{i=1}^n 
+\left[y^{(i)} \frac1{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} \cdot e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} (-x_j^{(i)}) + (1 - y^{(i)}) \frac1{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} + 1} \cdot e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} x_j^{(i)}\right]\\
+\end{align*}
+$$
+
+Observe that $\frac{e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} = \frac{1+e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} - \frac1{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} = 1-\sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)$, and $\frac{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} + 1} = \sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)$.
+Then, we can rewrite the partial derivative as
+$$
+\begin{align*}
+\frac{\partial}{\partial w_j} \mathcal{L}(\mathbf{w}) &= \sum_{i=1}^n 
+\left[-y^{(i)} (1 - \sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)) x_j^{(i)} + (1 - y^{(i)}) \sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle) x_j^{(i)}\right]\\
+&= \sum_{i=1}^n 
+x_j^{(i)} \left[\sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle) - y^{(i)}\right]\\
+&= \mathbf{X}_j^\top \left(\sigma(\mathbf{X} \mathbf{w}) - \mathbf{y}\right),
+\end{align*}
+$$
+where $\sigma(\cdot)$ is applied element-wise to the vector $\mathbf{X} \mathbf{w}$, and $\mathbf{X}_j$ is the $j$th column of the design matrix $\mathbf{X}$.
+Finally, we can write the gradient of the loss with respect to the weight vector $\mathbf{w}$ as
+$$
+\nabla_{\mathbf{w}} \mathcal{L}(\mathbf{w}) =  \mathbf{X}^\top \left(\sigma(\mathbf{X} \mathbf{w}) - \mathbf{y}\right).
+$$
+
+Our exact optimization approach would be to set the gradient to zero and solve for $\mathbf{w}$.
+Do you see why this doesn't work with the non-linear sigmoid function?
+
+Instead of exact optimization, we will use gradient descent!
+
+### Non-linear Transformations
+
+Often, our data is not linearly separable, i.e., we cannot draw a straight line to separate the two classes.
+In this case, we can use non-linear transformations to map the data to a higher-dimensional space, where it *is* linearly separable.
+One approach: As we saw for linear regression, we can add polynomial features to the data.
+In the image below, we add a new feature $x_1^2 + x_2^2$ to the data, which allows us to separate the two classes with a linear decision boundary in the transformed feature space.
+
+<center><img src="images/classification_transformation.svg" class="responsive-img"></center>
+
+It is not a priori clear which non-linear transformation will work best for a given dataset.
+In several lectures, we will explore how to use kernel methods to implicitly map the data to a higher-dimensional space, which captures many of the non-linear transformations we might want to use.
+
+### Measuring Error in Binary Classification
+
+The simplest way to measure the error of a classification model is to compute the *error rate*, which is the fraction of examples that are misclassified. For example, if we have $n$ examples and our model misclassifies $k$ of them, the error rate is $\frac{k}{n}$.
+
+However, the error rate does not take into account *which* points are misclassified.
+We will often break down the accuracy of a classification model into four categories:  
+- **True Positives (TP):** The model correctly predicts a positive class.  
+- **True Negatives (TN):** The model correctly predicts a negative class.  
+- **False Positives (FP):** The model incorrectly predicts a positive class when the true class is negative.    
+- **False Negatives (FN):** The model incorrectly predicts a negative class when the true class is positive.
+
+<center><img src="images/classification_venn.svg" class="responsive-img"></center>
+
+The raw counts of these four categories can be summarized in a **confusion matrix**. The confusion matrix is a square matrix with dimensions equal to the number of classes, where the rows represent the true classes and the columns represent the predicted classes.
+
+But, these raw counts themselves are not very informative.
+
+We often report the **True Positive Rate (TPR)**, also known as *recall*, which is the fraction of true positives out of all actual positives:
+$\text{TPR} = \frac{\text{TP}}{\text{TP} + \text{FN}}.$
+The TPR measures how well the model identifies positive examples (higher is better).
+
+We also report the **False Positive Rate (FPR)**, which is the fraction of false positives out of all actual negatives:
+$\text{FPR} = \frac{\text{FP}}{\text{FP} + \text{TN}}.$
+The FPR measures how often the model incorrectly identifies negative examples as positive (lower is better).
+
+Finally, we can report the **Precision**, which is the fraction of true positives out of all predicted positives:
+$\text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}.$
+Precision measures how well the model identifies positive examples among all predicted positives (higher is better).
+
+If we have a model that does not achieve the desired TPR or FPR, we have a hidden lever we can pull: the threshold for predicting a positive class.
+By default, we predict a positive class if the predicted probability is greater than $\frac12$.
+But, we can change this threshold to an arbitrary value $\tau \in [0, 1]$.
+Increasing the threshold decreases the number of positive predictions, which decreases both TPR and FPR:
+The TPR decreases because we are less likely to predict a positive class, so we will miss more true positives.
+The FPR decreases because we are less likely to predict a positive class, so we will make fewer false positive predictions.
+
+<center><img src="images/classification_boundaries.svg" class="responsive-img"></center>
+
+We can visualize the trade-off between TPR and FPR by plotting the **Receiver Operating Characteristic (ROC) curve**. The ROC curve is a plot of the TPR against the FPR for different threshold values $\tau$.
+Because a higher TPR is better and a lower FPR is better, we want the ROC curve to be as close to the top-left corner as possible.
+The area under the ROC curve (AUC) is a single number that summarizes the performance of the model across all threshold values.
+A model with an AUC of 1 is perfect, while a model with an AUC of 0.5 is no better than random guessing.
+
+<center><img src="images/classification_roc.svg" class="responsive-img"></center>
+
+### Multiple Classes
+
+In many settings, we are interested in classifying data into more than two classes.
+For example, we might want to classify images into different categories, such as cats, dogs, and birds.
+In this case, we need to extend our binary classification model to handle multiple classes.
+Our supervised learning setup remains the same, where we have labelled data $(\mathbf{x}^{(1)}, y^{(1)}), \ldots, (\mathbf{x}^{(n)}, y^{(n)})$, but now $y^{(i)} \in \{1, 2, \ldots, k\}$, for $k$ the number of classes.
+
+We can still use the same ideas that we used for binary logistic regression, but we need to extend the output of the model to predict a probability distribution over each of the $k$ classes.
+Instead of a single output, which we can interpret as the probability of the positive class, we will have a vector of outputs $\mathbf{f}(\mathbf{x}^{(i)}) \in \mathbb{R}^k$, where $k$ is the number of classes.
+
+To ensure this vector is a valid probability distribution, we can use the *softmax function*, defined as
+$$
+\begin{align*}
+\text{softmax}(\mathbf{z}) &= \begin{bmatrix}
+\frac{e^{z_1}}{\sum_{j=1}^k e^{z_j}} \\
+\frac{e^{z_2}}{\sum_{j=1}^k e^{z_j}} \\
+\vdots \\
+\frac{e^{z_k}}{\sum_{j=1}^k e^{z_j}} \\
+\end{bmatrix}
+\end{align*}
+$$
+Softmax applies the exponential function to each element of the vector, and then normalizes the resulting vector so that the sum of the resulting vector is 1.
+This ensures that the output is a valid probability distribution, where each probability is between 0 and 1 and the sum of all elements is 1.
+
+The loss function for multi-class classification is the *cross-entropy loss*, which is a generalization of the binary cross-entropy loss:
+$$
+\begin{align*}
+\mathcal{L}(\mathbf{w}) &= - \sum_{i=1}^n \sum_{j=1}^k \mathbb{1}[y^{(i)}=j] \log\left(f_j(\mathbf{x}^{(i)})\right),
+\end{align*}
+$$
+where $f_j(\mathbf{x}^{(i)})$ is the $j$th element of the softmax output vector $\mathbf{f}(\mathbf{x}^{(i)})$,
+and $\mathbb{1}[y^{(i)}=j]$ is an indicator function that is 1 if $y^{(i)} = j$ and 0 otherwise.

@@ -1,0 +1,376 @@
+---
+title: "**Autoencoders**"
+format:
+  html:
+    toc: true
+    math: mathjax
+    include-after-body: readtime.html
+---
+
+We have so far assumed that our data is labeled (e.g., we know an image depicts a dog).
+There is a wealth of unlabeled data available, and we would like to use it to improve our models.
+For example, think of the many images on the web, or millions of documents of text.
+Today, we will explore how to leverage this unlabeled data using unsupervised learning techniques.
+
+### Introduction
+
+There are many simple but clever ideas that we will see in unsupervised learning.
+The first is an *autoencoder*, which allows us to learn a meaningful, latent representation of the input data.
+The idea of autoencoders is quite natural: when we don't have labels for our data, let's use the data itself as a label.
+
+Let $d$ be the dimension of the input data.
+We will map the input data to a compressed representation in $k$ dimensions.
+Let $f_0: \mathbb{R}^d \to \mathbb{R}^k$ be the encoder, often a neural network, that maps the input data $\boldsymbol{x}$ to the latent representation $\boldsymbol{z} = f_0(\boldsymbol{x})$.
+We will then map the latent representation back to the original space with a decoder $f_1: \mathbb{R}^k \to \mathbb{R}^d$, also a neural network, where $\tilde{\boldsymbol{x}} = f_1(\boldsymbol{z})$ is the reconstruction of the original input $\boldsymbol{x}$.
+
+Our goal is to minimize the reconstruction error, which is typically measured as the mean squared error (MSE) between the original input $\boldsymbol{x}$ and the reconstructed input $\tilde{\boldsymbol{x}}$:
+
+$$
+\mathcal{L}_{\text{recon}} = \frac1{n} \sum_{i=1}^n \| \boldsymbol{x}^{(i)} - \tilde{\boldsymbol{x}}^{(i)} \|^2_2.
+$$
+
+<center><img src="images/autoencoder_bottleneck.svg" class="responsive-img"></center>
+
+Notice that this problem is trivial when $k \geq d$, since we can simply represent $\boldsymbol{z} = \boldsymbol{x}$ in the latent space without any loss of information.
+Crucially, our architecture must have a bottleneck, meaning that we need to enforce $k < d$ in order to learn a non-trivial representation.
+
+There are many applications of autoencoders:
+
+- [data compression](https://en.wikipedia.org/wiki/Data_compression) (for example, JPEG is a form of lossy compression that can be interpreted as an autoencoder), 
+- [denoising](https://en.wikipedia.org/wiki/Total_variation_denoising) (removing noise from images), 
+- [inpainting](https://en.wikipedia.org/wiki/Inpainting) (filling in missing parts of images), 
+- [representation learning](https://en.wikipedia.org/wiki/Feature_learning) (discovering useful features that can be used in downstream applications).
+
+When we map from $\mathbb{R}^d$ to a smaller dimension $\mathbb{R}^k$, we are necessarily losing information.
+However, much of this information isn't useful.
+With images, for example, most $d$-dimensional vectors are not natural images that we would recognize.
+Instead, there is a *manifold* of $d$-dimensional natural images.
+Learning this manifold directly is challenging, and autoencoders provide a powerful tool for mapping to a lower-dimensional space and back.
+
+<center><img src="images/autoencoder_manifold.svg" class="responsive-img"></center>
+
+Once we represent the data in the latent space, we can use it for various tasks such as classification, clustering, and generation.
+Instead of working in the *pixel-space*, for example, we can work in a lower dimension that captures the essential features of the data.
+Since all of our machine learning algorithms run in time dependent on the dimensionality of the input space, reducing the dimensionality can lead to significant speedups.
+Such latent representations form the backbone of state-of-the-art models in various domains, including computer vision, natural language processing, and speech recognition.
+
+### Variational Autoencoders
+
+The natural manifold of our data in $\mathbb{R}^d$ is generally complicated and non-convex.
+For example, we may have two images of the same cat, but the linear combination of these two images at the pixel-level does not lie on the manifold of cat images.
+
+When we build the autoencoder, we have a chance to make the latent space more structured.
+One method is called *Variational Autoencoders*, which impose a probabilistic structure on the latent space.
+Instead of the latent $\boldsymbol{z} = f_0(\boldsymbol{x})$ being a deterministic function of the input, we model it as a distribution.
+Because of the many [elegant](https://youtu.be/d_qvLDhkg00?si=NWXyyZKczpfUB6RL) [properties](https://youtu.be/zeJD6dqJ5lo?si=NFJTZunCeT8t5DaL) of Gaussian distributions, we often choose to model the latent space as a multivariate Gaussian distribution.
+Then, the latent is drawn from a Gaussian distribution i.e., $\boldsymbol{z} \sim \mathcal{N}(\boldsymbol{\mu}_\boldsymbol{x}, \boldsymbol{\Sigma}_\boldsymbol{x})$ is a random variable, where $\boldsymbol{\mu}_\boldsymbol{x}$ is the input-dependent mean and $\boldsymbol{\Sigma}_\boldsymbol{x}$ is the input-dependent covariance.
+
+In variational autoencoders, the loss consists of the normal reconstruction error and a measure of the distance between the learned distribution and a well-behaved prior distribution, typically the standard Gaussian $\mathcal{N}(\boldsymbol{0}, \boldsymbol{I})$:
+$$
+\mathcal{L}_\text{VAE} = \alpha \mathcal{L}_{\text{recon}} + (1-\alpha) D_{\text{KL}}(\mathcal{N}(\boldsymbol{\mu}_\boldsymbol{x}, \boldsymbol{\Sigma}_\boldsymbol{x}) || \mathcal{N}(\boldsymbol{0}, \boldsymbol{I})),
+$$
+where $\alpha \in (0,1)$ is a hyperparameter that balances the two terms, and $D_{KL}$ is the [Kullback-Leibler divergence](https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence). Formally,
+$$
+D_{\text{KL}}(P, Q) =
+\mathbb{E}_{\boldsymbol{z} \sim P} \left[ \log \frac{P(\boldsymbol{z})}{Q(\boldsymbol{z})} \right],
+$$
+where $P$ is the learned distribution and $Q$ is the prior distribution.
+The two losses will push the variational autoencoder in different directions:
+The reconstruction loss encourages the model to generate realistic samples, while the KL divergence encourages the latent space to always resemble the standard Gaussian distribution with mean $\boldsymbol{0}$ and covariance $\boldsymbol{I}$.
+These two goals are naturally at odds: if the encoder always outputted the mean $\boldsymbol{\mu}_\boldsymbol{x}=\boldsymbol{0}$, and the covariance $\boldsymbol{\Sigma}_\boldsymbol{x}=\boldsymbol{I}$, the KL divergence would be 0 but there would be no information for the decoder to reconstruct the input.
+However, by simultaneously training to achieve both goals, we can learn a meaningful latent space that captures the essential features of the data while also being structured.
+
+<center><img src="images/autoencoder_vae.svg" class="responsive-img"></center>
+
+We will use gradient descent to train the parameters of the encoder $f_0$ and the decoder $f_1$.
+However, when we use KL divergence as the loss, it's not immediately clear how to backpropagate through a random sample $\boldsymbol{z} \sim \mathcal{N}(\boldsymbol{\mu}_\boldsymbol{x}, \boldsymbol{\Sigma}_\boldsymbol{x})$.
+Instead, we will use the encoder to generate $\boldsymbol{\mu}_\boldsymbol{x}$ and $\boldsymbol{\Sigma}_\boldsymbol{x}$, and set $\boldsymbol{z} = \boldsymbol{\mu}_\boldsymbol{x} + \boldsymbol{\Sigma}_\boldsymbol{x}^{1/2} \boldsymbol{\epsilon}$, where $\boldsymbol{\epsilon} \sim \mathcal{N}(\boldsymbol{0}, \boldsymbol{I})$ is a standard normal variable.
+
+### Principal Component Analysis
+
+Principal component analysis (PCA) is the "linear regression" of unsupervised learning, offering a simple but powerful technique for dimensional reduction.
+PCA is the simplest kind of autoencoder, where the encoder and decoder are each a fully connected linear layer without activation functions.
+
+Let $\mathbf{W}_0 \in \mathbb{R}^{k \times d}$ be the encoder weight matrix, and $\mathbf{W}_1 \in \mathbb{R}^{d \times k}$ be the decoder weight matrix.
+The latent for input $\mathbf{x}$ is $\mathbf{z}^\top = \mathbf{x}^\top \mathbf{W}_0$, and the reconstruction is $\tilde{\mathbf{x}}^\top = \mathbf{z}^\top \mathbf{W}_1  = \mathbf{x}^\top \mathbf{W}_0 \mathbf{W}_1$.
+
+<center><img src="images/pca_single.svg" class="responsive-img"></center>
+
+We train the encoder and decoder on $n$ (unlabelled) data points $\mathbf{x}^{(1)}, \ldots, \mathbf{x}^{(n)}$.
+Let $\mathbf{X} \in \mathbf{R}^{n \times d}$ be the matrix of input data, where the $i$th row corresponds to data point ${\mathbf{x}^{(i)}}^\top$.
+
+<center><img src="images/pca_all.svg" class="responsive-img"></center>
+
+The goal is for the input matrix $\mathbf{X}$ to be well approximated by the reconstruction $\tilde{\mathbf{X}} = \mathbf{X} \mathbf{W}_0 \mathbf{W}_1$.
+In particular,
+$$
+\mathcal{L}( \mathbf{W}_0, \mathbf{W}_1)
+= \sum_{i=1}^n \| \mathbf{x}^{(i)} - \tilde{\mathbf{x}}^{(i)} \|^2
+= \sum_{i=1}^n \sum_{j=1}^d (x_j^{(i)} - \tilde{x}_j^{(i)})^2
+= \| \mathbf{X} - \tilde{\mathbf{X}} \|_\text{F}^2
+$$
+where the Frobenius norm $\| \mathbf{A} \|_\text{F}^2$ is the sum of squared entries of $\mathbf{A}$,
+and the last equality follows because $[\mathbf{X}]_{i,j} = x_j^{(i)}$ is the $j$th feature of the $i$th data point.
+
+We could apply gradient descent to minimize this loss with respect to the weights $\mathbf{W}_0$ and $\mathbf{W}_1$.
+But, like with linear regression, we can actually derive the optimal solution.
+Let's revisit some linear algebra to see how we can do this derivation.
+
+While only some matrices have eigendecompositions, all matrices have singular value decompositions (SVDs).
+In particular, let $r$ be the rank of $\mathbf{X}$, then we can write
+$$
+\mathbf{X} = \mathbf{U} \mathbf{\Sigma} \mathbf{V}^\top
+$$
+where $\mathbf{U} \in \mathbb{R}^{n \times r}$ and $\mathbf{V} \in \mathbb{R}^{d \times r}$ have orthonormal columns, and $\mathbf{\Sigma} \in \mathbb{R}^{r \times r}$ is a diagonal matrix with non-negative entries.
+
+<center><img src="images/pca_svd.svg" class="responsive-img"></center>
+
+Because the columns of $\mathbf{U}$ and $\mathbf{V}$ are orthonormal, we have 
+$$
+\mathbf{U}^\top \mathbf{U} = \mathbf{I}_r = \mathbf{V}^\top \mathbf{V}.
+$$
+Using our outerproduct perspective on matrix multiplication, we can write
+$$
+\mathbf{X} = \sum_{i=1}^r \mathbf{u}_i \sigma_i \mathbf{v}_i^\top
+$$
+where $\sigma_1 \geq \sigma_2 \geq \ldots \geq \sigma_r \geq 0$ are the singular values of $\mathbf{X}$, and $\mathbf{u}_i \in \mathbb{R}^{n \times 1}$ and $\mathbf{v}_i \in \mathbb{R}^{d \times 1}$ are the left and right singular vectors, respectively.
+Let $\mathbf{X}_k$ be the rank-$k$ approximation
+$$
+\mathbf{X}_k = \sum_{i=1}^k \mathbf{u}_i \sigma_i \mathbf{v}_i^\top.
+$$
+With this notation, we are ready to state a useful linear algebra result.
+
+**Eckart-Young-Mirsky Theorem**:
+The best rank-$k$ approximation of a matrix $\mathbf{X}$ in the Frobenius norm is given by its top $k$ singular values and corresponding singular vectors i.e.,
+$$
+\mathbf{X}_k = \arg \min_{\text{rank}-k \text{ } \tilde{\mathbf{X}}} \| \mathbf{X} - \tilde{\mathbf{X}} \|_\text{F}^2.
+$$
+
+::: {.proof-block}
+<details open>
+<summary>Proof of Eckart-Young-Mirsky Theorem</summary>
+
+We'll prove the theorem using several properties of the *trace*.
+For a square matrix $\mathbf{M}$, the trace $\text{tr}(\mathbf{M})$ is the sum of the diagonal entries, and it has the following three properties:
+
+First, $\| \mathbf{X} \|_\text{F}^2 = \text{tr}(\mathbf{X}^\top \mathbf{X})$ for any $\mathbf{X} \in \mathbb{R}^{n \times d}$.
+To see why, observe that
+$$\| \mathbf{X} \|_\text{F}^2 = \sum_{i=1}^n \sum_{j=1}^d [\mathbf{X}]_{i,j}^2 = \sum_{i=1}^n \| [\mathbf{X}]_{i,} \|_2^2 = \text{tr}(\mathbf{X}^\top \mathbf{X}).$$
+
+Second, $\text{tr}(\mathbf{A} \mathbf{B}) = \text{tr}(\mathbf{B} \mathbf{A})$
+for any matrices $\mathbf{A} \in \mathbb{R}^{n \times d}$ and $\mathbf{B} \in \mathbb{R}^{d \times n}$.
+To see why, observe that
+$$
+\text{tr}(\mathbf{A} \mathbf{B}) = \sum_{i=1}^n [\mathbf{A B}]_{i,i}
+= \sum_{i=1}^n \sum_{j=1}^d [\mathbf{A}]_{i,j} [\mathbf{B}]_{j,i}
+= \sum_{j=1}^d \sum_{i=1}^n [\mathbf{B}]_{j,i} [\mathbf{A}]_{i,j}
+= \sum_{j=1}^d [\mathbf{B A }]_{j,j}
+= \text{tr}(\mathbf{B} \mathbf{A}).
+$$
+
+Third, $\| \mathbf{XV} \|_\text{F}^2 = \| \mathbf{X} \|_\text{F}^2$, where the columns of $\mathbf{V} \in \mathbb{R}^{d \times r}$ are orthonormal.
+(The analogous result holds for multiplying $\mathbf{X}$ on the left by $\mathbf{U}^\top$, where the columns of $\mathbf{U} \in \mathbb{R}^{n \times r}$ are orthonormal.)
+To see why, observe that
+$$
+\| \mathbf{XV} \|_\text{F}^2 
+= \text{tr}((\mathbf{XV})^\top (\mathbf{XV}))
+= \text{tr}(\mathbf{V}^\top \mathbf{X}^\top \mathbf{X} \mathbf{V})
+= \text{tr}(\mathbf{X}^\top \mathbf{X} \mathbf{V} \mathbf{V}^\top)
+= \text{tr}(\mathbf{X}^\top \mathbf{X})
+= \| \mathbf{X} \|_\text{F}^2,
+$$
+where we used the first property in the first and last equality, the second property in the third equality, and the orthonormality of the columns of $\mathbf{V}$ in the fourth equality.
+
+With these properties, we are finally ready to prove the theorem.
+We have
+$$
+\begin{align}
+\| \mathbf{X} - \tilde{\mathbf{X}} \|_\text{F}^2
+= \| \mathbf{U \Sigma V}^\top - \tilde{\mathbf{X}} \|_\text{F}^2
+= \| \mathbf{U}^\top \mathbf{U \Sigma V}^\top \mathbf{V} - \mathbf{U}^\top \tilde{\mathbf{X}} \mathbf{V} \|_\text{F}^2
+= \| \mathbf{\Sigma} - \mathbf{C} \|_\text{F}^2,
+\end{align}
+$$
+where we use $\mathbf{C} = \mathbf{U}^\top \tilde{\mathbf{X}} \mathbf{V}$ for notational convenience.
+Continuing,
+$$
+\| \mathbf{\Sigma} - \mathbf{C} \|_\text{F}^2
+= \sum_{i=1}^r (\sigma_i - [\mathbf{C}]_{i,i})^2
++ \sum_{i\neq j} [\mathbf{C}]_{i,j}^2.
+$$
+When we choose $\mathbf{C}$, we can minimize this expression by setting $[\mathbf{C}]_{i,j} = 0$ for all $i \neq j$.
+This means that the optimal $\mathbf{C}$ is diagonal, and we can choose up to $k$ non-zero entries.
+Setting $[\mathbf{C}]_{i,i} = \sigma_i$ for $i \leq k$ and $0$ otherwise gives us the best rank-$k$ approximation.
+If we chose some $i' > k$ instead of $i \leq k$, we would be choosing a smaller singular value, which would increase the overall error.
+With the optimal choice $\mathbf{C} = \boldsymbol{\Sigma}_k$, we have $\tilde{\mathbf{X}} = \mathbf{U} \boldsymbol{\Sigma}_k \mathbf{V}^\top = \mathbf{X}_k$, and error
+$$
+\| \mathbf{X} - \tilde{\mathbf{X}} \|_\text{F}^2
+= \sum_{i=k+1}^r \sigma_i^2.
+$$
+
+</details>
+:::
+
+The Eckart-Young-Mirsky theorem tells us that the best rank-$k$ approximation of a matrix is given by its top $k$ singular values and corresponding singular vectors.
+So we'd like to choose $\mathbf{W}_0$ and $\mathbf{W}_1$ so that $\tilde{\mathbf{X}} = \mathbf{X} \mathbf{W}_0 \mathbf{W}_1$.
+Setting $\mathbf{W}_0 = \mathbf{V}_k$ and $\mathbf{W}_1 = \mathbf{V}_k^\top$ gives
+$$
+\tilde{\mathbf{X}}
+= \mathbf{X} \mathbf{V}_k \mathbf{V}_k^\top
+= \sum_{i=1}^r \mathbf{u}_i \sigma_i  \mathbf{v}_i^\top \sum_{j=1}^k \mathbf{v}_j \mathbf{v}_j^\top
+= \sum_{i=1}^k \mathbf{u}_i \sigma_i \mathbf{v}_i^\top = \mathbf{X}_k,
+$$
+where the second equality follows because $\mathbf{v}_i^\top \mathbf{v}_j=1$ if $i=j$ and $0$ otherwise.
+
+We call $\mathbf{X} \mathbf{V}_k = \mathbf{U}_k \boldsymbol{\Sigma}_k$ the latent representation, and the columns of $\mathbf{V}_k$ are the principal components.
+When we perform PCA, we are effectively running a singular value decomposition on $\mathbf{X}$.
+In practice, we generally mean-center and normalize $\mathbf{X}$ first; in particular, we subtract the mean from each column, and divide each column by its $\ell_2$-norm.
+
+We could compute the singular value decomposition directly using e.g., the scipy library:
+Returning the full decomposition requires $O(nd^2)$ time, while computing a rank-$k$ approximation can be done in $O(ndk)$ time.
+We could have also computed the eigendecomposition of $\mathbf{X}^\top \mathbf{X} = \mathbf{V} \boldsymbol{\Sigma}^2 \mathbf{V}^\top$, and $\mathbf{X} \mathbf{X}^\top = \mathbf{U} \boldsymbol{\Sigma}^2 \mathbf{U}^\top$.
+But, this approach is generally less efficient since it requires computing the full eigendecomposition of a $d \times d$ matrix and a $n\times n$, which is roughly $O(d^3 + n^3)$.
+
+In practice, PCA gives us a low-dimensional representation of the data that captures the most important variance.
+
+<center><img src="images/pca_approximations.svg" class="responsive-img"></center>
+
+As we increase the rank of the approximation, the reconstruction error decreases.
+Recall from the proof of the Eckart-Young-Mirsky theorem that the error of the rank-$k$ approximation is given by
+$$
+\sum_{i=k+1}^r \sigma_i^2.
+$$
+When the singular values are all similar, the reconstruction error decreases more slowly as we add more components.
+However, if the singular values decay quickly, we can achieve a significant reduction in error by adding just a few components.
+
+<center><img src="images/pca_spectrum.svg" class="responsive-img"></center>
+
+The reconstruction error is also smaller when the rank is lower.
+So if we have columns that are linear related, then the error tends to be lower.
+For example, in a housing dataset, maybe we have features like square footage, lot size, and yard size.
+Since these features are all related, we can capture their relationships more easily with fewer dimensions.
+Other kinds of data with low-rank structure include image data, where pixels in a small region are often correlated, and text data, where word usage patterns can be captured with a small number of topics.
+
+Consider an individual data point $\mathbf{x}$.
+The latent vector $\mathbf{z}$ is obtained by projecting $\mathbf{x}$ onto the principal components:
+$$
+\mathbf{z} = \sum_{i=1}^k \langle \mathbf{x}, \mathbf{v}_i \rangle.
+$$
+Then the reconstruction is given by
+$$
+\tilde{\mathbf{x}} = \sum_{i=1}^k z_i \mathbf{v}_i = \sum_{i=1}^k \langle \mathbf{x}, \mathbf{v}_i \rangle \mathbf{v}_i.
+$$
+
+<center><img src="images/pca_embedding.svg" class="responsive-img"></center>
+
+The magnitude of the reconstruction is the same as the magnitude of the latent representation.
+To see why, observe that
+$$
+\| \tilde{\mathbf{x}} \|_2^2
+= \left \| \sum_{i=1}^k \langle \mathbf{x}, \mathbf{v}_i \rangle \mathbf{v}_i \right \|_2^2
+= \langle \sum_{i=1}^k \langle \mathbf{x}, \mathbf{v}_i \rangle \mathbf{v}_i, \sum_{j=1}^k \langle \mathbf{x}, \mathbf{v}_j \rangle \mathbf{v}_j \rangle
+= \sum_{i=1}^k \langle \mathbf{x}, \mathbf{v}_i \rangle^2
+= \sum_{i=1}^k z_i^2 = \| \mathbf{z} \|_2^2.
+$$
+Similarly, the distance between reconstructed points $\tilde{\mathbf{x}}^{(i)}$ and $\tilde{\mathbf{x}}^{(j)}$ is the same as the distance between the latent representations $\mathbf{z}^{(i)}$ and $\mathbf{z}^{(j)}$. Do you see why?
+
+If the original data is close to the reconstructed data, then $\| \tilde{\mathbf{x}} \|_2 \approx \| \mathbf{x} \|_2$, and the latent representation $\| \mathbf{z} \|_2$ will also be similar.
+Put another way, the latent representations effectively capture the behavior of the original data.
+Next, we'll see how PCA can effectively represent language data.
+
+### Semantic Embeddings
+
+When we discussed transformers, we assumed we could meaningfully represent words as vectors in a continuous space. This idea is at the heart of semantic embeddings, where words with similar meanings are mapped to nearby latent representations.
+
+Our first attempt will be with a document-word matrix $\mathbf{X} \in \mathbb{R}^{n \times d}$.
+Each row of $\mathbf{X}$ corresponds to a document, and each column corresponds to a word.
+The entry $X_{ij}$ represents whether word $j$ appears in document $i$.
+When we apply PCA to this matrix, we can obtain a low-dimensional representation of the documents, and of the words!
+
+<center><img src="images/semantic_document_matrix.svg" class="responsive-img"></center>
+
+Among other applications, the latent document representations are useful for efficient search.
+By representing documents in a lower-dimensional space, we can quickly find similar documents using techniques like nearest neighbor search.
+
+Let $\mathbf{z}$ be the latent representation of a document $\mathbf{x}$.
+Consider the principal components $\mathbf{v}_i$ and $\mathbf{v}_j$ associated with words $i$ and $j$.
+If the reconstruction $\tilde{\mathbf{X}}$ is close to the original $\mathbf{X}$, then $\langle \mathbf{z}, \mathbf{v}_i \rangle \approx 1$ if word $i$ appears in the document, and $\langle \mathbf{z}, \mathbf{v}_j \rangle \approx 1$ if word $j$ appears.
+In this case, $\langle \mathbf{v}_i, \mathbf{v}_j \rangle$ will likely be large.
+In this way, the principal components can capture the meaning of words.
+
+<center><img src="images/semantic_words.svg" class="responsive-img"></center>
+
+One interesting application is that we can do "word math" like
+$$
+\mathbf{y}_\text{dog} - \mathbf{y}_\text{old} + \mathbf{y}_\text{young} \approx \mathbf{y}_\text{puppy}.
+$$
+
+For our document-word matrix, we defined the document representations as $\mathbf{X} \mathbf{V}_k = \mathbf{U}_k \mathbf{\Sigma}_k$ and the word representations as $\mathbf{V}_k^\top$.
+But, we could have just as easily defined the document representations as $\mathbf{U}_k$ and the word representations as $\mathbf{\Sigma}_k \mathbf{V}_k^\top$.
+With this definition, we can write the outer product between the word representations and itself as:
+$$
+\left( \mathbf{\Sigma}_k \mathbf{V}_k^\top\right)^\top \left( \mathbf{\Sigma}_k \mathbf{V}_k^\top \right)
+= \mathbf{V}_k \mathbf{\Sigma}_k^\top \mathbf{\Sigma}_k \mathbf{V}_k^\top
+= \tilde{\mathbf{X}}^\top \tilde{\mathbf{X}}.
+$$
+When $\tilde{\mathbf{X}}$ is close to $\mathbf{X}$,
+the inner product between word vectors $\mathbf{y}_i$ and $\mathbf{y}_j$ can be approximated as:
+$$
+\langle \mathbf{y}_i, \mathbf{y}_j \rangle \approx [\mathbf{X}^\top \mathbf{X}]_{i,j}
+= \text{\# documents with both $i$ and $j$}
+$$
+
+More generally, we can compress a variety of language data beyond document and word matrices.
+As a general recipe, we can compute the similarity between all word pairs $i$ and $j$, and store the results in a matrix $\mathbf{M} \in \mathbb{R}^{d \times d}$.
+We find a low-rank approximation $\mathbf{M} \approx \mathbf{Y}^\top \mathbf{Y}$ for some $\mathbf{Y} \in \mathbb{R}^{d \times k}$.
+Then, we can define the word representations as the rows of $\mathbf{Y}$.
+
+For example, one approach is to define similarity as the number of times a word appears in the same context as another word. This can be captured by counting co-occurrences in a sliding window over a corpus of text. 
+
+<center><img src="images/semantic_window.svg" class="responsive-img"></center>
+
+We then could process the co-occurrence counts with non-linearities to account for [Zipf's law](https://en.wikipedia.org/wiki/Zipf%27s_law).
+In the popular word2vec algorithm, for example, the similarity is given by
+$$
+[\mathbf{M}]_{i,j} = \log \frac{\text{\# contexts with both $i$ and $j$}}{\text{\# contexts with $i$}\cdot{\text{\# contexts with $j$}}}.
+$$
+
+Note: If $\mathbf{M}$ is not symmetric, then the factorization may be of the form $\mathbf{M} \approx \mathbf{W}^\top \mathbf{Y}$, where $\mathbf{W} \neq \mathbf{Y}$.
+In this case, we can take the rows of either $\mathbf{W}$ or $\mathbf{Y}$ as the word representations.
+
+There are many interesting applications of latent representations.
+
+#### Unsupervised Translation
+
+Using our co-occurrence strategy, we can turn documents or even transcribed conversations into language data $\mathbf{X}$, and then semantic embeddings $\mathbf{Y}$ without any supervision.
+In fact, we can construct these embeddings for multiple languages in parallel.
+If the languages have similar structures (e.g., family relationships), we can leverage this to rotate one language's embeddings into another's space.
+
+<center><img src="images/semantic_clouds.svg" class="responsive-img"></center>
+
+While not perfect, the aligned vectors can give a translation strategy without any supervision.
+Some researchers are even applying these strategies to map the sounds of monkeys or whales to human language!
+
+#### Graph Representations
+
+The applications of autoencoders go far beyond language.
+One particularly versatile data structure is a *graph*, where nodes represent entities and edges represent relationships.
+For example, we can use a graph to represent social networks (people are nodes and friendships are edges), road infrastructure (intersections are nodes and roads are edges), or even knowledge graphs (concepts are nodes and relationships are edges).
+Even when the underlying graph is massive, we can use a random walk through the graph and apply our co-occurrence strategy to learn embeddings for the nodes.
+
+<center><img src="images/semantic_graph.svg" class="responsive-img"></center>
+
+#### Multi-modal Contrastive Learning
+
+A particularly interesting feature of modern machine learning is the connection between different modalities of data e.g., generating images from text descriptions or vice versa.
+The method for achieving this connection is known as *contrastive learning*, and can be viewed as yet another application of autoencoders.
+
+Consider a dataset of captioned images where each image is paired with a descriptive caption.
+We can use neural networks (e.g., a convolutional network for the image, and a transformer for the text) to map the data to latent representations.
+Then we represent the similarity of the image and text embeddings in a similarity matrix $\mathbf{M} = \mathbf{I}$, where pairs of related images and captions that match have a value of 1, and all other pairs have a value of 0.
+The resulting embeddings, trained with updates to the networks so that $\mathbf{M} \approx \mathbf{W}^\top \mathbf{Y}$, can then be used for various tasks such as image captioning or text-to-image generation.
+
+<center><img src="images/semantic_contrastive.svg" class="responsive-img"></center>
+
+We can then use the embeddings in downstream techniques like [diffusion](https://www.rtealwitter.com/deeplearning2023/diffusion.html) to generate images from text descriptions.
+

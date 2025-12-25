@@ -1,0 +1,124 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+\usepackage{amsmath, amsfonts}
+\usepackage{hyperref, graphicx}
+\usepackage{tikz}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\title{CSCI 145 Problem Set 4}
+\author{} % TODO: Put your name here
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\subsection*{Submission Instructions}
+
+Please upload \textit{your} work by
+\textbf{11:59pm Monday September 22, 2025.}
+\begin{itemize}
+\item You are encouraged to discuss ideas
+and work with your classmates. However, you
+\textbf{must acknowledge} your collaborators
+at the top of each solution on which
+you collaborated with others 
+and you \textbf{must write} your solutions
+independently.
+\item Your solutions to theory questions must
+be written legibly, or typeset in LaTeX or markdown.
+If you would like to use LaTeX, you can import the source of this document (available from the course webpage) to Overleaf.
+\item I recommend that you write your solutions to coding questions in a Jupyter notebook using Google Colab.
+\item You should submit your solutions as a \textbf{single PDF} via the assignment on Gradescope.
+\end{itemize}
+
+\noindent
+\textbf{Grading:} The point of the problem set is for \textit{you} to learn. To this end, I hope to disincentivize the use of LLMs by \textbf{not} grading your work for correctness. Instead, you will grade your own work by comparing it to my solutions. This self-grade is due the Friday \textit{after} the problem set is due, also on Gradescope.
+
+\newpage
+\section*{Problem 1: Spam or Ham}
+
+In this problem, we will use Naive Bayes to identify emails as spam or ham (not spam).
+Consider the \textit{bag-of-words} matrix $\mathbf{X} \in \mathbb{R}^{n \times d}$.
+Each row corresponds to one of $n$ emails, and each column corresponds to one of $d$ words.
+For email index $i \in \{1, \ldots, n\}$ and word index $j \in \{1, \ldots, d\}$, the corresponding entry in $\mathbf{X}$ is given by
+\begin{align}
+    [\mathbf{X}]_{i,j} = \begin{cases}
+        1 & \text{word $j$ appears in email $i$} \\
+        0 & \text{else}.
+    \end{cases}
+\end{align}
+
+You can find code to load a bag-of-words matrix \href{https://www.rtealwitter.com/datamining2025/psets/starter_code/spam_bag_of_words.py}{here}.
+
+\subsection*{Part A: Computing Likelihood}
+
+Split the bag-of-words matrix $\mathbf{X}$ and the labels $\mathbf{y} \in \{0,1\}^n$ into training and testing sets, using an $80-20$ random split.
+
+Compute the likelihoods for the \textit{training data} $\mathbf{p}^{(1)} \in [0,1]^d$ and $\mathbf{p}^{(0)} \in [0,1]^d$ as described in class, \textit{without} using a for loop.
+
+\subsection*{Part B: Computing Log Posteriors}
+
+Compute the log of the posteriors for the \textit{testing data} using matrix multiplication between $\mathbf{X}$, $\log(\mathbf{p}^{(1)})$, and $\log(\mathbf{p}^{(0)})$.
+
+Why are we using the \textit{log} likelihoods? What happens to the evidence?
+
+\subsection*{Part C: Accuracy}
+
+Use the log posteriors to make predictions for the test set. What is the accuracy?
+
+%\input{solutions/solution4_1}
+
+\newpage
+
+\section*{Problem 2: Logistic Regression and ROC Curve}
+
+In this problem, you will gain familiarity working with the Python library \texttt{torch}, which is incredibly useful for building and training neural network models.
+
+\subsection*{Part A: Data and 3-Step Recipe Initialization}
+
+Load a \textit{binary classification} dataset of your choice (I used the breast cancer dataset from \texttt{sklearn}).
+After reviewing the \texttt{torch} \href{https://docs.pytorch.org/tutorials/beginner/basics/quickstart_tutorial.html}{quickstart guide}, please:
+
+\begin{itemize}
+    \item[$\square$] Create training and testing dataloaders
+    \item[$\square$] Initialize a one layer linear model
+    \item[$\square$] Initialize the binary cross entropy loss function with logits
+    \item[$\square$] Initialize the Adam optimizer
+\end{itemize}
+
+\textbf{Hint:} ChatGPT is your friend for documentation and examples!
+
+\subsection*{Part B: \texttt{torch} Training}
+
+Using your set up, train your model for $100$ epochs.
+As you saw in the quickstart quide, training consists of iterating over each \textit{batch} in your training data, and, for each batch, 1) a forward pass where you compute the loss, and 2) a backward pass where you use the optimizer to update your model.
+
+The commands are a little weird at first, but it's worth understanding them well because we'll use them again and again.
+
+\subsection*{Part C: ROC Curve}
+
+Pass the test data through the trained model.
+The outputs are \textit{logits}, which you can convert to probabilities by applying the sigmoid function (like almost everything else, this function is built in to \texttt{torch}).
+What is the accuracy of your model on the test data?
+
+Consider 1000 evenly spaced thresholds between the minimum probability and the maximum probability.
+For each threshold $\tau$, compute the TPR and FPR if we made predictions based on which probability was above $\tau$.
+Plot the ROC curve, where the vertical access is TPR and the horizontal access is FPR.
+What is the area under the curve (AUC)?
+
+\textbf{Hint:} You can compute the AUC using basic calculus i.e., the area of each ``rectangle'' under the curve.
+
+\subsection*{Part D: ROC Curve Changes?}
+
+Suppose you forgot to apply the sigmoid function to your logits.
+How would the ROC curve and the AUC change?
+
+The \textit{reason} neither changes is because the sigmoid function is a monotonically increasing function:
+For a particular threshold $\tau$ in the logit space, we will recover the same TPR and FPR at $\sigma(\tau)$ in the probability space.
+
+%\input{solutions/solution4_2}
+
+\end{document}

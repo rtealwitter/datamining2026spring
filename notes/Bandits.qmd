@@ -1,0 +1,163 @@
+---
+title: "**Multi-Armed Bandits**"
+format:
+  html:
+    toc: true
+    math: mathjax
+    include-after-body: readtime.html
+---
+
+The fundamental tension in reinforcement learning (and perhaps in life more generally) is between exploration and exploitation.
+On one hand, we want to exploit what we know to maximize our reward.
+On the other, we want to explore new actions to discover their potential rewards.
+Today, we will explore this tension in the context of a simplified reinforcement learning model: multi-armed bandits.
+
+In a multi-armed bandit problem, we have a set of $k$ actions (or "arms") to choose from, each with an unknown probability distribution of rewards.
+At each time step $t \in \{1,\ldots,T\}$, we choose one arm to pull $a^{(t)} \in \{1, \ldots, k\}$.
+We then receive a reward $r_{a^{(t)}} \in [-1,1]$ drawn from chosen arm $a^{(t)}$.
+Define the expected reward of arm $a$ as $\mu_a = \mathbb{E}[r_a]$.
+
+<center><img src="images/bandit.svg" class="responsive-img"></center>
+
+Our goal is to minimize the *average regret*, compared to the optimal arm:
+$$
+R_T = \max_{a \in \{1,\ldots, k\}} \mu_a - \frac1{T} \sum_{t=1}^{T} \mu_{a^{(t)}},
+$$
+The challenge is balancing exploration (trying out different arms to learn their rewards) with exploitation (choosing the arm that currently seems best).
+Our solution will be "optimism in the face of uncertainty"; that is, giving each arm a *reasonable* benefit of the doubt when picking the best option.
+
+### Upper Confidence Bound (UCB)
+
+Since we initially have no information about the arms, we use the first $k$ time steps to sample each arm once.
+From then on, we will maintain an estimate $\tilde{\mu}_a^{(t)}$ of the expected reward for each arm based on the reward we observed from all previous time steps $1,\ldots, t-1$.
+
+We will also maintain a confidence bound $\epsilon_a^{(t)}$ for each arm, which quantifies the uncertainty of our estimate.
+Formally, we expect $\mu_a - \tilde{\mu}_a^{(t)} \leq \epsilon_a^{(t)}$ with high probability.
+At each time step $t$, we will choose the arm with the highest upper confidence bound:
+$$
+a^{(t)} = \arg \max_{a} \tilde{\mu}_a^{(t)} + \epsilon_a^{(t)}.
+$$
+
+We will choose the confidence intervals so that the probability that our estimate deviates from the true mean by more than the confidence bound *at any point in the algorithm* is at most a user-defined parameter $\delta$.
+
+The following technical lemma will help us analyze the algorithm.
+
+**Lemma** For all time steps $t \in \{k+1, \ldots, T\}$ and arms $a \in \{1, \ldots, k\}$, with probability $1-\delta$, we have
+$$
+|\mu_a - \tilde{\mu}_a^{(t)}| \leq \epsilon_a^{(t)} = \sqrt{\frac{2\log(\frac{2T k}{\delta})}{n_a^{(t)}}}
+$$
+where $n_a^{(t)}$ is the number of times arm $a$ has been pulled up to time $t$ i.e., $n_a^{(t)} = \sum_{s=1}^{t-1} \mathbb{1}(a^{(s)} = a)$.
+
+::: {.proof-block}
+<details open>
+<summary>Proof of Lemma</summary>
+
+We will apply [Hoeffding's inequality](Concentration.html#hoeffding) to bound the estimation error.
+
+Consider $n$ independent random variables $X_1, X_2, \ldots, X_n$ that such that $a \leq X_i \leq b$ for all $i$. Let $\bar{X} = \frac{1}{n} \sum_{i=1}^n X_i$ be the sample mean, and $\mu = \mathbb{E}[\bar{X}]$ be the expected value of the sample mean.
+Recall Hoeffding's inequality: For any $\epsilon > 0$,
+$$
+\Pr\left(|\mathbb{E}[\bar{X}] - \bar{X}| \geq \epsilon\right) \leq 2 \exp\left(-\frac{2n\epsilon^2}{(b-a)^2}\right).
+$$
+In our setting, the rewards are bounded between $-1$ and $1$, so we have $a = -1$ and $b = 1$.
+Setting the failure probability to $\frac{\delta}{T k}$ and solving for $\epsilon$,
+we get
+$$
+\begin{align}
+2\exp\left(-\frac{2 {n} \epsilon^2}{4}\right)
+&= \frac{\delta}{T k}
+\\ \frac{{n} \epsilon^2}{2}
+&= \log\left(\frac{2T k}{\delta}\right)
+\\ \epsilon
+&= \sqrt{\frac{2 \log\left(\frac{2T k}{\delta}\right)}{n}}.
+\end{align}
+$$
+
+Applying Hoeffding's inequality, and this choice of $\epsilon$, to our reward estimation problem for a particular arm $a$ and time step $t$, we get
+$$
+\Pr\left(|\mu_a - \tilde{\mu}_a^{(t)}| \geq \epsilon_a^{(t)}\right) \leq \frac{\delta}{T k}.
+$$
+
+We want this inequality to hold simultaneously for all arms and all time steps.
+Union bounding over all $Tk$ events yields
+
+$$
+\Pr \left(
+  \bigcup_{t=1}^{T} \bigcup_{a=1}^{k} \left\{ |\mu_a - \tilde{\mu}_a^{(t)}| \geq \epsilon_a^{(t)} \right\}
+\right)
+\leq \sum_{t=1}^T \sum_{a=1}^k \frac{\delta}{T k}
+= \delta.
+$$
+
+</details>
+:::
+
+With the lemma in hand, we are now ready to prove the regret guarantee of the UCB algorithm.
+Let $a^*$ be the optimal arm, i.e., the arm with the highest expected reward $\mu_{a^*} = \max_{a} \mu_a$.
+
+**Regret Theorem:**
+The average regret of the UCB algorithm satisfies:
+$$
+\mu_{a^*} - \frac1{T} \sum_{t=1}^T \mu_{a^{(t)}}
+= O\left(\frac{k}{T} + \sqrt{\log\left(\frac{T k}{\delta}\right)} \frac{\sqrt{k}}{\sqrt{T}}\right)
+= \tilde{O}\left(\sqrt{\frac{k}{T}}\right).
+$$
+
+Note that the logarithmic term is always small; for example, $\log_{10}(\# \text{atoms in the universe}) \approx \log_{10}(10^{80}) = 80$.
+
+Since the multi-armed bandit problem is only interesting for $T \gg k$, the average regret is dominated by the second term, which decays as $\tilde{O}(\sqrt{k/T})$ where the $\tilde{O}(\cdot)$ hides log factors.
+In words, increasing the number of steps by a factor of 100 decreases the average regret by a factor of 10.
+Conversely, increasing the number of arms by a factor of 100 only increases the average regret by a factor of 10.
+
+Up to logarithmic factors, the UCB algorithm gives the best possible guarantee:
+That is, there are instances where the average regret grows at a rate of $\Omega(\sqrt{k/T})$ for all possible strategies (see e.g., Chapter 2 in [Regret Analysis of Stochastic and
+Nonstochastic Multi-armed Bandit Problems](https://arxiv.org/pdf/1204.5721)).
+
+
+::: {.proof-block}
+<details open>
+<summary>Proof of Regret Theorem</summary>
+
+We will first bound the difference between the reward of the optimal action $a^*$ and the reward of the action chosen by the algorithm $a^{(t)}$ at time $t$.
+By the lemma and the greedy choice of $a^{(t)}$, we have:
+$$
+\mu_{a^*}
+\leq 
+\tilde{\mu}_{a^*}^{(t)} + \epsilon_{a^*}^{(t)}
+\leq \tilde{\mu}_{a^{(t)}}^{(t)} + \epsilon_{a^{(t)}}^{(t)}
+\leq \mu_{a^{(t)}} + 2 \epsilon_{a^{(t)}}^{(t)}.
+$$
+Subtracting $\mu_{a^{(t)}}$ from both sides, we get
+$$
+\mu_{a^*} - \mu_{a^{(t)}}
+\leq 2 \epsilon_{a^{(t)}}^{(t)}
+= 2 \sqrt{\frac{2\log(\frac{2T k}{\delta})}{n_a^{(t)}}}.
+$$
+
+Summing over all but the first $k$ time steps,
+$$
+\sum_{t=k+1}^T \mu_{a^*} - \mu_{a^{(t)}}
+\leq \sum_{t=k+1}^T 2 \sqrt{\frac{2\log(\frac{2T k}{\delta})}{n_a^{(t)}}}
+= 2 \sqrt{2\log\left(\frac{2T k}{\delta}\right)} \sum_{t=k+1}^T \frac{1}{\sqrt{n_a^{(t)}}}.
+$$
+We can write the inner summation as
+$$
+\sum_{t=k+1}^T \frac{1}{\sqrt{n_a^{(t)}}} 
+= \sum_{a=1}^k \sum_{i=1}^{n_a^{(T)}} \frac{1}{\sqrt{i}}
+\leq \sum_{a=1}^k 2 \sqrt{n_a^{(T)}}
+\leq 2 \sqrt{T k},
+$$
+where the first inequality follows by upper bounding the sum with an integral, and the second inequality follows from [Cauchy-Schwarz](https://en.wikipedia.org/wiki/Cauchy%E2%80%93Schwarz_inequality). Do you see how?
+
+Then, the *average* regret is
+
+$$
+\frac1{T} \sum_{t=1}^T \mu_{a^*} - \mu_{a^{(t)}}
+\leq 2 \frac{k}{T} +\frac1{T} \sum_{t=k+1}^T \mu_{a^*} - \mu_{a^{(t)}}
+= 2 \frac{k}{T} + 4 \sqrt{2\log\left(\frac{2T k}{\delta}\right)} \frac{\sqrt{k}}{\sqrt{T}}.
+$$
+
+</details>
+:::
+
+

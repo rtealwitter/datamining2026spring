@@ -1,0 +1,10 @@
+/*-- scss:defaults --*/
+$link-decoration: none;
+
+a {
+  text-decoration: none;
+
+  &:hover {
+    text-decoration: underline; // optional, for a visual cue
+  }
+}

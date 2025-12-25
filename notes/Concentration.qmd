@@ -1,0 +1,199 @@
+---
+title: "**Concentration Inequalities**"
+format:
+  html:
+    toc: true
+    math: mathjax
+    include-after-body: readtime.html
+---
+
+In our exploration of reinforcement learning, we saw how the outcome of actions can be random.
+More generally, we are surrounded by random processes, from the weather to stock prices.
+Today, we will discuss a powerful tool for understanding the behavior of random variables: concentration inequalities.
+In the remainder of the course, we will apply these inequalities in a simplified model of reinforcement learning, explainable AI, and active learning.
+
+Let $X$ be a random variable drawn from a distribution.
+We will let $\Pr(X = x)$ denote the probability that $X$ takes on the particular value $x$.
+The expectation, or mean, of $X$ is defined as
+$$
+\mathbb{E}[X] = \sum_{x} x \cdot \Pr(X = x).
+$$
+Note: When $X$ is a continuous random variable, the expectation is defined using an integral instead of a sum.
+
+The variance of $X$ measures how closely it concentrates around its expectation:
+$$
+\text{Var}(X) = \mathbb{E}[(X - \mathbb{E}[X])^2].
+$$
+
+<center><img src="images/concentration_intro.svg" class="responsive-img"></center>
+
+Concentration inequalities will help us bound the probability that $X$ deviates from its mean by a certain amount.
+
+### Markov's Inequality
+
+The building block of concentration inequalities is Markov's inequality.
+Let $\mathbf{X}$ be a non-negative random variable.
+Markov's inequality says that, for any $\epsilon > 0$,
+$$
+\Pr(\mathbf{X} \geq \epsilon) \leq \frac{\mathbb{E}[\mathbf{X}]}{\epsilon}.
+$$
+
+::: {.proof-block}
+<details open>
+<summary>Proof of Markov's Inequality</summary>
+
+We will use the definition of expectation to prove Markov's inequality:
+$$
+\begin{align}
+\mathbb{E}[\mathbf{X}]
+&= \sum_{x} x \cdot \Pr(\mathbf{X} = x)
+\\&= \sum_{x: x \geq \epsilon} x \cdot \Pr(\mathbf{X} = x) + \sum_{x: x < \epsilon} x \cdot \Pr(\mathbf{X} = x)
+\\&\geq \sum_{x: x \geq \epsilon} \epsilon \cdot \Pr(\mathbf{X} = x) + \sum_{x: x < \epsilon} 0 \cdot \Pr(\mathbf{X} = x)
+\\&= \epsilon \sum_{x: x \geq \epsilon} \Pr(\mathbf{X} = x)
+\\&= \epsilon \cdot \Pr(\mathbf{X} \geq \epsilon),
+\end{align}
+$$
+where the second equality is by partitioning the sum, the inequality is because $x \geq 0$ by assumption in the first term and $x$ is non-negative, and the last equality follows because the probability of the event $\{\mathbf{X} \geq \epsilon\}$ is the sum of the probabilities of all outcomes where $\mathbf{X}$ is at least $\epsilon$.
+
+</details>
+:::
+
+<center><img src="images/concentration_markov+.svg" class="responsive-img"></center>
+
+As $\epsilon$ increases, the probability that $X \geq \epsilon$ decays at a rate of $1/\epsilon$.
+This is certainly in the right direction (as $\epsilon$ increases, the probability that $X$ exceeds $\epsilon$ decreases), but we could hope for a stronger bound.
+For example, the tail bound of the Gaussian distribution decays at an exponential rate.
+However, there are also some distributions where Markov's inequality is tight i.e., $\Pr(X \geq \epsilon) = \frac{\mathbb{E}[X]}{\epsilon}$.
+Can you construct such a distribution?
+
+In order to distinguish between distributions with different tail behaviors, we will make use of additional information.
+The next inequality we consider will incorporate the variance.
+
+### Chebyshev's Inequality {#chebyshev}
+
+Chebyshev's inequality is a stronger concentration inequality that applies to any random variable with a finite mean and variance.
+Let $\sigma^2 = \text{Var}(X)$ be the variance of $X$, and $\sigma = \sqrt{\sigma^2}$ be the standard deviation.
+Chebyshev's inequality states that, for any $\epsilon > 0$,
+$$
+\Pr(|X - \mathbb{E}[X]| \geq \epsilon \sigma) \leq \frac{1}{\epsilon^2}.
+$$
+In words, the probability that a random variable deviates from its mean by more than $\epsilon$ standard deviations is at most $\frac{1}{\epsilon^2}$.
+
+::: {.proof-block}
+<details open>
+<summary>Proof of Chebyshev's Inequality</summary>
+
+While the two inequalities appear quite different, we will actually use Markov's to prove Chebyshev's.
+Define a new random variable $Z = (\mathbf{X} - \mathbb{E}[X])^2$.
+Then, we can apply Markov's inequality to $Z$:
+$$
+\Pr((\mathbf{X} - \mathbb{E}[X])^2 \geq \epsilon^2) \leq \frac{\mathbb{E}[(\mathbf{X} - \mathbb{E}[X])^2]}{\epsilon^2}.
+$$
+Notice that $\mathbb{E}[(\mathbf{X} - \mathbb{E}[X])^2] = \text{Var}(X) = \sigma^2$.
+Taking the squareroot of both sides of the event $(\mathbf{X} - \mathbb{E}[X])^2 \geq \epsilon^2$ yields
+$$
+\Pr(|\mathbf{X} - \mathbb{E}[X]| \geq \epsilon) \leq \frac{\sigma^2}{\epsilon^2}.
+$$
+Setting $\epsilon = \epsilon' \sigma$ gives us
+$$
+\Pr(|\mathbf{X} - \mathbb{E}[X]| \geq \epsilon' \sigma) \leq \frac{\sigma^2}{(\epsilon' \sigma)^2} = \frac{1}{\epsilon'^2}.
+$$
+The statement follows by relabeling $\epsilon'$ as $\epsilon$.
+
+</details>
+:::
+
+<center><img src="images/concentration_chebyshev+.svg" class="responsive-img"></center>
+
+The advantage of Chebyshev's inequality is that information about the distribution's variance yields tighter bounds.
+But, for fixed variance, the probability of deviating more than $\epsilon$ from the mean is still only $1/\epsilon^2$.
+When we are interested in the behavior of *many* random variables simultaneously, we'll need an even stronger dependence on $\epsilon$ to get meaningful bounds.
+
+### Union Bound
+
+Before we develop the stronger bound, we'll cover another important concept: the union bound.
+Consider events $E_1, \ldots E_m$.
+The union bound states that
+$$
+\Pr\left( E_1, \ldots, E_m \right) \leq \Pr(E_1) + \ldots + \Pr(E_m).
+$$
+
+The simplest way to see this is through a Venn diagram. Each event $E_i$ corresponds to a region in the diagram, and the union of all events corresponds to the total area covered by these regions. By the properties of probability, the area of the union is at most the sum of the areas of the individual regions.
+
+<center><img src="images/concentration_union.svg" class="responsive-img"></center>
+
+### Hoeffding's Inequality {#hoeffding}
+
+The central limit theorem tells us that the sum of many independent random variables will be approximately normally distributed, regardless of the original distribution of the variables.
+(Check out [this](https://www.youtube.com/watch?v=zeJD6dqJ5lo) excellent 3blue1brown video for an intuitive explanation.)
+Hoeffding's inequality allows us to formalize this idea for a finite number of random variables.
+
+Consider $n$ independent random variables $X_1, X_2, \ldots, X_n$ that are bounded such that $a \leq X_i \leq b$ for all $i$. Let $\bar{X} = \frac{1}{n} \sum_{i=1}^n X_i$ be the sample mean, and $\mu = \mathbb{E}[\bar{X}]$ be the expected value of the sample mean.
+Hoeffding's inequality states that, for any $\epsilon > 0$,
+$$
+\Pr\left(\left|\bar{X} - \mathbb{E}[\bar{X}]\right| \geq \epsilon\right) \leq 2 \exp\left(-\frac{2n\epsilon^2}{(b-a)^2}\right).
+$$
+In words, Hoeffding's gives an exponentially decaying bound on the probability that the sample mean deviates from the true mean by more than $\epsilon$.
+
+::: {.proof-block}
+<details open>
+<summary>Proof of Hoeffding's Inequality</summary>
+
+The key technical tool is a result known as Hoeffding's Lemma:
+For any random variable $Y$ bounded between $a$ and $b$,
+$$
+\mathbb{E}[\exp(\lambda(Y - \mathbb{E}[Y]))]
+\leq \exp\left(\frac{\lambda^2(b-a)^2}{8}\right).
+$$
+See the [Wikipedia page](https://en.wikipedia.org/wiki/Hoeffding%27s_lemma) for several proofs.
+
+As in the proof of Chebyshev's, we will use Markov's inequality.
+Define $Z = \bar{X} - \mathbb{E}[X] = \frac1{n} \sum_{i=1}^n (X_i - \mathbb{E}[X_i])$, where the last equality follows by the linearity of expectation.
+Let $\lambda > 0$.
+Then, we can apply Markov's inequality to the exponential of $\lambda Z$:
+$$
+\begin{align}
+\Pr(Z \geq \epsilon) &= \Pr\left(\exp({\lambda Z}) \geq \exp({\lambda \epsilon})\right)
+\\&\leq \frac{\mathbb{E}[\exp({\lambda Z})]}{\exp({\lambda \epsilon})}
+\\&= \exp({-\lambda \epsilon})
+\mathbb{E}\left[\exp\left({\frac{\lambda}{n} \sum_{i=1}^n (X_i - \mathbb{E}[X_i])}\right)\right]
+\\&=  \exp({-\lambda \epsilon}) \prod_{i=1}^n \mathbb{E}\left[\exp\left({\frac{\lambda}{n} (X_i - \mathbb{E}[X_i])}\right)\right]
+\\&\leq \exp({-\lambda \epsilon}) \prod_{i=1}^n \exp\left({\frac{\lambda^2(b-a)^2}{8n^2}}\right)
+\\&= \exp\left({-\lambda \epsilon} + \frac{\lambda^2(b-a)^2}{8n}\right),
+\end{align}
+$$
+where the first inequality follows by Markov's,
+the second equality follows by the definition of $Z$,
+the third equality follows because the product of exponentials is the exponential of the sum,
+and the second inequality follows by Hoeffding's Lemma.
+
+Recall that $\lambda$ is a free parameter since the inequality holds for all $\lambda > 0$.
+So, in particular, we are free to minimize over $\lambda$.
+Let $A = (b-a)^2/n$ for notational simplicity.
+The expression $-\lambda \epsilon + \lambda^2 A/8$ is convex in $\lambda$.
+Setting the derivative equal to 0 yields $-\epsilon + 2\lambda A / 8=0$, and, rearranging, $\lambda = \frac{4\epsilon}{A}$.
+Plugging in this choice of $\lambda$, we get
+$$
+{-\lambda \epsilon} + \frac{\lambda^2(b-a)^2}{8n}
+= -\left( \frac{4\epsilon}{A} \right) \epsilon + \left( \frac{4\epsilon}{A} \right)^2 \frac{A}{8}
+= -\frac{2\epsilon^2}{A}
+= -\frac{2n\epsilon^2}{(b-a)^2}.
+$$
+
+Recall that $Z = \bar{X} - \mathbb{E}[\bar{X}]$.
+All together, we have
+$$
+\Pr(\bar{X} - \mathbb{E}[\bar{X}] \geq \epsilon)
+= \Pr(Z \geq \epsilon)
+\leq \exp\left(-\frac{2n\epsilon^2}{(b-a)^2}\right).
+$$
+
+The final statement follows by similarly bounding $-Z$, and then union bounding over the event that $-Z > \epsilon$ and $Z \geq \epsilon$.
+
+</details>
+:::
+
+<center><img src="images/concentration_hoeffding+.svg" class="responsive-img"></center>
+
+For a fixed interval $[a, b]$ and number of variables $n$, Hoeffding's inequality gives an exponentially decaying bound on the probability that the sample mean deviates from the true mean by more than $\epsilon$.
+When we discuss a simplified model of reinforcement learning, we will see how this strong inequality can be applied to simultaneously bound many events.

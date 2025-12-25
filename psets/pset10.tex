@@ -1,0 +1,150 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+\usepackage{amsmath, amsfonts}
+\usepackage{hyperref, graphicx}
+\usepackage{tikz, bbm, mathtools}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\title{CSCI 145 Problem Set 10}
+\author{} % TODO: Put your name here
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\subsection*{Submission Instructions}
+
+Please upload \textit{your} work by
+\textbf{11:59pm Monday November 10, 2025.}
+\begin{itemize}
+\item You are encouraged to discuss ideas
+and work with your classmates. However, you
+\textbf{must acknowledge} your collaborators
+at the top of each solution on which
+you collaborated with others 
+and you \textbf{must write} your solutions
+independently.
+\item Your solutions to theory questions must
+be written legibly, or typeset in LaTeX or markdown.
+If you would like to use LaTeX, you can import the source of this document (available from the course webpage) to Overleaf.
+\item I recommend that you write your solutions to coding questions in a Jupyter notebook using Google Colab.
+\item You should submit your solutions as a \textbf{single PDF} via the assignment on Gradescope.
+\end{itemize}
+
+\noindent
+\textbf{Grading:} The point of the problem set is for \textit{you} to learn. To this end, I hope to disincentivize the use of LLMs by \textbf{not} grading your work for correctness. Instead, you will grade your own work by comparing it to my solutions. This self-grade is due the Friday \textit{after} the problem set is due, also on Gradescope.
+
+\newpage
+\section*{Problem 1: Policy Gradient Reward Shift}
+
+Using the policy gradient strategy we described in class, our strategy is to run gradient descent using the gradient:
+
+\begin{align}
+    \mathbb{E}_{\tau \sim \pi}[R(\tau) \nabla_\theta \log \pi(\tau)].
+\end{align}
+
+Computing the expectation exactly is infeasible because we can't (in general) enumerate every possible trajectory, so we \textit{estimate} the expectation by sampling trajectories $\tau$ from the policy $\pi$.
+We'd like our estimator to be right in expectation, and to have low variance.
+In order to reduce the variance, we often subtract a constant baseline $b$ from the reward $R(\tau)$.
+In this problem, we will investigate how to choose $b$.
+
+\subsection*{Part A: Correct in Expectation}
+
+Consider a \textit{discrete} distribution, i.e., $\tau$ is one of a finite set of values.
+With this assumption, we can write the expectation as a summation e.g.,
+\begin{align}
+    \mathbb{E}[R(\tau)]
+    =\sum_{\tau} \pi(\tau) R(\tau)
+\end{align}
+where $\pi(\tau)$ is the probability that the policy produces the trajectory $\tau$.
+Show that 
+\begin{align}
+    \mathbb{E}[(R(\tau) -b) \nabla_\theta \log \pi(\tau)]
+    = \mathbb{E}[R(\tau) \nabla_\theta \log \pi(\tau)].
+\end{align}
+
+\textbf{Hint:} Use the log-derivative trick from class in reverse.
+
+\subsection*{Part B: Variance Reduction}
+For mathematical simplicity, define $\mathbf{g} = \nabla_\theta \log \pi(\tau)$, and $R= R(\tau)$.
+Consider the random variable
+\begin{align}
+    \mathbf{X} = (R - b) \mathbf{g}
+\end{align}
+Derive the optimal $b^*$ to minimize the variance of $X$.
+
+\textbf{Hint:} Recall that we can write the variance of a random variable $X$ as $\text{Var}(\mathbf{X}) = \mathbb{E}[\|\mathbf{X}\|_2^2] - \|\mathbb{E}[\mathbf{X}]\|^2.$
+
+Suppose that $\mathbf{g}$ is independent of $R$, what is the optimal $b^*$?
+
+
+%\input{solutions/solution10_1}
+
+\newpage
+
+\section*{Problem 2: Reinforcement Learning in Action}
+
+\subsection*{Part A: A New Environment}
+
+Adapt the code from class to a different \href{https://gymnasium.farama.org/environments/classic_control/}{Gymnasium} environment.
+
+\subsection*{Part B: Baseline Shift Strategies}
+
+Define the per-step \emph{cost-to-go}
+$$
+R_\ell(\tau) \;=\; \sum_{t=\ell}^{L-1} (-r_t)\,\gamma^{\,t-\ell},
+$$
+and let
+$$
+g_\ell \;=\; \nabla_\Theta \log \pi_\Theta(a_\ell).
+$$
+Using a constant (per-episode) baseline $b$, the REINFORCE gradient is
+$$
+\hat{\mathbf{g}}
+\;=\;
+\sum_{\ell=0}^{L-1} \big(R_\ell - b\big)\, g_\ell.
+$$
+
+Compare the following choices of $b$:
+
+\paragraph{(a) No baseline}
+$$
+b \;=\; 0,
+\qquad
+\hat{\mathbf{g}}
+\;=\;
+\sum_{\ell=0}^{L-1} R_\ell\, g_\ell.
+$$
+
+\paragraph{(b) Mean (episode-average) baseline}
+$$
+\hat{b}
+\;=\;
+\frac{1}{L}\sum_{\ell=0}^{L-1} R_\ell,
+\qquad
+\hat{\mathbf{g}}
+\;=\;
+\sum_{\ell=0}^{L-1} \big(R_\ell - \hat{b}\big)\, g_\ell.
+$$
+
+\paragraph{(c) Grad-norm (variance-minimizing constant) baseline}
+$$
+\hat{b}
+\;=\;
+\frac{\sum_{\ell=0}^{L-1} R_\ell\,\|g_\ell\|_2^2}
+     {\sum_{\ell=0}^{L-1} \|g_\ell\|_2^2},
+\qquad
+\hat{\mathbf{g}}
+\;=\;
+\sum_{\ell=0}^{L-1} \big(R_\ell - \hat{b}\big)\, g_\ell.
+$$
+
+Plot the running average (window size $10$) of \emph{episode reward}.
+
+%\input{solutions/solution10_2}
+
+\end{document}

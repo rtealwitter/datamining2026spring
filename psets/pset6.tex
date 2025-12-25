@@ -1,0 +1,157 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+\usepackage{amsmath, amsfonts}
+\usepackage{hyperref, graphicx}
+\usepackage{tikz}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\title{CSCI 145 Problem Set 6}
+\author{} % TODO: Put your name here
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\subsection*{Submission Instructions}
+
+Please upload \textit{your} work by
+\textbf{11:59pm Monday October 6, 2025.}
+\begin{itemize}
+\item You are encouraged to discuss ideas
+and work with your classmates. However, you
+\textbf{must acknowledge} your collaborators
+at the top of each solution on which
+you collaborated with others 
+and you \textbf{must write} your solutions
+independently.
+\item Your solutions to theory questions must
+be written legibly, or typeset in LaTeX or markdown.
+If you would like to use LaTeX, you can import the source of this document (available from the course webpage) to Overleaf.
+\item I recommend that you write your solutions to coding questions in a Jupyter notebook using Google Colab.
+\item You should submit your solutions as a \textbf{single PDF} via the assignment on Gradescope.
+\end{itemize}
+
+\noindent
+\textbf{Grading:} The point of the problem set is for \textit{you} to learn. To this end, I hope to disincentivize the use of LLMs by \textbf{not} grading your work for correctness. Instead, you will grade your own work by comparing it to my solutions. This self-grade is due the Friday \textit{after} the problem set is due, also on Gradescope.
+
+\newpage
+\section*{Problem 1: MNIST}
+
+We will train two kinds of logistic regression models on the MNIST dataset.
+The first is standard logistic regression, the second will use the reparameterization trick.
+
+\textbf{Tip:} When in doubt, print out the shapes of the data and the models you're working with! You can do this for a matrix \texttt{X} by calling \texttt{X.shape}.
+
+\textbf{Hint:} There are several concepts I'm expecting you to figure out on your own. If you're stuck with a bug or a step, use generative AI and/or throw a message on discord.
+
+\subsection*{Part A: Loading MNIST}
+
+The MNIST dataset consists of tens of thousands of images of handwritten digits and their labels (0, 1, 2, ..., 9).
+Load the MNIST dataset using \texttt{torch}.
+Define a training set of 1000 randomly selected image/label pairs, and a testing set of 100 (different) randomly selected image/label pairs.
+Create a dataloader for each set.
+
+\subsection*{Part B: Logistic Regression}
+
+In this part, you'll find a solution to the problem:
+\begin{align}
+    \min_{\mathbf{W} \in \mathbb{R}^{d \times k}}
+    \mathcal{L}_{\text{CrossEntropy}}
+    (\mathbf{XW}, \mathbf{y})
+\end{align}
+where $k$ is the number of classes.
+
+Using our three step recipe for machine learning, initialize a logistic regression model for the multi-class classification problem.
+As described in the class \href{https://www.rtealwitter.com/datamining2025/notes/LogisticRegression.html#multiple-classes}{notes}, the idea is to have one output for each possible class.
+Instead of the binary cross entropy loss function we used during our first foray with \texttt{torch},
+we'll need the cross entropy loss this time (but you can still pass the unnormalized logits to this function).
+
+Once you've trained your model for 100 steps, plot 10 randomly selected images from the test set and the label your model predicts.
+(Of the ten values for each input, the prediction your model makes is the one with the largest logit value.)
+
+\subsection*{Part C: Reparameterization Trick}
+
+In this part, you'll find a solution to the problem:
+\begin{align}
+    \min_{\mathbf{V} \in \mathbb{R}^{n \times k}}
+    \mathcal{L}_{\text{CrossEntropy}}
+    (\mathbf{XX^\top V}, \mathbf{y}).
+\end{align}
+
+Let's do logistic regression with the reparameterization trick.
+First, build your matrix $\mathbf{X} \in \mathbb{R}^{n\times d}$, and compute the Gaussian kernel matrix $\mathbf{X X}^\top =\mathbf{K} \in \mathbb{R}^{n\times n}$.
+
+Recall:
+
+\begin{align}
+    [\mathbf{K}]_{i,j} = \exp 
+    \left(
+    -\frac{\| \mathbf{x}^{(i)} - \mathbf{x}^{(j)}\|_2^2}{2\sigma^2}
+    \right).
+\end{align}
+
+What should the size of the model input be?
+Train the model, but notice we can't use batches of data as we normally do.
+
+For randomly selected test images, get predictions from your model.
+(You'll first need to compute the Gaussian kernel between the test points and the original data.)
+
+Plot the images and the predicted labels.
+
+\subsection*{Part D: Summary}
+
+Which variant of logistic regression train more quickly?
+Which scales better as we increase the number of training points?
+
+%\input{solutions/solution6_1}
+
+\newpage
+\section*{Problem 2: Logistic Regression to Neural Network}
+
+\subsection*{Part A: Sigmoid Derivative}
+
+At the heart of backpropagation is the idea of modularly computing the derivative.
+For a function $f$ with input $z$, we can compute the derivative of the loss with respect to $z$ by adding, for all functions $f$ that take $z$ as input,
+\begin{align}
+    \frac{\partial \mathcal{L}}{\partial z} += 
+    \frac{\partial \mathcal{L}}{\partial f}
+    \frac{\partial f}{\partial z}.
+\end{align}
+For functions like $f(z) = z^2$, computing $\frac{\partial f}{\partial z}$ is quite easy.
+In this problem, we will compute the derivative of the sigmoid function 
+\begin{align}
+  \sigma(z) = \frac1{1+e^{-z}}.
+\end{align}
+In particular, show that 
+\begin{align}
+    \frac{\partial }{\partial z}\sigma(z)
+    = \sigma(z)(1-\sigma(z)).
+\end{align}
+
+\textbf{Hint:} Try differentiating $\log (\sigma(z))$, and solve for $\frac{\partial \sigma(z)}{\partial z}$.
+
+\subsection*{Part B: Neural Network}
+
+One of the benefits of \texttt{torch} is that backpropagation is hidden under the hood.
+Given a number of layers $\ell$, build a model
+\begin{align}
+    f^{(\ell)}(\mathbf{x}) =
+    \mathbf{W}^{(\ell)} (\text{ReLU}(\mathbf{W}^{(\ell-1)}(\ldots
+    (\text{ReLU}(\mathbf{W}^{(1)}\mathbf{x})))
+\end{align}
+where $\mathbf{W}^{(1)} \in \mathbb{R}^{m \times d}$,
+$\mathbf{W}^{(\ell)} \in \mathbb{R}^{k \times m}$, and
+$\mathbf{W}^{(j)} \in \mathbb{R}^{m \times m}$ for some number of neurons $m$.
+Note: When $\ell=1$, there is only one matrix with dimension $k \times d$.
+
+\subsection*{Part C: Empirical Comparison}
+Train your model for $\ell=1,2,3$, and record the training and test loss for each epoch.
+Plot the training loss (solid line) and test loss (dotted line) for each depth of model. What do you notice?
+
+%\input{solutions/solution6_2}
+
+\end{document}

@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Logistic Regression</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../eve.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-c5a5d5e27fcc88644031c24cff017230.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link rel="shortcut icon" href="../eve.ico">
+<script id="MathJax-script" async="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+
+
+<!-- Google tag (gtag.js) -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-GZHXTPTRRE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-GZHXTPTRRE');
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Spring 2026</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://discord.gg/dES3fSPEeC"> 
+<span class="menu-text">Discord</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://www.gradescope.com/courses/1091652"> 
+<span class="menu-text">Gradescope</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://www.rtealwitter.com/datamining2025/"> 
+<span class="menu-text">Fall 2025</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#model-and-loss" id="toc-model-and-loss" class="nav-link active" data-scroll-target="#model-and-loss">Model and Loss</a></li>
+  <li><a href="#optimization" id="toc-optimization" class="nav-link" data-scroll-target="#optimization">Optimization</a></li>
+  <li><a href="#non-linear-transformations" id="toc-non-linear-transformations" class="nav-link" data-scroll-target="#non-linear-transformations">Non-linear Transformations</a></li>
+  <li><a href="#measuring-error-in-binary-classification" id="toc-measuring-error-in-binary-classification" class="nav-link" data-scroll-target="#measuring-error-in-binary-classification">Measuring Error in Binary Classification</a></li>
+  <li><a href="#multiple-classes" id="toc-multiple-classes" class="nav-link" data-scroll-target="#multiple-classes">Multiple Classes</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><strong>Logistic Regression</strong></h1>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>With a little probability, we saw how the Naive Bayes Classifier can be used to make predictions. However, the Naive Bayes Classifier assumes that the value of each feature is independent of the others, which is often not the case in practice (e.g., if the word “discount” appears in an email, it is more likely that the word “sale” also appears). As an alternative approach to classification problems, we will see how we can generalize linear regression, with a little non-linearity.</p>
+<p>Our setup will be the standard supervised learning setting, where we have labelled data <span class="math inline">\((\mathbf{x}^{(1)}, y^{(1)}), \ldots, (\mathbf{x}^{(n)}, y^{(n)})\)</span>, for <span class="math inline">\(\mathbf{x}^{(i)} \in \mathbb{R}^d\)</span> the feature vector for the <span class="math inline">\(i\)</span>th example. However, unlike regression where we predict a continuous value <span class="math inline">\(y^{(i)} \in \mathbb{R}\)</span>, we will now predict a binary value <span class="math inline">\(y^{(i)} \in \{0, 1\}\)</span>. We can use the same linear model as before, i.e., we will predict the output as <span class="math inline">\(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle\)</span>, where <span class="math inline">\(\mathbf{w} \in \mathbb{R}^d\)</span> is the weight vector. But, we run into an issue: the output of the linear model can take on any real value, but we want to predict a binary value.</p>
+<section id="model-and-loss" class="level3">
+<h3 class="anchored" data-anchor-id="model-and-loss">Model and Loss</h3>
+<p>We’ll explore several attempts to convert our linear model into a binary classifier.</p>
+<p>Attempt #1: We could simply apply a step function to the output of the linear model, i.e., predict <span class="math inline">\(y^{(i)} = 1\)</span> if <span class="math inline">\(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle &gt; 0\)</span> and <span class="math inline">\(y^{(i)} = 0\)</span> otherwise. The loss could be the difference between the predicted value and the true value, i.e., <span class="math inline">\(\mathcal{L}(\mathbf{w}) = \sum_{i=1}^n |y^{(i)} - \langle \mathbf{w}, \mathbf{x}^{(i)} \rangle|\)</span>. However, this loss is not differentiable, so we cannot use gradient descent to optimize it.</p>
+<p>Attempt #2: We could use the mean squared error loss, i.e., <span class="math inline">\(\mathcal{L}(\mathbf{w}) = \sum_{i=1}^n (y^{(i)} - \langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)^2\)</span>. This loss is differentiable, but it does not work well for classification problems: if we have a large positive value for <span class="math inline">\(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle\)</span>, the loss will be large even if <span class="math inline">\(y^{(i)} = 1\)</span>.</p>
+<p>Attempt #3: We can apply the <em>sigmoid function</em> to the output of the linear model to map it to the range <span class="math inline">\((0, 1)\)</span>, i.e., we will predict <span class="math inline">\(f(\mathbf{x}^{(i)}) = \sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)\)</span>, where <span class="math inline">\(\sigma(z) = \frac{1}{1 + e^{-z}}\)</span> is the sigmoid function. The sigmoid function is a smooth, non-linear function that maps any real number to the range <span class="math inline">\((0, 1)\)</span>. We can then interpret <span class="math inline">\(f(\mathbf{x}^{(i)})\)</span> as the probability that <span class="math inline">\(y^{(i)} = 1\)</span> given the features <span class="math inline">\(\mathbf{x}^{(i)}\)</span>. If we need to report a class label, we can threshold the predicted probability, e.g., predict <span class="math inline">\(y^{(i)} = 1\)</span> if <span class="math inline">\(f(\mathbf{x}^{(i)}) &gt; \frac12\)</span> and <span class="math inline">\(y^{(i)} = 0\)</span> otherwise.</p>
+<center>
+<img src="images/classification_outputs.svg" class="responsive-img">
+</center>
+<p>To train our model, we need a loss function that measures how well our predicted probabilities match the true labels. A common choice is the <em>binary cross-entropy loss</em>, which is defined as <span class="math display">\[\mathcal{L}(\mathbf{w}) = - \sum_{i=1}^n \left[y^{(i)} \log(f(\mathbf{x}^{(i)})) + (1 - y^{(i)}) \log(1 - f(\mathbf{x}^{(i)}))\right].\]</span> This loss function measures the distance (in a sense we’ll explore later in the course) between the predicted probabilities and the true labels. It is differentiable, so we can use gradient descent to optimize it.</p>
+<center>
+<img src="images/classification_loss.svg" class="responsive-img">
+</center>
+</section>
+<section id="optimization" class="level3">
+<h3 class="anchored" data-anchor-id="optimization">Optimization</h3>
+<p>Once we have a model and loss function, we have seen two ways to optimize the model: <em>Exact optimization</em>, where we compute the gradient of the loss function with respect to the model parameters and set the gradient to zero to find the optimal parameters. <em>Gradient descent</em>, where we iteratively update the model parameters in the direction of the negative gradient of the loss function. Both approaches require the gradient of the loss function with respect to the model parameters, so let’s compute the gradient of <span class="math inline">\(\mathcal{L}(\mathbf{w})\)</span> with respect to <span class="math inline">\(\mathbf{w}\)</span>.</p>
+<p>Plugging in the sigmoid function, we have <span class="math display">\[
+\begin{align*}
+\mathcal{L}(\mathbf{w}) &amp;= - \sum_{i=1}^n \left[y^{(i)} \log\left(\frac{1}{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}\right) + (1 - y^{(i)}) \log\left(1 - \frac{1}{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}\right)\right] \\
+\end{align*}
+\]</span></p>
+<p>Observe that <span class="math inline">\(\frac1{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} = \frac{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} + 1}\)</span>, so <span class="math inline">\(1-\frac1{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} = \frac{1}{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} + 1}\)</span>.</p>
+<p>Then, we can rewrite the loss as <span class="math display">\[
+\begin{align*}
+\mathcal{L}(\mathbf{w}) &amp;= \sum_{i=1}^n \left[y^{(i)} \log\left(1+e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} \right) + (1 - y^{(i)}) \log\left(e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} + 1\right) \right].
+\end{align*}
+\]</span></p>
+<p>Let’s compute the partial derivative of the loss with respect to <span class="math inline">\(w_j\)</span>. Applying the chain rule, we have <span class="math display">\[
+\begin{align*}
+\frac{\partial}{\partial w_j} \mathcal{L}(\mathbf{w}) &amp;= \sum_{i=1}^n
+\left[y^{(i)} \frac1{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} \cdot e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} (-x_j^{(i)}) + (1 - y^{(i)}) \frac1{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} + 1} \cdot e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} x_j^{(i)}\right]\\
+\end{align*}
+\]</span></p>
+<p>Observe that <span class="math inline">\(\frac{e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} = \frac{1+e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} - \frac1{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} = 1-\sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)\)</span>, and <span class="math inline">\(\frac{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} + 1} = \sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)\)</span>. Then, we can rewrite the partial derivative as <span class="math display">\[
+\begin{align*}
+\frac{\partial}{\partial w_j} \mathcal{L}(\mathbf{w}) &amp;= \sum_{i=1}^n
+\left[-y^{(i)} (1 - \sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)) x_j^{(i)} + (1 - y^{(i)}) \sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle) x_j^{(i)}\right]\\
+&amp;= \sum_{i=1}^n
+x_j^{(i)} \left[\sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle) - y^{(i)}\right]\\
+&amp;= \mathbf{X}_j^\top \left(\sigma(\mathbf{X} \mathbf{w}) - \mathbf{y}\right),
+\end{align*}
+\]</span> where <span class="math inline">\(\sigma(\cdot)\)</span> is applied element-wise to the vector <span class="math inline">\(\mathbf{X} \mathbf{w}\)</span>, and <span class="math inline">\(\mathbf{X}_j\)</span> is the <span class="math inline">\(j\)</span>th column of the design matrix <span class="math inline">\(\mathbf{X}\)</span>. Finally, we can write the gradient of the loss with respect to the weight vector <span class="math inline">\(\mathbf{w}\)</span> as <span class="math display">\[
+\nabla_{\mathbf{w}} \mathcal{L}(\mathbf{w}) =  \mathbf{X}^\top \left(\sigma(\mathbf{X} \mathbf{w}) - \mathbf{y}\right).
+\]</span></p>
+<p>Our exact optimization approach would be to set the gradient to zero and solve for <span class="math inline">\(\mathbf{w}\)</span>. Do you see why this doesn’t work with the non-linear sigmoid function?</p>
+<p>Instead of exact optimization, we will use gradient descent!</p>
+</section>
+<section id="non-linear-transformations" class="level3">
+<h3 class="anchored" data-anchor-id="non-linear-transformations">Non-linear Transformations</h3>
+<p>Often, our data is not linearly separable, i.e., we cannot draw a straight line to separate the two classes. In this case, we can use non-linear transformations to map the data to a higher-dimensional space, where it <em>is</em> linearly separable. One approach: As we saw for linear regression, we can add polynomial features to the data. In the image below, we add a new feature <span class="math inline">\(x_1^2 + x_2^2\)</span> to the data, which allows us to separate the two classes with a linear decision boundary in the transformed feature space.</p>
+<center>
+<img src="images/classification_transformation.svg" class="responsive-img">
+</center>
+<p>It is not a priori clear which non-linear transformation will work best for a given dataset. In several lectures, we will explore how to use kernel methods to implicitly map the data to a higher-dimensional space, which captures many of the non-linear transformations we might want to use.</p>
+</section>
+<section id="measuring-error-in-binary-classification" class="level3">
+<h3 class="anchored" data-anchor-id="measuring-error-in-binary-classification">Measuring Error in Binary Classification</h3>
+<p>The simplest way to measure the error of a classification model is to compute the <em>error rate</em>, which is the fraction of examples that are misclassified. For example, if we have <span class="math inline">\(n\)</span> examples and our model misclassifies <span class="math inline">\(k\)</span> of them, the error rate is <span class="math inline">\(\frac{k}{n}\)</span>.</p>
+<p>However, the error rate does not take into account <em>which</em> points are misclassified. We will often break down the accuracy of a classification model into four categories:<br>
+- <strong>True Positives (TP):</strong> The model correctly predicts a positive class.<br>
+- <strong>True Negatives (TN):</strong> The model correctly predicts a negative class.<br>
+- <strong>False Positives (FP):</strong> The model incorrectly predicts a positive class when the true class is negative.<br>
+- <strong>False Negatives (FN):</strong> The model incorrectly predicts a negative class when the true class is positive.</p>
+<center>
+<img src="images/classification_venn.svg" class="responsive-img">
+</center>
+<p>The raw counts of these four categories can be summarized in a <strong>confusion matrix</strong>. The confusion matrix is a square matrix with dimensions equal to the number of classes, where the rows represent the true classes and the columns represent the predicted classes.</p>
+<p>But, these raw counts themselves are not very informative.</p>
+<p>We often report the <strong>True Positive Rate (TPR)</strong>, also known as <em>recall</em>, which is the fraction of true positives out of all actual positives: <span class="math inline">\(\text{TPR} = \frac{\text{TP}}{\text{TP} + \text{FN}}.\)</span> The TPR measures how well the model identifies positive examples (higher is better).</p>
+<p>We also report the <strong>False Positive Rate (FPR)</strong>, which is the fraction of false positives out of all actual negatives: <span class="math inline">\(\text{FPR} = \frac{\text{FP}}{\text{FP} + \text{TN}}.\)</span> The FPR measures how often the model incorrectly identifies negative examples as positive (lower is better).</p>
+<p>Finally, we can report the <strong>Precision</strong>, which is the fraction of true positives out of all predicted positives: <span class="math inline">\(\text{Precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}.\)</span> Precision measures how well the model identifies positive examples among all predicted positives (higher is better).</p>
+<p>If we have a model that does not achieve the desired TPR or FPR, we have a hidden lever we can pull: the threshold for predicting a positive class. By default, we predict a positive class if the predicted probability is greater than <span class="math inline">\(\frac12\)</span>. But, we can change this threshold to an arbitrary value <span class="math inline">\(\tau \in [0, 1]\)</span>. Increasing the threshold decreases the number of positive predictions, which decreases both TPR and FPR: The TPR decreases because we are less likely to predict a positive class, so we will miss more true positives. The FPR decreases because we are less likely to predict a positive class, so we will make fewer false positive predictions.</p>
+<center>
+<img src="images/classification_boundaries.svg" class="responsive-img">
+</center>
+<p>We can visualize the trade-off between TPR and FPR by plotting the <strong>Receiver Operating Characteristic (ROC) curve</strong>. The ROC curve is a plot of the TPR against the FPR for different threshold values <span class="math inline">\(\tau\)</span>. Because a higher TPR is better and a lower FPR is better, we want the ROC curve to be as close to the top-left corner as possible. The area under the ROC curve (AUC) is a single number that summarizes the performance of the model across all threshold values. A model with an AUC of 1 is perfect, while a model with an AUC of 0.5 is no better than random guessing.</p>
+<center>
+<img src="images/classification_roc.svg" class="responsive-img">
+</center>
+</section>
+<section id="multiple-classes" class="level3">
+<h3 class="anchored" data-anchor-id="multiple-classes">Multiple Classes</h3>
+<p>In many settings, we are interested in classifying data into more than two classes. For example, we might want to classify images into different categories, such as cats, dogs, and birds. In this case, we need to extend our binary classification model to handle multiple classes. Our supervised learning setup remains the same, where we have labelled data <span class="math inline">\((\mathbf{x}^{(1)}, y^{(1)}), \ldots, (\mathbf{x}^{(n)}, y^{(n)})\)</span>, but now <span class="math inline">\(y^{(i)} \in \{1, 2, \ldots, k\}\)</span>, for <span class="math inline">\(k\)</span> the number of classes.</p>
+<p>We can still use the same ideas that we used for binary logistic regression, but we need to extend the output of the model to predict a probability distribution over each of the <span class="math inline">\(k\)</span> classes. Instead of a single output, which we can interpret as the probability of the positive class, we will have a vector of outputs <span class="math inline">\(\mathbf{f}(\mathbf{x}^{(i)}) \in \mathbb{R}^k\)</span>, where <span class="math inline">\(k\)</span> is the number of classes.</p>
+<p>To ensure this vector is a valid probability distribution, we can use the <em>softmax function</em>, defined as <span class="math display">\[
+\begin{align*}
+\text{softmax}(\mathbf{z}) &amp;= \begin{bmatrix}
+\frac{e^{z_1}}{\sum_{j=1}^k e^{z_j}} \\
+\frac{e^{z_2}}{\sum_{j=1}^k e^{z_j}} \\
+\vdots \\
+\frac{e^{z_k}}{\sum_{j=1}^k e^{z_j}} \\
+\end{bmatrix}
+\end{align*}
+\]</span> Softmax applies the exponential function to each element of the vector, and then normalizes the resulting vector so that the sum of the resulting vector is 1. This ensures that the output is a valid probability distribution, where each probability is between 0 and 1 and the sum of all elements is 1.</p>
+<p>The loss function for multi-class classification is the <em>cross-entropy loss</em>, which is a generalization of the binary cross-entropy loss: <span class="math display">\[
+\begin{align*}
+\mathcal{L}(\mathbf{w}) &amp;= - \sum_{i=1}^n \sum_{j=1}^k \mathbb{1}[y^{(i)}=j] \log\left(f_j(\mathbf{x}^{(i)})\right),
+\end{align*}
+\]</span> where <span class="math inline">\(f_j(\mathbf{x}^{(i)})\)</span> is the <span class="math inline">\(j\)</span>th element of the softmax output vector <span class="math inline">\(\mathbf{f}(\mathbf{x}^{(i)})\)</span>, and <span class="math inline">\(\mathbb{1}[y^{(i)}=j]\)</span> is an indicator function that is 1 if <span class="math inline">\(y^{(i)} = j\)</span> and 0 otherwise.</p>
+
+
+
+</section>
+
+</main> <!-- /main -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const wordsPerMinute = 200;
+  const text = document.body.innerText;
+  const words = text.trim().split(/\s+/).length;
+  const readingTime = Math.ceil(words / wordsPerMinute);
+
+  const readTimeEl = document.createElement("div");
+  readTimeEl.innerText = `⏱️ ${readingTime} min read`;
+
+  // Style it to appear centered
+  readTimeEl.style.fontSize = "0.9em";
+  readTimeEl.style.margin = "1em auto";
+  readTimeEl.style.textAlign = "left";
+  readTimeEl.style.width = "100%";
+
+  const title = document.querySelector("h1");
+  if (title) {
+    title.parentNode.insertBefore(readTimeEl, title.nextSibling);
+  }
+});
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

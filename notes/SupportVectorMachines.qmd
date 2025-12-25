@@ -1,0 +1,248 @@
+---
+title: "**Support Vector Machines and Constrained Optimization**"
+format:
+  html:
+    toc: true
+    math: mathjax
+    include-after-body: readtime.html
+---
+
+We have so far explored the Naive Bayes classifier and logistic regression for solving classification tasks. In this section, we will learn about another tool called support vector machines (SVMs).
+While the final algorithm will be similar to logistic regression, SVMs approach the problem from a different perspective.
+As we'll soon discover, both logistic regression and SVMs have their own strengths and weaknesses.
+Plus, we'll get to see some fun math along the way!
+
+### Support Vector Machines
+
+Consider a binary classification problem with data points $\mathbf{x}^{(i)}$ and labels $y^{(i)} \in \{-1, 1\}$.
+(We previously used $y^{(i)} \in \{0, 1\}$, but this is just a relabeling for convenience.)
+We want to find a hyperplane that separates the two classes.
+For the majority of our discussion, we will assume that the data is linearly separable, meaning there exists a hyperplane that can perfectly separate the two classes.
+
+<center><img src="images/svm_data.svg" class="responsive-img"></center>
+
+When there is such a separating hyperplane, there are often infinitely many that we can choose from.
+The question at the heart of support vector machines is: which hyperplane should we choose?
+
+<center><img src="images/svm_possible_lines.svg" class="responsive-img"></center>
+
+As we've seen in the past, it is not too difficult to find a model that perfectly fits our training data; the real challenge is to find a model that generalizes well to unseen data.
+In the context of classification, we may expect that a model that separates the two classes with the largest 'margin of error' will generalize better than one that is very close to the data points.
+With this in mind, Vladimir Vapnik and Alexey Chervonenkis proposed the idea of support vector machines, which aim to find the hyperplane that maximizes the margin between the two classes.
+
+<center><img src="images/svm_definition.svg" class="responsive-img"></center>
+
+Let's consider a particular hyperplane, defined by the normal vector $\mathbf{w}$ and bias $b$.
+The equation of the hyperplane is given by:
+$$
+\begin{align}
+\langle \mathbf{w}, \mathbf{x} \rangle - b = 0.
+\end{align}
+$$
+
+We will define $\mathbf{w}$ and $b$ so that $\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle - b \geq 1$ for all points $\mathbf{x}^{(i)}$ in the positive class ($y^{(i)} = 1$) and $\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle - b \leq -1$ for all points in the negative class ($y^{(i)} = -1$).
+As we can see in the figure above, such a hyperplane will always exist if the data is linearly separable.
+How can we find the hyperplane that maximizes the margin?
+
+### Computing the Margin
+
+For a given $\mathbf{w}$ and $b$, we can see that the margin is the distance between the hyperplane $\langle \mathbf{w}, \mathbf{x} \rangle - b = 1$ and the hyperplane $\langle \mathbf{w}, \mathbf{x} \rangle - b = -1$.
+Let's calculate this distance.
+
+<center><img src="images/svm_margin.svg" class="responsive-img"></center>
+
+Consider a point $\mathbf{z}_1$ on the hyperplane $\langle \mathbf{w}, \mathbf{x} \rangle - b = 1$.
+Let $\mathbf{z}_2$ be the point on the hyperplane $\langle \mathbf{w}, \mathbf{x} \rangle - b = -1$ that is *closest* to $\mathbf{z}_1$.
+Because $\mathbf{z}_1$ and $\mathbf{z}_2$ are the closest points to each other on the two hyperplanes, the line connecting them is perpendicular to both hyperplanes.
+(Otherwise, we could move along the hyperplane $\langle \mathbf{w}, \mathbf{x} \rangle - b = -1$ to find a point $\mathbf{z}_2'$ that is closer to $\mathbf{z}_1$ than $\mathbf{z}_2$, contradicting our assumption that $\mathbf{z}_2$ is the closest point.)
+Formally, we can write:
+$$
+\mathbf{z}_1 - \mathbf{z}_2 = \lambda \bar{\mathbf{w}}
+$$
+for some scaling $\lambda \in \mathbb{R}$, where $\bar{\mathbf{w}}$ is the unit normal vector $\frac{\mathbf{w}}{\|\mathbf{w}\|_2}$.
+We are interested in the length of this vector $\lambda$.
+By our observation above, we can write $\mathbf{z}_1 =  \lambda \bar{\mathbf{w}} + \mathbf{z}_2$.
+Then, plugging in $\mathbf{z}_1$ into the hyperplane equation $\langle \mathbf{w}, \mathbf{z}_1 \rangle - b = 1$, we have:
+$$
+\begin{align}
+1 &= \langle \mathbf{w}, \lambda \bar{\mathbf{w}} + \mathbf{z}_2 \rangle - b
+\\ &= \langle \mathbf{w}, \lambda \bar{\mathbf{w}} \rangle + \langle \mathbf{w}, \mathbf{z}_2 \rangle - b
+\\ &= \lambda \langle \mathbf{w}, \bar{\mathbf{w}} \rangle - 1
+\\ &= \frac{\lambda}{\| \mathbf{w} \|_2} \| \mathbf{w} \|_2^2 - 1.
+\end{align}
+$$
+Rearranging, we have that $\lambda = \frac2{\| \mathbf{w} \|_2}$.
+For a given $\mathbf{w}$ and $b$, we now know how to compute the margin. Let's now find the $\mathbf{w}$ and $b$ with the largest margin.
+
+### Constrained Optimization
+
+We can formalize our goal as a constrained optimization problem:
+We want to find the hyperplane that maximizes the margin, subject to the constraints that all points in the positive class are on one side of the hyperplane and all points in the negative class are on the other side.
+
+Observe that maximizing the margin is equivalent to minimizing the *inverse* of the margin, which, by our calculation above, is equivalent to minimizing $\frac12 \| \mathbf{w} \|_2$.
+Further, notice that we can simplify our constraints:
+$\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle - b \geq 1 \text{ for } y^{(i)} = 1$
+and $\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle - b \leq -1 \text{ for } y^{(i)} = -1$
+is equivalent to $y^{(i)}(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle - b) \geq 1$ for all $i$.
+(This is why we relabelled the classes so that $y^{(i)} \in \{-1, 1\}$.)
+We can now write our optimization problem as follows:
+$$
+\begin{align}
+\min_{\mathbf{w}, b} \frac12 \| \mathbf{w} \|_2^2 \textnormal{ such that }
+ y^{(i)}(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle - b) \geq 1 \text{ } \forall i.
+\end{align}
+$$
+
+The points $\mathbf{x}^{(i)}$ that lie on the hyperplane i.e., those for which $y^{(i)}(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle - b) = 1$ are called the *support vectors*.
+Let $\mathcal{S}$ be the set of indices of the support vectors.
+
+<center><img src="images/svm_supports.svg" class="responsive-img"></center>
+
+The problem above is known as an example of a *constrained optimization problem*.
+More specifically, it is a *quadratic programming* problem:
+we have a quadratic objective function (the term $\frac12 \| \mathbf{w} \|_2^2$ is quadratic in $\mathbf{w}$) and linear constraints (the constraints are linear in $\mathbf{w}$ and $b$).
+Constrained optimization problems in general, and quadratic programming in particular, are a rich area of study in optimization, and there are many techniques to solve them.
+However, the time complexity of these techniques will depend on the number of variables in $\mathbf{w}$.
+For data in high dimensions (e.g., the transformed data after we add features to make the classes linearly separable), the time complexity can be quite high.
+In the next section, we will see how to find the *dual* of this problem, which can allow us to solve it more efficiently.
+
+Before we do, let's see why the hyperplane is called a *support vector machine*.
+
+**Claim**: The optimal hyperplane $\mathbf{w}^\star$ is a linear combination of the support vectors:
+$$
+\mathbf{w}^\star = \sum_{i=1}^n \beta_i  y^{(i)} \mathbf{x}^{(i)}
+$$
+for some coefficients $\beta_i \in \mathbb{R}$.
+
+::: {.proof-block}
+<details open>
+<summary>Proof</summary>
+
+Suppose for contradiction that $\mathbf{w}^\star$ is not a linear combination of the support vectors.
+That is, $\mathbf{w}^\star = \sum_{i=1}^n \beta_i  y^{(i)} \mathbf{x}^{(i)} + \mathbf{v}$ for some vector $\mathbf{v}$ that is orthogonal to all support vectors.
+We will construct a new hyperplane $\mathbf{w}' = \mathbf{w}^\star - \epsilon \mathbf{v}$ for some small $\epsilon > 0$, so that each point is still correctly classified, and the margin is larger than that of $\mathbf{w}^\star$.
+
+Let's check that the new hyperplane $\mathbf{w}'$ still correctly classifies all points.
+First, for any support vector $\mathbf{x}^{(i)}$, we have 
+$$
+\langle \mathbf{w}', \mathbf{x}^{(i)} \rangle = \langle \mathbf{w}^\star - \epsilon \mathbf{v}, \mathbf{x}^{(i)} \rangle = \langle \mathbf{w}^\star, \mathbf{x}^{(i)} \rangle
+$$
+since $\mathbf{v}$ is orthogonal to all support vectors.
+By assumption, $\mathbf{w}^\star$ satisfies $y^{(i)}(\langle \mathbf{w}^\star, \mathbf{x}^{(i)} \rangle - b) = 1$.
+Second, for any non-support vector $\mathbf{x}^{(j)}$, we have 
+$$
+\langle \mathbf{w}', \mathbf{x}^{(j)} \rangle = \langle \mathbf{w}^\star - \epsilon \mathbf{v}, \mathbf{x}^{(j)} \rangle = \langle \mathbf{w}^\star, \mathbf{x}^{(j)} \rangle - \epsilon \langle \mathbf{v}, \mathbf{x}^{(j)} \rangle.
+$$
+Since $\mathbf{x}^{(j)}$ is not a support vector, we have $y^{(j)} (\langle \mathbf{v}, \mathbf{x}^{(j)} \rangle - b) > 1$.
+Because this inequality is strict, we can choose $\epsilon$ small enough so that $y^{(j)}(\langle \mathbf{w}', \mathbf{x}^{(j)} \rangle - b) = y^{(j)}(\langle \mathbf{w}^\star, \mathbf{x}^{(j)} \rangle - b - \epsilon \langle \mathbf{v}, \mathbf{x}^{(j)} \rangle) > 1$.
+
+Next, let's check that the margin of $\mathbf{w}'$ is larger than that of $\mathbf{w}^\star$.
+Since $\mathbf{v}$ is orthogonal to all support vectors, we can write:
+$$
+\begin{align}
+\| \mathbf{w}' \|_2^2 
+&= \| \sum_{i=1}^n \beta_i y^{(i)} \mathbf{x}^{(i)} - (1-\epsilon) \mathbf{v} \|_2^2 \\
+&= \| \sum_{i=1}^n \beta_i y^{(i)} \mathbf{x}^{(i)} \|_2^2 + (1-\epsilon)^2 \| \mathbf{v} \|_2^2 \\
+&< \| \sum_{i=1}^n \beta_i y^{(i)} \mathbf{x}^{(i)} \|_2^2 + \| \mathbf{v} \|_2^2 = \| \mathbf{w}^\star \|_2^2.
+\end{align}
+$$
+Since the length of the normal vector $\mathbf{w}$ is inversely proportional to the margin, we have that the margin of $\mathbf{w}'$ is larger than that of $\mathbf{w}^\star$, a contradiction!
+
+</details>
+:::
+
+### The Dual Problem
+
+We have derived a quadratic programming problem, which we'll call the *primal problem*:
+
+$$
+\begin{align}
+\min_{\mathbf{w}, b} \frac12 \| \mathbf{w} \|_2^2 \textnormal{ such that }
+ y^{(i)}(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle - b) \geq 1 \text{ } \forall i.
+\end{align}
+$$
+
+The challenge in directly solving the primal is that the number of variables in $\mathbf{w}$ is equal to the number of features, which can be very large especially if we apply feature transformations to the data.
+Fortunately, we can turn the *primal* into a *dual problem*, that, roughly speaking, converts each constraint into a variable, and each variable into a constraint.
+The dual problem will have a number of variables equal to the number of data points, which can be much smaller than the number of features, especially if we run a convex hull algorithm to reduce to only the "external" points that could be support vectors.
+
+Let's begin with the *Lagrangian* of the primal problem:
+$$
+\begin{align}
+\min_{\mathbf{w}, b} \max_{\boldsymbol{\alpha}} \frac12 \| \mathbf{w} \|_2^2 - \sum_{i=1}^n \alpha_i \left( y^{(i)}(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle - b) - 1 \right)
+= \min_{\mathbf{w}, b} \max_{\boldsymbol{\alpha}} \mathcal{L}(\mathbf{w}, b, \boldsymbol{\alpha}),
+\end{align}
+$$
+where $\boldsymbol{\alpha} \in \mathbb{R}^{|\mathcal{S}|}_+$ is a vector of non-negative real numbers.
+Let's see why the Lagrangian is equivalent to the primal problem:
+For a particular $\mathbf{w}$ and $b$, the constraints in the primal problem must be satisfied by the Lagrangian, otherwise there is some $i$ such that $y^{(i)}(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle - b) < 1$ and we can arbitrarily increase the Lagrangian objective by increasing $\alpha_i$.
+Among these $\mathbf{w}$ and $b$ that satisfy the constraints, the Lagrangian objective is minimized when $\frac12 \|\mathbf{w}\|_2^2$ is as small as possible, which is equivalent to minimizing the objective of the primal problem.
+
+The Lagrangian is useful because we can more easily reason about the optimal $\mathbf{w}$ and $b$.
+Notice that the Lagrangian is a *convex* function in $\mathbf{w}$ and $b$, and a *concave* function in $\boldsymbol{\alpha}$.
+Further, as long as the data is linearly separable, we can always come up with a $\mathbf{w}$ and $b$ such that the constraints are satisfied, namely with $\boldsymbol{\alpha} = 0$.
+Together, by [Slater's condition](https://en.wikipedia.org/wiki/Slater%27s_condition), we can apply the [minimax theorem](https://en.wikipedia.org/wiki/Minimax_theorem) to exchange the order of the minimization and maximization.
+That is,
+$$
+\min_{\mathbf{w}, b} \max_{\boldsymbol{\alpha}} \mathcal{L}(\mathbf{w}, b, \boldsymbol{\alpha})
+= \max_{\boldsymbol{\alpha}} \min_{\mathbf{w}, b} \mathcal{L}(\mathbf{w}, b, \boldsymbol{\alpha}).
+$$
+
+Let's fix a $\boldsymbol{\alpha}$ and minimize the Lagrangian with respect to $\mathbf{w}$ and $b$.
+Taking the gradient with respect to $\mathbf{w}$ and $b$, and setting it to zero, we have:
+$$
+\begin{align}
+\nabla_{\mathbf{w}} \mathcal{L}(\mathbf{w}^*, b^*, \boldsymbol{\alpha})
+&= \mathbf{w}^* - \sum_{i=1}^n \alpha_i y^{(i)} \mathbf{x}^{(i)} = 0
+\\\nabla_{b} \mathcal{L}(\mathbf{w}^*, b^*, \boldsymbol{\alpha})
+&= \sum_{i=1}^n \alpha_i y^{(i)} = 0.
+\end{align}
+$$
+We can plug these two equations into the Lagrangian to obtain 
+$$
+\begin{align}
+\mathcal{L}(\mathbf{w}, b, \boldsymbol{\alpha})
+&=
+\frac12 \left\| \sum_{i=1}^n \alpha_i y^{(i)} \mathbf{x}^{(i)} \right\|^2
+- \sum_{i=1}^n \alpha_i y^{(i)} {\mathbf{x}^{(i)}}^\top \sum_{j=1}^n \alpha_j y^{(j)} \mathbf{x}^{(j)} 
++ b \sum_{i=1}^n \alpha_i y^{(i)}
++ \sum_{i=1}^n \alpha_i
+\\&=
+- \frac12 \sum_{i,j=1}^n \alpha_i \alpha_j y^{(i)} y^{(j)} \langle \mathbf{x}^{(i)}, \mathbf{x}^{(j)} \rangle
++ \sum_{i=1}^n \alpha_i.
+\end{align}
+$$
+Finally, the dual problem is given by 
+$$
+\begin{align}
+\max_{\boldsymbol{\alpha}} \sum_{i=1}^n \alpha_i - \frac12 \sum_{i,j=1}^n \alpha_i \alpha_j y^{(i)} y^{(j)} \langle \mathbf{x}^{(i)}, \mathbf{x}^{(j)} \rangle
+\text{ such that } \alpha_i \geq 0 \text{ and } \sum_{i=1}^n \alpha_i y^{(i)} = 0.
+\end{align}
+$$
+We call the $\alpha_i$'s the *dual variables*.
+The points with $\alpha_i > 0$ are exactly the support vectors, and the optimal hyperplane can be computed as $\mathbf{w}^* = \sum_{i \in \mathcal{S}}^n \alpha_i y^{(i)} \mathbf{x}^{(i)}$.
+To get the optimal bias $b^*$, we can use any support vector $\mathbf{x}^{(i)}$ and compute $b^* = \langle \mathbf{w}^*, \mathbf{x}^{(i)} \rangle - y^{(i)}$ since we know that the support vector lies on the hyperplane.
+
+### Soft Margin
+
+We have so far assumed that the data is linearly separable.
+However, in practice, we may have noisy data or outliers that make it impossible to find a hyperplane that perfectly separates the two classes.
+To address this, we can modify our optimization problem to allow for some misclassification.
+We can do this by introducing slack variables $\xi_i \geq 0$ for each data point, which allow us to 'relax' the constraints.
+The modified optimization problem is given by:
+
+$$
+\begin{align}
+\min_{\mathbf{w}, b} \| \mathbf{w} \|^2 + C \sum_{i=1}^n \xi_i
+\text{ such that }
+y^{(i)}(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle - b) \geq 1 - \xi_i \text{ and } \xi_i \geq 0 \text{ for all } i.
+\end{align}
+$$
+
+<center><img src="images/svm_soft.svg" class="responsive-img"></center>
+
+The optimal choice of each slack variable satisfies $\xi_i = \max(0, 1 - y^{(i)}(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle - b))$.
+The parameter $C > 0$ controls the trade-off between maximizing the margin and minimizing the misclassification.
+Notice that this is equivalent to minimizing the hinge loss, with a $\ell_2$ regularization term.
+
+<center><img src="images/svm_loss.svg" class="responsive-img"></center>

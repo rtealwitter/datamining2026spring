@@ -1,0 +1,10 @@
+/.quarto/
+.DS_Store
+grades/canvas_grades.csv
+grades/gradescope_grades.csv
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz

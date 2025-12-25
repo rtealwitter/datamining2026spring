@@ -1,0 +1,192 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+\usepackage{amsmath, amsfonts}
+\usepackage{hyperref, graphicx}
+\usepackage{tikz}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+\title{CSCI 145 Problem Set 2}
+\author{} % TODO: Put your name here
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\subsection*{Submission Instructions}
+
+Please upload \textit{your} work by
+\textbf{11:59pm Monday September 8, 2025.}
+\begin{itemize}
+\item You are encouraged to discuss ideas
+and work with your classmates. However, you
+\textbf{must acknowledge} your collaborators
+at the top of each solution on which
+you collaborated with others 
+and you \textbf{must write} your solutions
+independently.
+\item Your solutions to theory questions must
+be written legibly, or typeset in LaTeX or markdown.
+If you would like to use LaTeX, you can import the source of this document (available from the course webpage) to Overleaf.
+\item I recommend that you write your solutions to coding questions in a Jupyter notebook using Google Colab.
+\item You should submit your solutions as a \textbf{single PDF} via the assignment on Gradescope.
+\end{itemize}
+
+\noindent
+\textbf{Grading:} The point of the problem set is for \textit{you} to learn. To this end, I hope to disincentivize the use of LLMs by \textbf{not} grading your work for correctness. Instead, you will grade your own work by comparing it to my solutions. This self-grade is due the Friday \textit{after} the problem set is due, also on Gradescope.
+
+\newpage \section*{Problem 1: Single Value Functions}
+
+Consider a supervised learning problem with $n$ labels $y^{(1)}, \ldots, y^{(n)} \in \mathbb{R}$.
+In class, we explored the linear function class that predicted a weighted combination of the input points.
+In this problem, we'll consider the function class that outputs a single real number $m \in \mathbb{R}$ for all points.
+
+
+A single number that best fits the data is known as its \textit{central tendency} in statistics.
+Here, we will derive different central tendencies from an empirical risk minimization perspective.
+
+\subsection*{Part A: $\ell_2$-norm}
+
+Consider the $\ell_2$-norm loss function
+
+$$
+\mathcal{L}(m) = \sum_{i=1}^n (y^{(i)} - m)^2.
+$$
+
+Show the optimal value $m^*$ is the average.
+
+\subsection*{Part B: $\ell_\infty$-norm}
+
+Consider the $\ell_\infty$-norm loss function
+
+$$
+\mathcal{L}(m) = \max_{i \in \{1, \ldots, n\}} |y^{(i)} - m|.
+$$
+
+Derive the value $m^*$ that minimizes this loss.
+
+\textbf{Hint:} Think about the minimization problem directly rather than using derivatives.
+
+\subsection*{Part C: $\ell_1$-norm}
+
+Consider the $\ell_1$-norm loss function
+
+$$
+\mathcal{L}(m) = \sum_{i=1}^n |y^{(i)} - m|.
+$$
+
+For simplicity, assume that $n$ is odd.
+Show that the optimal value $m^*$ is the median.
+
+\textbf{Hint:} Try drawing the loss on top of a plot of the points on the number line.
+
+%\input{solutions/solution2_1}
+\newpage
+\section*{Problem 2: Leave One Out Linear Regression}
+
+Generally, we have access to a limited amount of data.
+In machine learning, there's an inherent tension in how we use this data.
+On one hand, we want to use as much data as possible when training the model, so that the trained model will be more accurate.
+On the other hand, we're also interested in evaluating the trained model to see how well it performs.
+If we evaluate the model on data that it was trained on, the model may perform well but only because it has seen the data before.
+
+One solution is to separate the dataset into a training set and an evaluation set.
+Most commonly, $80\%$ of the data is used to train the model, while the remaining $20\%$ is reserved for evaluating the model.
+However, this isn't ideal because we're only using a fraction of our data for training, and only evaluating its performance on a fraction of the data.
+
+In a perfect world, we would use (almost) all the data for both training and evaluation.
+This would involve training a model on all but one data point, and evaluating how well its prediction matches the true label.
+Most of the time, this leave-one-out approach is quite expensive because we need to retrain a model from scratch for each of the $n$ points in the dataset.
+
+In this problem, we'll see how we can more efficiently compute the leave-one-out prediction for linear models with some clever linear algebra.
+
+\subsection*{Part A: LOO Weights}
+
+Let $\mathbf{X} \in \mathbb{R}^{n \times d}$ be the data matrix where the $i$th row is the $i$th input $\mathbf{x}^{(i)} \in \mathbb{R}^d$.
+Let $\mathbf{y} \in \mathbb{R}^n$ be the target vector where the $i$th entry is the $i$th label $y^{(i)} \in \mathbb{R}$.
+
+Recall that the optimal weights when using all $n$ points are:
+
+$$
+\mathbf{w}^* = (\mathbf{X}^\top \mathbf{X})^{-1}
+\mathbf{X}^\top \mathbf{y}.
+$$
+
+Show that the leave-one-out weights when the $i$th labeled data point is removed are:
+
+\begin{align}
+\mathbf{w}^*_{-i} 
+= \left(\mathbf{X}^\top \mathbf{X} - {\mathbf{x}^{(i)}} {\mathbf{x}^{(i)}}^\top \right)^{-1}
+\left(
+\mathbf{X}^\top \mathbf{y}
+- \mathbf{x}^{(i)} y^{(i)}
+\right).
+\end{align}
+
+\textbf{Hint:} Use the outer product definition of matrix multiplication (twice).
+
+\subsection*{Part B: Sherman-Morrison}
+
+Computing the inverse of a $d \times d$ matrix is expensive, taking roughly $O(d^3)$ time.
+We would like to compute $(\mathbf{X}^\top \mathbf{X})^{-1}$ only once, and then reuse our results for multiple left-out points $i \in \{1,\ldots, n\}$.
+Luckily, the \href{https://en.wikipedia.org/wiki/Sherman%E2%80%93Morrison_formula}{Sherman-Morrison formula} gives us just the tool.
+
+Apply the Sherman-Morrison formula to show that:
+
+\begin{align}
+\mathbf{w}^*_{-i} 
+= 
+\left(\left(\mathbf{X}^\top \mathbf{X}\right)^{-1}
++ \frac{
+\left(\mathbf{X}^\top \mathbf{X}\right)^{-1}
+\mathbf{x}^{(i)} {\mathbf{x}^{(i)}}^\top
+\left(\mathbf{X}^\top \mathbf{X}\right)^{-1}
+}
+{
+1-{\mathbf{x}^{(i)}}^\top
+\left(\mathbf{X}^\top \mathbf{X}\right)^{-1}
+{\mathbf{x}^{(i)}}
+}
+\right)
+\left(
+\mathbf{X}^\top \mathbf{y}
+- \mathbf{x}^{(i)} y^{(i)}
+\right).
+\end{align}
+
+\subsection*{Part C: LOO Prediction}
+
+Define the \textit{leverage} of the $i$th point as 
+$\ell_i = {\mathbf{x}^{(i)}}^\top
+\left(\mathbf{X}^\top \mathbf{X}\right)^{-1}
+\mathbf{x}^{(i)}$.
+Now show that the leave-one-out prediction for the $i$th point is:
+\begin{align}
+\hat{y}^{(i)}_{-i}
+= {\mathbf{x}^{(i)}}^\top 
+\mathbf{w}^*_{-i} 
+= \frac{\hat{y}^{(i)} - \ell_i y^{(i)}}    
+{1 - \ell_i}
+\end{align}
+where $\hat{y}^{(i)} = {\mathbf{x}^{(i)}}^\top 
+\mathbf{w}^* $ is the prediction when all $n$ points are used in training.
+
+\subsection*{Part D: Time Complexity}
+
+After the initial $O(d^3)$ cost of computing $\left(\mathbf{X}^\top \mathbf{X}\right)^{-1}$,
+what is the time complexity of computing all $n$ leave-one-out predictions?
+What would the cost have been if we naively retrained the model for each prediction?
+
+\subsection*{Part E: In Practice}
+
+Load a labeled dataset of your choice (e.g., the first 100 points in the California housing dataset available on \texttt{scikitlearn}.)
+Compute the regular predictions, and
+\textit{efficiently} compute the leave-one-out predictions.
+Plot the leave-one-out predictions and the regular predictions against the true labels, with an identity line to mark the \textit{ideal} performance.
+What do you notice?
+
+%\input{solutions/solution2_2}
+
+\end{document}

@@ -1,0 +1,332 @@
+---
+title: "**Explainable AI and Active Learning**"
+format:
+  html:
+    toc: true
+    math: mathjax
+    include-after-body: readtime.html
+---
+
+In this course, we have explored how machine learning can be used to solve tasks, from supervised learning with linear models to reinforcement learning with neural networks.
+The approaches we've discussed, especially when we throw lots of compute and data at them, tend to work very well in practice.
+However, as these models are deployed in the real world, it becomes increasingly important to understand their behavior.
+Today, we'll explore one way to gain insights into model behavior.
+
+<center><img src="images/xai_intro.svg" class="responsive-img"></center>
+
+Understanding a model like linear regression is easy.
+The output of the model is a weighted linear combination of the inputs:
+$$
+f(\mathbf{x}) = \sum_{i=1}^{d} w_i x_i.
+$$
+So, changing feature $i$ from baseline $b_i$ to $x_i$ will simply increase the output at a rate of the weight $w_i$.
+Formally, the attribution of the change in output to feature $i$ from $x_i$ to $b_i$ can be expressed as:
+$$
+\phi_i = w_i (x_i - b_i).
+$$
+With these attribution values $\phi_i$ in hand, we can perform several safety checks.
+For example, it would be concerning if the attribution of race in a mortgage rate model was non-zero, or if the attribution of gender in a hiring model was non-zero.
+
+General models (think neural networks with many layers) are unfortunately not so easy to understand.
+The challenge is that there are *non-linear* interactions between features, making it difficult to attribute changes in the output to specific input features.
+For example, consider a model which predicts how weather will impact the growth of plants:
+Precipitation is beneficial for plant growth, but only when the temperature is high enough;
+if it's below freezing, precipitation will instead be harmful.
+Teasing apart the effects of a feature requires considering not just the feature itself, but also all the other features.
+
+Let $\mathbf{x} \in \mathbb{R}^d$ be the input to a model, and let $f(\mathbf{x})$ be the output that we're trying to understand.
+We'll consider the impact of feature $x_i$ relative to a baseline $\mathbf{b} \in \mathbb{R}^d$.
+In order to tease apart this effect, we will consider all possible ways to set the other features.
+For a subset of features $S \subseteq [d]$, define $\mathbf{x}^S$ so that
+$$
+\mathbf{x}^S_j = \begin{cases}
+x_i & \text{if } j \in S \\
+b_j & \text{if } j \notin S.
+\end{cases}
+$$
+Then, one natural way to examine the effect of $x_i$ is to compare $f(\mathbf{x}^{S \cup \{i\}}) - f(\mathbf{x}^S)$ for all sets $S \subseteq [d] \setminus \{i\}$.
+For notational convenience, define a function $v: 2^{[d]} \to \mathbb{R}$ so that $v(S) = f(\mathbf{x}^{S})$.
+
+<center><img src="images/xai_hypercube.svg" class="responsive-img"></center>
+
+We can think of $v(S)$ as defining a *value* for each vertex of the $d$-dimensional hypercube.
+The attribution of the $i$th element can then be thought of as the *average* marginal change from $v(S)$ to $v(S \cup \{i\})$ over all subsets $S$.
+In order to define this average precisely, we need to decide how to weight the different subsets.
+
+## Shapley Values
+
+There are several desirable properties that we would like our attribution values to satisfy:
+
+- **Null**: If a feature does not affect the output, its attribution should be zero.
+- **Symmetry**: If two features contribute equally to the output, they should receive equal attribution.
+- **Linearity**: If the model is a linear combination of two models, the attribution should be a linear combination of the attributions of the individual models.
+- **Efficiency**: The total attribution across all features should equal the change in output from the baseline.
+
+These four properties have been studied since the mid-20th century in the context of fairly distributing payouts among players in a cooperative game $v: 2^{[d]} \to \mathbb{R}$.
+The Shapley value, proposed by Nobel laureate Lloyd Shapley, *uniquely* satisfies all four properties:
+$$
+\begin{align}
+\phi_i &= \frac1{d} \sum_{S \subseteq [d] \setminus \{i\}} \frac{v(S \cup \{i\}) - v(S)}{\binom{d-1}{|S|}}
+\\&= 
+\underbrace{
+\frac1{d} 
+\sum_{\ell=0}^{d-1} 
+  \underbrace{
+    \frac1{\binom{d-1}{\ell}} 
+    \sum_{\substack{S \subseteq [d] \setminus \{i\} \\ |S|=\ell}} 
+      \big( v(S \cup \{i\}) - v(S) \big)
+  }_{\text{average over subsets of size }\ell}
+}_{\text{average over all subset sizes}}
+\end{align}
+$$
+Intuitively, the Shapley value is the *average* contribution of a feature to the model's output, where the distribution equally weights each set size $\ell$.
+While different distributions will satisfy the first three properties, only the Shapley value satisfies all four.
+Mathematically, efficiency requires that
+$$
+\sum_{i=1}^{d} \phi_i = v([d]) - v(\emptyset) = f(\mathbf{x}) - f(\mathbf{b}).
+$$
+Notably, this allows us to *decompose* the change in the prediction into contributions from each feature.
+
+<center><img src="images/xai_efficiency.svg" class="responsive-img"></center>
+
+Because of these desirable properties, Shapley values are the *de facto* method of feature attribution in modern machine learning.
+But, because there are an exponential number of subsets, computing Shapley values exactly is computationally challenging.
+
+### Monte Carlo Estimation
+
+Our first attempt at approximation will be with the standard Monte Carlo estimator.
+Any time we have a summation over many terms, we can *estimate* the entire sum using only a few of its terms.
+Consider a sampling distribution $\mathcal{D}$ over subsets $S \subseteq [d] \setminus \{i\}$.
+We will let $p_S$ be the probability of sampling subset $S$ from $\mathcal{D}$.
+Draw $m$ subsets $S_1, \ldots, S_m$ with replacement from $\mathcal{D}$.
+
+The Monte Carlo estimator is
+$$
+\tilde{\phi}_i^\text{MC} = \frac1{m} \sum_{j=1}^{m} \frac{v(S_j \cup \{i\}) - v(S_j)}{d \binom{d-1}{|S_j|} p_{S_j}}.
+$$
+Often, we set the sampling probabilities to the weights i.e., $p_S = \frac{1}{d \binom{d-1}{|S|}}$ so that the estimator can simply be written as
+$$
+\tilde{\phi}_i^\text{MC} = \frac1{m} \sum_{j=1}^{m} \left(v(S_j \cup \{i\}) - v(S_j)\right).
+$$
+
+The expected value of our estimator, with respect to the randomness of the sampling, is
+$$
+\mathbb{E}[\tilde{\phi}_i^\text{MC}]
+= \mathbb{E}\left[\frac1{m} \sum_{j=1}^{m} \sum_{S \subseteq [d] \setminus \{i\}} \frac{v(S \cup \{i\}) - v(S)}{d \binom{d-1}{|S|} p_S} \mathbb{1}[S = S_j]\right]
+= \frac1{m} \sum_{j=1}^{m} \sum_{S \subseteq [d] \setminus \{i\}} \frac{v(S \cup \{i\}) - v(S)}{d \binom{d-1}{|S|} p_S} \mathbb{E}[\mathbb{1}[S = S_j]]
+= \phi_i,
+$$
+where the second equality follows by the linearity of expectation, and the last equality follows because the expectation of an indicator random variable is the probability that the indicator is 1.
+While it's important that the estimator is right expectation, we also care about how closely it concentrates around $\phi_i$.
+To this end, let's compute the variance. We'll use three properties of the variance:
+
+- **Scalar Constant:** If $c$ is a constant, then $\text{Var}(cX) = \mathbb{E}[(cX)^2] - \mathbb{E}[cX]^2 = c^2 \text{Var}(X)$. 
+- **Linearity of Variance:**
+If $X$ and $Y$ are independent random variables, then $\text{Var}(X + Y) = \text{Var}(X) + \text{Var}(Y)$. Can you prove why?
+- **Variance of an Indicator Random Variable:**
+Let $\mathbb{1}[A]$ be an indicator random variable that is 1 if event $A$ occurs and 0 otherwise.
+Then, $\text{Var}(\mathbb{1}[A]) = \mathbb{E}[\mathbb{1}[A]^2] - \mathbb{E}[\mathbb{1}[A]]^2 = \Pr(A) - \Pr(A)^2 \leq \Pr(A)$.
+
+With these in hand, the variance of our estimator is
+$$
+\text{Var}(\tilde{\phi}_i^\text{MC})
+\leq \frac1{m^2} \sum_{j=1}^{m} \sum_{S \subseteq [d] \setminus \{i\}}
+\left(\frac{v(S \cup \{i\}) - v(S)}{d \binom{d-1}{|S|} p_S}\right)^2
+\Pr(\mathbb{1}[S_j = S])
+= \frac1{m} \sum_{S \subseteq [d] \setminus \{i\}}
+\left(\frac{v(S \cup \{i\}) - v(S)}{d \binom{d-1}{|S|} p_S}\right)^2
+p_S
+$$
+
+With our choice of $p_S = \frac{1}{d\binom{d-1}{|S|}}$, we get
+$$
+\text{Var}(\tilde{\phi}_i^\text{MC})
+\leq \frac1{m} \sum_{S \subseteq [d] \setminus \{i\}}
+\frac{\left(v(S \cup \{i\}) - v(S)\right)^2}{d\binom{d-1}{|S|}}.
+$$
+
+Using [Chebyshev's inequality](Concentration.html#chebyshev), we can bound the probability that our estimator deviates from the true value:
+$$
+\Pr\left(|\tilde{\phi}_i^\text{MC} - \phi_i| \geq \epsilon\right) \leq \frac{\text{Var}(\tilde{\phi}_i^\text{MC})}{\epsilon^2}.
+$$
+Setting the failure probability to $\delta$, we could solve for the number of samples $m$ that we need to achieve an $\epsilon$ approximation to $\phi_i$.
+
+While an excellent (and simple) estimator, the naive Monte Carlo approach has an unfortunate drawback:
+Each sampled pair $v(S)$ and $v(S \cup \{i\})$ can only be used for estimating the $i$th Shapley value $\phi_i$.
+In effect, we only use $1/d$ of our total sample budget for each estimate.
+
+### Maximum Sample Reuse Estimation
+
+A more sophisticated approach to estimating Shapley values is to rewrite the Shapley value where the subsets are not paired.
+Observe that
+$$
+\begin{align}
+\phi_i &= \sum_{S \subseteq [d] \setminus \{i\}} \frac{v(S \cup \{i\}) - v(S)}{d \binom{d-1}{|S|}}
+\\&= \sum_{S \subseteq [d] \setminus \{i\} : i \in S} \frac{v(S)}{d \binom{d-1}{|S|-1}}
+- \sum_{S \subseteq [d] \setminus \{i\} : i \notin S} \frac{v(S)}{d \binom{d-1}{|S|}}
+\\&= \sum_{S \subseteq [d] \setminus \{i\}} v(S) \left(\frac{\mathbb{1}[i \in S]}{d \binom{d-1}{|S|-1}}
+- \frac{\mathbb{1}[i \notin S]}{d \binom{d-1}{|S|}}\right).
+\end{align}
+$$
+
+A natural approach is to use each sampled set $S$ to estimate *every* Shapley value.
+This Maximum Sample Reuse (MSR) estimator is
+
+$$
+\begin{align}
+\tilde{\phi}_i^\text{MSR}
+&= \frac1{m} \sum_{j=1}^m v(S_j) \left(
+\frac{\mathbb{1}[i \in S_j]}{d \binom{d-1}{|S_j|-1}} - \frac{\mathbb{1}[i \notin S_j]}{d \binom{d-1}{|S_j|}}
+\right)
+\frac{1}{p_S}.
+\end{align}
+$$
+
+A similar calculation to before shows that this estimator is also right in expectation.
+However, its variance depends on $[v(S)]^2$ rather than $[v(S \cup \{i\}) - v(S)]^2$.
+In practice, we expect similar inputs $\mathbf{x}^{S \cup \{i\}}$ and $\mathbf{x}^{S}$ to yield similar outputs, so the variance of the Monte Carlo estimator is generally much smaller than the variance of the Maximum Sample Reuse estimator.
+
+## Active Linear Regression
+
+Shapley values have many wonderful and surprising properties.
+One of them is that they are the best linear approximation to the function $v$, for a certain weighting of the values $v(S)$.
+
+For notational convenience, suppose that $v(\emptyset) =0$.
+(If not, we could subtract $v(\emptyset)$ from all values to center them without change the Shapley values.)
+We can write the vector of Shapley values as
+$$
+\boldsymbol{\phi} =
+\begin{bmatrix}
+\phi_1 \\
+\phi_2 \\
+\vdots \\
+\phi_d
+\end{bmatrix}
+= \arg \min_{\boldsymbol{\beta} \in \mathbb{R}^d: \langle \boldsymbol{\beta}, \mathbf{1} \rangle = v([d])}
+\sum_{S \subseteq [d]: 0 < |S| < d} 
+\left( v(S) - \sum_{i \in S} \beta_i \right)^2 w_S,
+$$
+where the weights are $w_S = \frac{1}{\binom{d}{|S|} |S| (d-|S|)}$.
+Notice that the weighting in the regression problem is similar to that of the Shapley values themselves.
+Further, the constraint that $\boldsymbol{\beta}$ sums to $v([d])$ ensures that the efficiency property is satisfied, since we assumed that $v(\emptyset) = 0$.
+
+Unfortunately, proving this equality is involved, and not particularly informative.
+But it will be quite useful for estimating Shapley values efficiently.
+
+We'll first need to convert the constrained regression problem to an unconstrained one.
+Define the input matrix $\mathbf{A}' \in \mathbb{R}^{2^d-2 \times d}$ so that each row corresponds to a subset $S \subseteq [d]$ where $0 < |S| < d$, and each column corresponds to an index $i \in [d]$.
+The $(S,i)$ entry is given by $[\mathbf{A}']_{S,i} = \mathbb{1}[i \in S] \sqrt{w_S}$.
+Define the target vector $\mathbf{b}' \in \mathbb{R}^{2^d-2}$ so that the $S$th entry is given by $[\mathbf{b}']_S = v(S) \sqrt{w_S}$.
+Then we can rewrite the regression problem as
+$$
+\begin{align}
+\boldsymbol{\phi}
+&= \arg \min_{\boldsymbol{\beta} \in \mathbb{R}^d: \langle \boldsymbol{\beta}, \mathbf{1} \rangle = v([d])} \| \mathbf{A}' \boldsymbol{\beta} - \mathbf{b}' \|^2
+\\& = \arg \min_{\boldsymbol{\beta} \in \mathbb{R}^d: \langle \boldsymbol{\beta}, \mathbf{1} \rangle = 0} \| \mathbf{A}' \boldsymbol{\beta} + \mathbf{A}' \mathbf{1} \frac{v([d])}{d} - \mathbf{b}' \|^2 +  \mathbf{1} \frac{v([d])}{d}
+\\& = \arg \min_{\boldsymbol{\beta} \in \mathbb{R}^d} \| \mathbf{A} \boldsymbol{\beta} - \mathbf{b} \|^2 + \mathbf{1} \frac{v([d])}{d},
+\end{align}
+$$
+where we define $\mathbf{b} = \mathbf{b'} - \mathbf{A' 1} \frac{v([d])}{d}$,
+we define $\mathbf{A}= \mathbf{A' P}$,
+and we define $\mathbf{P} = \mathbf{I} - \frac1{d} \mathbf{1} \mathbf{1}^\top$ as the projection matrix onto the subspace orthogonal to the constant vector $\mathbf{1}$.
+
+Now we can apply our favorite linear regression tools.
+
+### Active Learning
+
+Let
+$$
+\boldsymbol{\beta}^* = \arg \min_{\boldsymbol{\beta} \in \mathbb{R}^d} \| \mathbf{A} \boldsymbol{\beta} - \mathbf{b} \|^2.
+$$
+
+The challenge in solving this linear regression problem is similar to the challenge of directly computing the Shapley values:
+the input matrix and target vector are exponentially large in $d$.
+Luckily, we can sample only a fraction of the rows, and find the best linear approximation to these.
+
+<center><img src="images/xai_subsample.svg" class="responsive-img"></center>
+
+Let $\boldsymbol{\Pi} \in \mathbb{R}^{m \times (2^d-2)}$ be the sampling matrix.
+Each row of $\boldsymbol{\Pi}$ corresponds to a sample.
+In the $j$th row, we have
+$$
+[\boldsymbol{\Pi}]_{j,S} = \begin{cases}
+\frac1{\sqrt{p_S}} & \text{ if } S_j = S \\
+0 & \text{ else}.
+\end{cases}
+$$
+The least squares solution on the sampled problem is given by:
+$$
+\tilde{\boldsymbol{\beta}}=\arg \min_{\boldsymbol{\beta} \in \mathbb{R}^d}
+\| \boldsymbol{\Pi} \mathbf{A} \boldsymbol{\beta} - \boldsymbol{\Pi} \mathbf{b} \|_2
+= \left( \mathbf{A}^\top \boldsymbol{\Pi}^\top \boldsymbol{\Pi} \mathbf{A} \right)^{+} \mathbf{A}^\top \boldsymbol{\Pi}^\top \boldsymbol{\Pi} \mathbf{b}
+$$
+Notice that we reweight the sampling matrix so that $\mathbf{A}^\top \boldsymbol{\Pi}^\top \boldsymbol{\Pi} \mathbf{A}$ and $\mathbf{A}^\top \boldsymbol{\Pi}^\top \boldsymbol{\Pi} \mathbf{b}$ are correct in expectation; that is, $\mathbb{E}[ \boldsymbol{\Pi}^\top \boldsymbol{\Pi}] = \mathbf{I}$.
+Because of the correlation between samples, this doesn't actually mean that the model is correct in expectation; that is, $\mathbb{E}[ \tilde{\boldsymbol{\beta}}] \neq \boldsymbol{\beta}^*$.
+
+Unlike in most of the problems we've seen where sampled points are given to us in a dataset, we get to choose the sampled subsets that we use to solve the regression problem.
+
+### Leverage Scores
+
+A particularly powerful tool in active learning is the use of leverage scores.
+Leverage scores quantify how useful a sample is for fitting the linear regression model.
+For samples with high leverage, excluding them can deteriorate the quality of the learned model.
+
+<center><img src="images/xai_leverage.svg" class="responsive-img"></center>
+
+The idea is to measure how "alone" a fitted sample value *could* be relative to the other samples.
+Mathematically, the leverage of a sample $S$ is given by
+$$
+\ell_S = \max_{\boldsymbol{\beta} \in \mathbb{R}^d}
+\frac{([\boldsymbol{A \beta}]_S)^2}{\| \boldsymbol{A \beta} \|_2^2}.
+$$
+Notice that $\ell_S$ is defined independently of the target vector $\mathbf{b}$:
+It measures, over all possible learned vectors $\boldsymbol{\beta}$, what's the largest the entry $[\boldsymbol{A \beta}]_S$ can be relative to the overall norm of the fitted vector $\boldsymbol{A \beta}$.
+
+When we sample according to leverage scores, we can get strong guarantees on the performance of our learned function.
+Roughly, with $m=O(d \log(d) + \frac{d}{\epsilon^2})$ samples, the solution to the approximate regression problem $\boldsymbol{\beta}$ satisfies, with high probability,
+$$
+\| \boldsymbol{A} \tilde{\boldsymbol{\beta}} - \boldsymbol{b} \|_2^2 \leq
+(1+\epsilon) \| \boldsymbol{A} \boldsymbol{\beta}^* - \boldsymbol{b} \|_2^2.
+$$
+That is, the fit of the learned model is close to the fit of the optimal model.
+We unfortunately won't cover the proofs of these results here, but the key technical tool is applying *matrix* concentration inequalities.
+
+### Regression Adjustment
+
+Once we have the learned model $\tilde{\boldsymbol{\beta}}$, we can simply return our estimated Shapley values $\tilde{\boldsymbol{\phi}} = \tilde{\boldsymbol{\beta}} + \mathbf{1} \frac{v([d])}{d}$ as our best guess for the Shapley values.
+While this is generally quite accurate, our linear regression estimates are not correct in expectation (because of the correlated samples when we built the $\boldsymbol{\beta}$).
+
+If we wanted to get unbiased estimates with the same accuracy, we could use our estimates to reduce the variance of an unbiased estimator like Monte Carlo or Maximum Sample Reuse.
+Consider an approximation $\tilde{v}: 2^{[d]} \to \mathbb{R}$ defined by
+$$
+\tilde{v}(S) = \sum_{i \in S} \tilde{\phi}_i.
+$$
+Let $\phi_i(v)$ be the Shapley value of the $i$th data point with respect to the function $v$.
+Since the Shapley values are linear, we can write
+$$
+\begin{align}
+\phi_i (v) &= 
+\sum_{S \subseteq [d] \setminus \{i\}} \frac{v(S \cup \{i\}) - v(S)}{d \binom{d-1}{|S|}}
+\\&= \sum_{S \subseteq [d] \setminus \{i\}} \frac{v(S \cup \{i\}) - v(S) + \tilde{v}(S \cup \{i\}) - \tilde{v}(S) - \tilde{v}(S \cup \{i\}) + \tilde{v}(S)}{d \binom{d-1}{|S|}}
+\\&= \sum_{S \subseteq [d] \setminus \{i\}} \frac{\tilde{v}(S \cup \{i\}) - \tilde{v}(S)}{d \binom{d-1}{|S|}}
++ \sum_{S \subseteq [d] \setminus \{i\}} \frac{v(S \cup \{i\}) - v(S) - \tilde{v}(S \cup \{i\}) + \tilde{v}(S)}{d \binom{d-1}{|S|}}
+\\&= \phi_i(\tilde{v}) + \phi_i(v - \tilde{v}).
+\end{align}
+$$
+When $\tilde{v}$ is a linear function, we can simply read off the Shapley values.
+It remains to estimate the Shapley values of the residual $\phi_i(v - \tilde{v})$, for which we can use any estimator.
+
+Recall that the Maximum Sample Reuse estimator is both unbiased and sample efficient.
+The one drawback was that the variance depended on $[v(S)]^2$.
+However, when we use the estimator on the residual $v - \tilde{v}$, the variance will depend on $[v(S) - \tilde{v}(S)]^2$ instead.
+As long as $\tilde{v}$ is a good approximation of $v$, this can lead to much lower variance estimates.
+
+### A Data Perspective
+
+We motivated Shapley values as a way to understand the predictions of models, but their definition and the estimators we discussed can be applied to any function $v$.
+One particularly relevant choice for $v(S)$ is the *quality* of a model when trained only on data points in $S$.
+(Typically, as you may expect, we measure quality via loss on a fixed testing set.)
+Just like when teasing apart the contributions of individual features, the value of a data point will change in importance depending on the context of the other data points in the training set.
+With this particular $v$, the Shapley value $\phi_i$ tells us how valuable the $i$th data point is to the model performance.
+As data becomes increasingly important, understanding the contributions of individual data points can help us make more informed decisions about data collection, labeling, and model training.
+For example, we could use the Shapley values of this data function as a mechanism for assigning value to data owners such as newspapers or artists who created the data.

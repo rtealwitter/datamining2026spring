@@ -1,0 +1,182 @@
+---
+title: "**CSCI 145: Data Mining**"
+output:
+  html_document:
+    css: styles.css
+---
+
+<center>
+*A course on the mathematical foundations of machine learning.*
+</center>
+
+<br>
+
+<div class="row">
+  <div class="col" markdown="1">
+
+  **Instructor**: [R. Teal Witter](https://www.rtealwitter.com/). Please call me Teal.
+  
+  **Class Times**: Tuesdays and Thursdays from 4:15 to 5:30pm in Kravis 164.
+  
+  **Office Hours**: Mondays and Thursdays from 12:30 to 2pm in Adams 213.
+
+  **Problem Sets**: Your primary opportunity to learn the material will be on problem sets. You may work with others to solve the problems, but you must write your solutions by yourself, and explicitly acknowledge any outside help (e.g., websites, people, LLMs).
+
+  </div>
+  <div class="col" markdown="1">
+
+  **Quizzes**: There will be short quizzes at the beginning of (randomly) selected classes. These quizzes will test your understanding of the problem sets and the concepts from the prior week.
+
+  **Exams**: The two midterm exams are the primary method of assessing your understanding of the material.
+
+  **Project**: The  project offers a chance to explore an area that interests you, practice writing high quality code, and develop your ability to communicate technical ideas to an audience. 
+
+  </div>
+</div>
+
+**Resources**: Most of the material we cover comes from either Chris Musco's phenomenal [machine learning course](https://www.chrismusco.com/machinelearning2024_grad/), or Chinmay Hegde's fantastic [deep learning course](https://chinmayhegde.github.io/dl-notes/). While we do not have a textbook, we do have typed notes; I **highly** recommend you read the notes before each class.
+
+<table style="width: 100%; border-collapse: collapse;">
+  <tr>
+    <td>Week</td>
+    <td>Tuesday</td>
+    <td>Thursday</td>
+    <td>Slides</td>
+    <td>Assignments</td>
+  </tr>
+
+  <tr class="section-header">
+    <td colspan="5">Warm Up</td>
+  </tr>
+
+  <tr>
+    <td>Week 1 (1/20 and 1/22)</td>
+    <td><a href="notes/LinearAlgebra.html">Math Review</a></td>
+    <td><a href="notes/LinearAlgebra.html">Linear Algebra</a></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Week 2 (1/27 and 1/29)</td>
+    <td><a href="notes/PageRank.html">PageRank</a></td>
+    <td><a href="notes/PageRank.html">PageRank</a></td>
+    <td></td>
+    <td></td>
+  </tr>
+
+  <tr class="section-header">
+    <td colspan="5">Supervised Learning</td>
+  </tr>
+
+  <tr>
+    <td>Week 3 (2/3 and 2/5)</td>
+    <td><a href="notes/LinearRegression.html">Linear Regression</a></td>
+    <td><a href="notes/LinearRegression.html">Linear Regression</a></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Week 4 (2/10 and 2/12)</td>
+    <td><a href="notes/LinearRegression.html">Exact Optimization</a></td>
+    <td><a href="notes/GradientDescent.html">Gradient Descent</a></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Week 5 (2/17 and 2/19)</td>
+    <td><a href="notes/PolynomialRegression.html">Polynomial Regression</a></td>
+    <td><a href="notes/LogisticRegression.html">Probability</a></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Week 6 (2/24 and 2/26)</td>
+    <td><a href="notes/LogisticRegression.html">Logistic Regression</a></td>
+    <td><a href="notes/NeuralNetworks.html">Neural Networks</a></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Week 7 (3/3 and 3/5)</td>
+    <td><a href="notes/NeuralNetworks.html">Backpropagation</a></td>
+    <td><i>Midterm Exam</i></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Week 8 (3/10 and 3/12)</td>
+    <td><a href="https://chinmayhegde.github.io/dl-notes/notes/lecture04/">Convolutional Networks</a></td>
+    <td><a href="https://chinmayhegde.github.io/dl-notes/notes/lecture07/">Transformers</a></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Week 9 (3/17 and 3/19)</td>
+    <td><i>Spring Break (No Class)</i></td>
+    <td><i>Spring Break (No Class)</i></td>
+    <td></td>
+    <td></td>
+  </tr>
+
+  <tr>
+    <td>Week 10 (3/24 and 3/26)</td>
+    <td><a href="notes/DecisionTrees.html">Decision Trees and Random Forests</a></td>
+    <td><a href="notes/DecisionTrees.html">AdaBoost</a></td>
+    <td></td>
+    <td></td>
+  </tr>
+
+  <tr class="section-header">
+    <td colspan="5">Unsupervised Learning</td>
+  </tr>
+
+  <tr>
+    <td>Week 11 (3/31 and 4/2)</td>
+    <td><a href="notes/DecisionTrees.html">Gradient Boosting</a></td>
+    <td><a href="notes/Autoencoders.html">Autoencoders</a></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Week 12 (4/7 and 4/9)</td>
+    <td><a href="notes/Autoencoders.html">Autoencoders</a></td>
+    <td><a href="notes/Autoencoders.html">Principal Component Analysis</a></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Week 13 (4/14 and 4/16)</td>
+    <td><a href="https://chinmayhegde.github.io/dl-notes/notes/lecture09/">Reinforcement Learning Applied</a></td>
+    <td><a href="https://chinmayhegde.github.io/dl-notes/notes/lecture09/">Reinforcement Learning Applied</a></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Week 14 (4/21 and 4/23)</td>
+    <td><a href="notes/Concentration.html">Concentration Inequalities</a></td>
+    <td><a href="notes/Concentration.html">Concentration Inequalities</a></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Week 15 (4/28 and 4/30)</td>
+    <td><a href="notes/Bandits.html">Multi-armed Bandits</a></td>
+    <td><i>Midterm Exam</i></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Week 16 (5/5 and 5/7)</td>
+    <td><i>Project Preparation</i></td>
+    <td><i>Reading Day (No Class)</i></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>Week 17 (5/12 and 5/14)</td>
+    <td><i>Project Presentation 7-10pm</i></td>
+    <td><i>Finals (No Class)</i></td>
+    <td></td>
+    <td></td>
+  </tr>
+</table>

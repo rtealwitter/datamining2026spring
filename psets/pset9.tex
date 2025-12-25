@@ -1,0 +1,131 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+\usepackage{amsmath, amsfonts}
+\usepackage{hyperref, graphicx}
+\usepackage{tikz, bbm, mathtools}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\title{CSCI 145 Problem Set 9}
+\author{} % TODO: Put your name here
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\subsection*{Submission Instructions}
+
+Please upload \textit{your} work by
+\textbf{11:59pm Monday November 3, 2025.}
+\begin{itemize}
+\item You are encouraged to discuss ideas
+and work with your classmates. However, you
+\textbf{must acknowledge} your collaborators
+at the top of each solution on which
+you collaborated with others 
+and you \textbf{must write} your solutions
+independently.
+\item Your solutions to theory questions must
+be written legibly, or typeset in LaTeX or markdown.
+If you would like to use LaTeX, you can import the source of this document (available from the course webpage) to Overleaf.
+\item I recommend that you write your solutions to coding questions in a Jupyter notebook using Google Colab.
+\item You should submit your solutions as a \textbf{single PDF} via the assignment on Gradescope.
+\end{itemize}
+
+\noindent
+\textbf{Grading:} The point of the problem set is for \textit{you} to learn. To this end, I hope to disincentivize the use of LLMs by \textbf{not} grading your work for correctness. Instead, you will grade your own work by comparing it to my solutions. This self-grade is due the Friday \textit{after} the problem set is due, also on Gradescope.
+
+\newpage
+\section*{Problem 1: Autoencoders and Variational Autoencoders}
+
+In this problem, we will explore unsupervised learning through autoencoders (AEs) and variational autoencoders (VAEs).
+
+\subsection*{Part A: KL Divergence from First Principles}
+
+Let $P$ be the univariate normal distribution $\mathcal{N}(\mu,\sigma^2)$ and $Q$ be the univariate normal distribution $\mathcal{N}(0,1)$.
+Starting from the scalar densities
+$$
+  p(z)=\frac{1}{\sqrt{2\pi}\,\sigma}\exp\!\Big(-\frac{(z-\mu)^2}{2\sigma^2}\Big),\quad
+  q(z)=\frac{1}{\sqrt{2\pi}}\exp\!\Big(-\frac{z^2}{2}\Big),
+$$
+derive the KL-divergence
+$$
+  \mathbb{E}_{z\sim P}\left[\log \frac{p(z)}{q(z)}\right]
+  =\tfrac12\big(\mu^2+\sigma^2-1-\log\sigma\big).
+$$
+\textbf{Hint:} Take logs, and notice that $\mathbb{E}[(z-\mu)^2]=\sigma^2$ and $\mathbb{E}[z^2]=\sigma^2+\mu^2$. 
+
+What is the KL divergence when we have a \textit{multivariate} distribution where each dimension is independent? That is,
+$$
+  p(\mathbf{z})=\prod_{i=1}^d \frac{1}{\sqrt{2\pi}\,\sigma_i}\exp\!\Big(-\frac{(z_i-\mu_i)^2}{2\sigma_i^2}\Big),\quad
+  q(\mathbf{z})=\prod_{i=1}^d \frac{1}{\sqrt{2\pi}}\exp\!\Big(-\frac{z_i^2}{2}\Big).
+$$
+
+\subsection*{Part B: Autoencoder}
+
+Implement and train an autoencoder with a bottleneck $k=2$ on MNIST.
+
+Take a random sample of 100 points and embed them into the latent space with your trained encoder.
+Label the points based on their class, what do you notice about where the points cluster?
+
+
+\subsection*{Part C: Variational Autoencoder}
+
+Implement a VAE, also with bottleneck $k=2$. In particular, you should produce $\mathbf{\mu_x} \in \mathbb{R}^2$ and $\Sigma^2 = \begin{bmatrix}\sigma_1^2 & 0 \\ 0 & \sigma_2^2\end{bmatrix}$.
+Train the VAE with the reconstruction and multivariate KL loss you derived in part A.
+
+Like for the autoencoder, embed 100 points into the latent space.
+How do those encoded with the VAE compare to those encoded with the autoencoder?
+
+%\input{solutions/solution9_1}
+
+\newpage
+\section*{Problem 2: Principal Component Analysis}
+
+\subsection*{Part A: Frobenius Norm}
+
+Let $\mathbf{X} = \mathbf{U \Sigma V^\top}$ be the rank $r$ singular value decomposition of $\mathbf{X}$.
+Suppose that
+$\mathbf{X} \in \mathbb{R}^{n \times d}$,
+$\mathbf{U} \in \mathbb{R}^{n \times r}$,
+$\mathbf{\Sigma} \in \mathbb{R}^{r \times r}$, and
+$\mathbf{V} \in \mathbb{R}^{d \times r}$.
+In this problem, you will show that
+$$
+\| \mathbf{X} \|_\text{F}^2 = \sum_{i=1}^r \sigma_i^2.
+$$
+
+Because the singular vectors are orthogonal, recall that $\mathbf{U}^\top \mathbf{U} = \mathbf{I}_{r \times r} = \mathbf{V}^\top \mathbf{V}$.
+Use this property to show that
+$$
+\| \mathbf{U \Sigma V^\top} \|_\text{F}^2 =
+\| \mathbf{\Sigma V^\top} \|_\text{F}^2 =
+\| \mathbf{\Sigma} \|_\text{F}^2.
+$$
+
+Finally, rewrite the previous equation as the sum of squared singular values.
+
+\subsection*{Part B: PCA Reconstruction}
+
+Load an image $\mathbf{X}$ of your choice.
+Compute its singular value decomposition $\mathbf{X} = \mathbf{U \Sigma V^\top}$,
+and plot the PCA reconstruction $\mathbf{X}_k$ for $k=1,10,50,100$.
+
+Using the singular values computed in $\Sigma$, plot the singular value \textit{spectrum} (singular value by index) and the reconstruction error you computed in class by $k$.
+
+\subsection*{Part C: Word Math}
+
+Load a text encoder of your choice.
+Choose $n$ words e.g., young, old, puppy, and dog, etc.
+Use the text encoder to represent each word in $d$ dimensions.
+Build the matrix $\mathbf{X} \in \mathbb{R}^{n \times d}$, and find its singular value decomposition.
+Compute the latent representations of the words with $k=2$.
+Plot and label the latent representations of the words.
+Can you get word math to work?
+
+%\input{solutions/solution9_2}
+
+\end{document}

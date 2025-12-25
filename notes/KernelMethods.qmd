@@ -1,0 +1,187 @@
+---
+title: "**Kernel Methods**"
+format:
+  html:
+    toc: true
+    math: mathjax
+    include-after-body: readtime.html
+---
+
+Many of the methods we have discussed so far are linear in nature, i.e., we make predictions based on a linear combination of the input features. Next, we will explore non-linear methods, specifically kernel methods, and neural networks.
+Both are closely related to feature transformations, which we have already discussed in the context of linear regression and support vector machines.
+
+### $k$-Nearest Neighbors
+
+We'll start with the $k$-nearest neighbors algorithm, which is a simple yet powerful non-parametric method for classification and regression.
+As usual in the supervised learning setting, we have $n$ labeled training examples $\{(\mathbf{x}^{(i)}, y^{(i)})\}_{i=1}^n$, where $\mathbf{x}^{(i)} \in \mathbb{R}^d$ is the feature vector and $y^{(i)} \in \mathbb{R}$ is the label.
+When we get a new unlabeled example $\mathbf{x}$, we find the $k$ training examples that are *closest* to $\mathbf{x}$, then we predict the label of $\mathbf{x}$ as the *average* of the labels of these $k$ neighbors.
+
+We can visualize the $k$-nearest neighbors predictions as a kind of Voronoi diagram, where each point in the feature space is assigned to the label of its nearest neighbor(s).
+
+<center><img src="images/kernel_knn.svg" class="responsive-img"></center>
+
+We typically measure closeness via *cosine similarity* i.e., the cosine of the angle between two vectors.
+Consider two vectors $\mathbf{x}$ and $\mathbf{w}$, the cosine similarity is:
+$$
+\cos(\theta) = \frac{\langle \mathbf{x}, \mathbf{w} \rangle}{\|\mathbf{x}\| \|\mathbf{w}\|}
+$$
+where $\theta$ is the angle between the two vectors.
+
+::: {.proof-block}
+<details open>
+<summary>Proof of Cosine Identity</summary>
+
+Consider the triangle with vertices at the origin, $\mathbf{x}$, and $\mathbf{w}$.
+The lengths of the sides are $a = \|\mathbf{x}\|_2$, $b = \|\mathbf{w}\|_2$, and $c = \|\mathbf{x} - \mathbf{w}\|_2$.
+The law of cosines tells us that:
+$$
+\cos(\theta) = \frac{a^2 + b^2 - c^2}{2ab}.
+$$
+Then $a^2 + b^2 - c^2 = \|\mathbf{x}\|_2^2 + \|\mathbf{w}\|_2^2 - \|\mathbf{x} - \mathbf{w}\|_2^2$.
+Since $\|\mathbf{x} - \mathbf{w}\|_2^2 = \|\mathbf{x}\|_2^2 + \|\mathbf{w}\|_2^2 - 2\langle \mathbf{x}, \mathbf{w} \rangle$, we have
+$$
+\cos(\theta) = \frac{2 \langle \mathbf{x}, \mathbf{w} \rangle}{ 2\|\mathbf{x}\|_2 \|\mathbf{w}\|_2},
+$$
+and the identity follows.
+
+</details>
+:::
+
+The cosine similarity identity tells us that the following are equivalent:  
+- Large cosine similarity $\cos(\theta)$.  
+- Small angle $\theta$.    
+- Small distance $\|\mathbf{x} - \mathbf{w}\|_2$.
+
+Let's apply the $k$-nearest neighbors algorithm to the MNIST dataset, which contains images of handwritten digits.
+Each image is a $28 \times 28$ pixel grayscale image, which we can flatten into a vector of length $784$.
+When we compute the cosine similarity between two images, we are essentially measuring how similar the two images are based on their pixel values in each dimension.
+A search for the nearest neighbors will find the images that are closest in terms of pixel values, which often corresponds to similar handwriting styles.
+
+<center><img src="images/kernel_mnist_knn.svg" class="responsive-img"></center>
+
+While quite accurate out of the box, it's difficult to improve its accuracy because we do not have parameters to tune.
+Instead, we can use feature transformations to more *expressively* represent the data in higher dimensions.
+
+### Kernel Trick
+
+We can apply feature transformations to the input data to create a new representation that captures more complex relationships.
+Let $\phi: \mathbb{R}^d \to \mathbb{R}^m$ be a feature transformation that maps the inputs to a higher-dimensional space.
+
+<center><img src="images/kernel_transform.svg" class="responsive-img"></center>
+
+For most transformations, $m$ is very large, and explicitly computing the transformation $\phi(\mathbf{x}^{(i)})$ is infeasible.
+Fortunately, we can use the *kernel trick* to compute the inner product without explicitly computing the transformation.
+The kernel trick allows us to define a kernel function $\mathbf{K}: \mathbb{R}^d \times \mathbb{R}^d \to \mathbb{R}$ such that
+$$
+\begin{align}
+[\mathbf{K}]_{i,j}
+=k(\mathbf{x}^{(i)}, \mathbf{x}^{(j)})
+= \langle \phi(\mathbf{x}^{(i)}), \phi(\mathbf{x}^{(j)}) \rangle.
+\end{align}
+$$
+
+For many years, I was confused about why the kernel trick works. Doesn't computing the inner product require us to apply the transformation $\phi$?
+
+Let's see two examples:
+
+**Polynomial Kernel**: Consider the polynomial kernel $k(\mathbf{x}, \mathbf{x}') = (\langle \mathbf{x}, \mathbf{x}' \rangle + 1)^p$ for $p \in \mathbb{N}$.
+The explicit transformation $\phi$ when $p=2$ and $d=3$ is given by:
+$$
+\phi(\mathbf{x}) = \begin{bmatrix}
+1 \\
+\sqrt{2} x_1 \\
+\sqrt{2} x_2 \\
+\sqrt{2} x_3 \\
+x_1^2 \\
+x_2^2 \\
+x_3^2 \\
+\sqrt{2} x_1 x_2 \\
+\sqrt{2} x_1 x_3 \\
+\sqrt{2} x_2 x_3 \\
+\end{bmatrix}
+$$
+However, we can efficiently compute the inner product without explicitly computing $\phi$:
+$$
+\begin{align}
+K(\mathbf{x}, \mathbf{x}') &= (\langle \mathbf{x}, \mathbf{x}' \rangle + 1)^2
+\\&= (1 + x_1 x_1' + x_2 x_2' + x_3 x_3')^2
+\\&= 1 + 2x_1 x_1' + 2x_2 x_2' + 2x_3 x_3' + x_1^2 x_1'^2 + x_2^2 x_2'^2 
+\\& + x_3^2 x_3'^2 + 2x_1 x_2 x_1' x_2' + 2x_1 x_3 x_1' x_3' + 2x_2 x_3 x_2' x_3'
+\\&= \langle \phi(\mathbf{x}), \phi(\mathbf{x}') \rangle.
+\end{align}
+$$
+
+
+**Gaussian Kernel**: Consider the Gaussian kernel $K(\mathbf{x}, \mathbf{x}') = e^{-\frac{\|\mathbf{x} - \mathbf{x}'\|_2^2}{2\sigma^2}}$ for some $\sigma > 0$.
+As shown [here](https://en.wikipedia.org/wiki/Radial_basis_function_kernel), the Gaussian kernel can be expressed as an infinite series.
+Instead of explicitly computing the transformation $\phi$, we can compute the kernel in $O(d)$ time by computing the inner product $\langle \mathbf{x}, \mathbf{x}' \rangle$, and then applying the exponential function with a scaling.
+
+We have seen how to apply the kernel trick to the $k$-nearest neighbors algorithm, which allows us to compute the inner product in a higher-dimensional space without explicitly computing the feature transformation.
+Let's see how we can apply the kernel trick to a more familiar tool: multi-class classification.
+
+### Reparameterization Trick
+
+Let $q$ be the number of classes.
+We will learn $q$ weight vectors $\mathbf{w}^{(1)}, \ldots, \mathbf{w}^{(q)} \in \mathbb{R}^d$.
+Our final prediction is the class with the highest value (we previously normalized these outputs via softmax so that we could interpret them as probabilities):
+$$
+\arg \max_{\ell \in [q]} \langle \mathbf{w}^{(\ell)}, \mathbf{x} \rangle.
+$$
+Equivalently, we can view the problem as a *similarity search*, where we want to find the class with smallest distance:
+$$
+\arg \min_{\ell \in [q]} \|\mathbf{w}^{(\ell)} - \mathbf{x}\|_2^2.
+$$
+
+In the context of MNIST, the weight vectors look something like this:
+
+<center><img src="images/kernel_mnist_weights.svg" class="responsive-img"></center>
+
+While vaguely resembling the digits, they are not very interpretable, and it's unclear how much they capture the underlying structure of the data.
+We would really like to represent the data in a more expressive way *without* explicitly computing the feature transformation, similar to the kernel trick we applied to the $k$-nearest neighbors algorithm.
+
+For notational simplicity, consider binary logistic regression, where we have a single weight vector $\mathbf{w} \in \mathbb{R}^d$.
+The optimization problem is to find
+$$
+\arg \min_{\mathbf{w} \in \mathbb{R}^{d}} \mathcal{L}(\sigma(\mathbf{Xw}), \mathbf{y})
+$$
+$\mathbf{X} \in \mathbb{R}^{n \times d}$ is the input data matrix, $\mathbf{y} \in \{0,1\}^n$ is the label vector, $\mathcal{L}$ is the binary cross-entropy loss, and $\sigma$ is the entrywise softmax function.
+But it's unclear how to apply the kernel trick here, since we are not computing the inner product between two feature vectors, but rather between a feature vector and a weight vector.
+
+**Reparameterization Trick:** We can equivalently represent the weight vector as a linear combination of the training examples:
+$$
+\mathbf{w} = \sum_{i=1}^n \alpha_i \mathbf{x}^{(i)}
+$$
+for some coefficients $\alpha_i \in \mathbb{R}$.
+
+::: {.proof-block}
+<details open>
+<summary>Proof of Reparameterization Trick</summary>
+
+Suppose for contradiction that $\mathbf{w}$ is not in the span of the rows of $\mathbf{X}$.
+Then we can write $\mathbf{w} = \mathbf{v} + \mathbf{u}$, where $\mathbf{v}$ is in the span of the rows of $\mathbf{X}$ and $\mathbf{u}$ is orthogonal to the span of the rows of $\mathbf{X}$.
+But then $\mathbf{X w} = \mathbf{Xv} + \mathbf{Xu} = \mathbf{Xv}$, since $\mathbf{Xu} = 0$, so it suffices to optimize over $\mathbf{v}$.
+</details>
+:::
+
+The reparameterization trick tells us that we can equivalently represent the weight vector in the *span* of the rows of the input data matrix $\mathbf{X}$.
+
+
+<center><img src="images/kernel_reparameterization.svg" class="responsive-img"></center>
+
+With the reparameterization trick in hand, we can represent the weight vector as $\mathbf{X}^\top \mathbf{v}$.
+The optimization problem becomes:
+$$
+\arg \min_{\mathbf{v} \in \mathbb{R}^{n}} \mathcal{L}(\sigma(\mathbf{X X}^\top \mathbf{v}), \mathbf{y}).
+$$
+
+Now, we can apply the kernel trick to compute the inner products of $\mathbf{X X^\top}$.
+At inference time, we can similarly use the kernel trick to compute the inner product between the input vector $\mathbf{x}$ and the weight vector $\mathbf{X}^\top \mathbf{v}$.
+
+The reparameterization trick allows us to expressively represent data without explicitly computing the feature transformation.
+We can also apply the trick to other linear models such as linear regression.
+
+While they allow us to expressively represent data without explicitly computing the feature transformation, the kernel and reparameterization tricks are still computationally expensive:
+We need to compute the $n \times n$ kernel matrix $\mathbf{K}$.
+
+We will next see how neural networks allow us to *automatically* learn feature transformations, while basically maintaining the training and inference efficiency of linear models.
+

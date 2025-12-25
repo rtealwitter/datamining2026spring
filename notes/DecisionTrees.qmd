@@ -1,0 +1,198 @@
+---
+title: "**Decision Trees and Boosting**"
+format:
+  html:
+    toc: true
+    math: mathjax
+    include-after-body: readtime.html
+---
+
+Feature transformations and neural networks are powerful tools for supervised learning, but they can be difficult to interpret.
+Today, we'll consider a more intuitive model class called trees, which, until very recently, gave the best performance on many supervised learning tasks.
+
+### Decision Trees
+
+Decision trees are a simple yet powerful model class that can be used for both classification and regression tasks.
+For simplicity, we'll define them in terms of classification, but the same ideas apply to regression.
+
+Decision trees work by recursively partitioning the feature space into regions that are as homogeneous as possible with respect to the target variable.
+
+<center><img src="images/tree_example.svg" class="responsive-img"></center>
+
+The tree structure is incredibly intuitive, and likely the most natural way to represent a decision-making process.
+At each internal node, the tree splits the data based on a feature and a threshold.
+The goal is to find the split that *best* (more on this later) separates the classes.
+
+Like gradient descent, decision trees use a *greedy* approach to learning.
+As we build the tree, we recursively evaluate the data at each leaf, choosing the feature and threshold that best separates the classes.
+Let $\ell$ be a leaf *after* the split at the *prior* leaf, and $p^{(\ell)}_c$ be the proportion of points in leaf $\ell$ that are of class $c$.
+Without loss of generality, suppose that $c=0$ is the majority class.
+(Soon, we'll consider weighted points, in which case we will define the weighted majority.)
+If we reach leaf $\ell$, we predict that the point belongs to the majority class.
+
+The question is what split minimizes the loss of the resulting predictions.
+In particular, we'd like to minimize the *expected* loss of the predictions where the expectation is taken over the proportion of points that make it to the leaf $p^{(\ell)}$:
+$$
+\mathbb{E}_\ell[\mathcal{L}(\ell)] = \sum_\ell \mathcal{L}(\ell) \cdot p^{(\ell)}.
+$$
+There are several ways to define the loss of a leaf, but several common ones are:
+
+**Error Rate**:
+The error rate is the proportion of points in the leaf that are not of the predicted majority class.
+That is,
+$$
+\mathcal{L}_\text{error}(\ell) = 1 - p^{(\ell)}_0.
+$$
+
+**Gini Impurity**:
+The Gini impurity measures the probability of misclassifying a randomly chosen point from the leaf *if we were to randomly assign it to a class according to the class proportions*.
+That is,
+$$
+\mathcal{L}_\text{Gini}(\ell) = \sum_{c} p^{(\ell)}_c (1 - p^{(\ell)}_c).
+$$
+With a little algebra, we can rewrite this as:
+$$
+\mathcal{L}_\text{Gini}(\ell) = \sum_{c} p^{(\ell)}_c - \left(p^{(\ell)}_c\right)^2 = 1 - \sum_{c} \left(p^{(\ell)}_c\right)^2.
+$$
+
+**Information Gain**:
+Like logistic regression, information gain uses the entropy of the leaf to measure the error.
+That is,
+$$
+\mathcal{L}_\text{InfoGain}(\ell) = H(\ell) = -\sum_{c} p^{(\ell)}_c \log(p^{(\ell)}_c).
+$$
+Since the entropy is a measure of uncertainty, we call the reduction in entropy from the prior leaf to the resulting leaves after the split the *information gain*.
+
+Previously, we updated the parameters of our model to minimize the loss of our predictions.
+In decision trees, we search over all possible splits of the data to find the one that minimizes the expected loss.
+While this sounds expensive, in practice, there are a limited number of feasible splits.
+
+We've discussed decision trees in terms of classification, but they can also be used for regression tasks.
+What prediction would a leaf make in a regression task? How could we measure the loss of this prediction?
+
+On their own, decision trees are not particularly expressive.
+But, they can be *boosted* to create remarkably powerful models.
+A boosted model is a collection of weaker learners that together make the final prediction.
+
+### Adaptive Boosting (AdaBoost)
+
+In adaptive boosting, we iteratively train a model to improve the composite model we've built so far.
+For simplicity, we'll explore adaptive boosting in the context of binary classification, but the method can be generalized to regression tasks.
+
+Let $f_t : \mathbb{R}^d \to \{-1, 1\}$ be the model learned at iteration $t$.
+The combined prediction is given by an ensemble model $F_t : \mathbb{R}^d \to \mathbb{R}$.
+The ensemble model is defined as a weighted sum of the predictions of the individual models:
+$$
+F_t(x) = \alpha_1 f_1(x) + \alpha_2 f_2(x) + \ldots + \alpha_t f_t(x)
+= F_{t-1}(x) + \alpha_t f_t(x),
+$$
+where $\alpha_k > 0$ is a weight that determines the importance of the model $f_k$ in the ensemble.
+
+Given $F_{t-1}$, we are interested in learning a new model $f_t$ and a new weight $\alpha_t$ that minimizes the loss of the composite model.
+We'll define the loss as
+$$
+\mathcal{L}(F_t) = \sum_{i=1}^n e^{-y^{(i)} F_t(\mathbf{x}^{(i)})},
+$$
+where $y^{(i)} \in \{-1, 1\}$ is the true label of the $i$-th training example.
+When the composite model output is the same sign as the true label, the term in the exponent is negative, and the contribution to the error is less than 1.
+When the composite model output is the opposite sign as the true label, the term in the exponent is positive, and the contribution to the loss is (potentially much) greater than 1.
+
+Using the multiplication property of exponents, and the definition of $F_t$, we can rewrite the loss as
+$$
+\mathcal{L}(F_t) = \sum_{i=1}^n e^{-y^{(i)} (F_{t-1}(\mathbf{x}^{(i)}) + \alpha_t f_t(\mathbf{x}^{(i)}))}
+= \sum_{i=1}^n e^{-y^{(i)} F_{t-1}(\mathbf{x}^{(i)})} e^{-y^{(i)} \alpha_t f_t(\mathbf{x}^{(i)})}.
+$$
+Let $w^{(i)}_{t-1} = e^{-y^{(i)} F_{t-1}(\mathbf{x}^{(i)})}$ be the weight of the $i$th training example at iteration $t$.
+Notice that these weights are independent of the new model $f_t$ and the new weight $\alpha_t$.
+Then, partitioning the summation, we can write the error as
+$$
+\begin{align}
+\mathcal{L}(F_t) &=
+\sum_{i: y^{(i)} = f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1} e^{-\alpha_t} + \sum_{i: y^{(i)} \neq f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1} e^{\alpha_t}
+\\&= \sum_{i=1}^n w^{(i)}_{t-1} e^{-\alpha_t} + \sum_{i: y^{(i)} \neq f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1} (e^{\alpha_t} - e^{-\alpha_t})
+\\&= \sum_{i=1}^n w^{(i)}_{t-1} e^{-\alpha_t} + (e^{\alpha_t} - e^{-\alpha_t}) \sum_{i: y^{(i)} \neq f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1}.
+\end{align}
+$$
+
+With $F_{t-1}$ fixed, minimizing $\mathcal{L}(F_t)$ is equivalent to minimizing the weighted error of the new model $f_t$ i.e., the sum of the weights for all misclassified points.
+Once we learn a decision tree $f_t$ that minimizes the weighted error, we can find the optimal weight $\alpha_t$ by differentiating the loss with respect to $\alpha_t$ and setting it to zero.
+In particular, we have
+$$
+\frac{\partial \mathcal{L}(F_t)}{\partial \alpha_t}
+= \sum_{i : y^{(i)} = f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1} (-e^{-\alpha_t})
++ \sum_{i : y^{(i)} \neq f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1} e^{\alpha_t}
+= 0
+$$
+which tells us that
+$$
+e^{-\alpha_t} \sum_{i : y^{(i)} = f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1}
+= e^{\alpha_t} \sum_{i : y^{(i)} \neq f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1}.
+$$
+Taking the logarithm of both sides, we have:
+$$
+-\alpha_t + \log\left(\sum_{i : y^{(i)} = f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1}\right)
+= \alpha_t + \log\left(\sum_{i : y^{(i)} \neq f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1}\right).
+$$
+Rearranging, we have
+$$
+\alpha_t = \frac{1}{2} \log\left(\frac{1-\epsilon_t}{\epsilon_t}\right)
+$$
+where $\epsilon_t = \frac{\sum_{i : y^{(i)} \neq f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1}}{\sum_{i=1}^n w^{(i)}_{t-1}}$ is the weighted error rate of the model $f_t$.
+
+At each iteration $t$, we compute the weights $w^{(i)}_{t-1}$ based on which points the current ensemble model $F_{t-1}$ are misclassifying. We then learn a new model $f_t$ that minimizes the weighted error, adapting to correct the mistakes of the current ensemble. Finally, we compute the optimal weight $\alpha_t$ for the new model based on its weighted error rate.
+
+<center><img src="images/tree_adaboost_learning.svg" class="responsive-img"></center>
+
+The final prediction algorithm combines each of the weak learners.
+
+<center><img src="images/tree_adaboost_predicting.svg" class="responsive-img"></center>
+
+The AdaBoost algorithm is agnostic to the choice of weak learner, but decision trees are efficient and interpretable:
+Each weak learner can be trained quickly, and the resulting decision tree can be understood as a weighted vote of the individual trees.
+
+### Gradient Boosting
+
+Remarkably, AdaBoost can be viewed as gradient descent where the loss function is defined over the *predictions* on points rather than the *parameters* of the model.
+
+Let $\mathcal{L}$ be a differentiable loss function defined over the predictions of the model on the training data.
+In AdaBoost, we used the exponential loss, but we could use other loss functions like squared error or logistic loss.
+Rather than considering weak learners that are binary classifiers, we will now consider real-valued functions $f_t : \mathbb{R}^d \to \mathbb{R}$.
+
+As before, the combined prediction is given by an ensemble model $F_t : \mathbb{R}^d \to \mathbb{R}$.
+The ensemble model is defined as a weighted sum of the predictions of the individual models:
+$$
+F_t(x) = \alpha_1 f_1(x) + \alpha_2 f_2(x) + \ldots + \alpha_t f_t(x) = F_{t-1}(x) + \alpha_t f_t(x).
+$$
+
+Our goal is to find a weak learner $f_t$ that minimizes the loss
+$$
+\arg \min_{f_t} \sum_{i=1}^n \mathcal{L}(y^{(i)}, F_{t-1}(\mathbf{x}^{(i)}) + f_t(\mathbf{x}^{(i)})).
+$$
+Recall that the gradient descent update subtracts the gradient of the parameter (opposite the direction of steepest ascent) for a small learning rate $\alpha$.
+Instead of updating the parameters of the model, we will update the predictions of the model.
+In our boosting language, the gradient descent update for the $i$th prediction is
+$$
+F_t(\mathbf{x}^{(i)}) = F_{t-1}(\mathbf{x}^{(i)}) - \alpha \frac{ \partial \mathcal{L}(y^{(i)}, F_{t-1}(\mathbf{x}^{(i)}))}{\partial F_{t-1}(\mathbf{x}^{(i)})}.
+$$
+In practice, finding a function that exactly matches the gradient is difficult, so we will instead find a function that *approximates* the gradient.
+That is, we train a weak learner $f_t$ to fit the points $(\mathbf{x}^{(i)}, \frac{ \partial \mathcal{L}(y^{(i)}, F_{t-1}(\mathbf{x}^{(i)}))}{\partial F_{t-1}(\mathbf{x}^{(i)})})$ for $i \in \{1, \ldots n\}$.
+When the loss is the squared error loss, i.e.,
+$$
+\mathcal{L}(y, F_{t-1}(\mathbf{x})) = \frac12 (F_{t-1}(\mathbf{x}) - y)^2,
+$$
+the gradient of the loss with respect to the prediction is simply the residual between the prior prediction and the label, i.e.,
+$$
+\frac{ \partial \mathcal{L}(y, F_{t-1}(\mathbf{x}))}{\partial F_{t-1}(\mathbf{x})} = F_{t-1}(\mathbf{x}) - y.
+$$
+In this, gradient boosting has a nice interpretation as an iterative process of fitting a model to the residuals of the prior model.
+Once we have trained the weak learner $f_t$, we can select the weight $\alpha_t$ to minimize the loss of the composite model:
+$$
+\alpha_t = \arg \min_\alpha \sum_{i=1}^n \mathcal{L}(y^{(i)}, F_{t-1}(\mathbf{x}^{(i)}) + \alpha f_t(\mathbf{x}^{(i)})).
+$$
+When the loss is differentiable and convex (e.g., mean squared error), we can find the optimal weight $\alpha_t$ by differentiating the loss with respect to $\alpha_t$ and setting it to zero.
+
+The gradient boosting algorithm called [XGBoost](https://en.wikipedia.org/wiki/XGBoost) is a popular implementation.
+Since 2014, XGboost has basically been the best performing model on many supervised learning tasks.
+However, foundation models like [TabPFN](https://en.wikipedia.org/wiki/TabPFN) are starting to outperform XGBoost on small to medium-sized datasets.
+Like modern models, TabPFN uses a transformer architecture, and is trained on some 130 million synthetic datasets.
+While XGBoost requires relearning an ensemble for each new dataset, TabPFN can be run without any training by simply passing labeled example data, and unlabeled validation data as input to the model.

@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Autoencoders</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../eve.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-c5a5d5e27fcc88644031c24cff017230.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link rel="shortcut icon" href="../eve.ico">
+<script id="MathJax-script" async="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+
+
+<!-- Google tag (gtag.js) -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-GZHXTPTRRE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-GZHXTPTRRE');
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Spring 2026</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://discord.gg/dES3fSPEeC"> 
+<span class="menu-text">Discord</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://www.gradescope.com/courses/1091652"> 
+<span class="menu-text">Gradescope</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://www.rtealwitter.com/datamining2025/"> 
+<span class="menu-text">Fall 2025</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction">Introduction</a></li>
+  <li><a href="#variational-autoencoders" id="toc-variational-autoencoders" class="nav-link" data-scroll-target="#variational-autoencoders">Variational Autoencoders</a></li>
+  <li><a href="#principal-component-analysis" id="toc-principal-component-analysis" class="nav-link" data-scroll-target="#principal-component-analysis">Principal Component Analysis</a></li>
+  <li><a href="#semantic-embeddings" id="toc-semantic-embeddings" class="nav-link" data-scroll-target="#semantic-embeddings">Semantic Embeddings</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><strong>Autoencoders</strong></h1>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>We have so far assumed that our data is labeled (e.g., we know an image depicts a dog). There is a wealth of unlabeled data available, and we would like to use it to improve our models. For example, think of the many images on the web, or millions of documents of text. Today, we will explore how to leverage this unlabeled data using unsupervised learning techniques.</p>
+<section id="introduction" class="level3">
+<h3 class="anchored" data-anchor-id="introduction">Introduction</h3>
+<p>There are many simple but clever ideas that we will see in unsupervised learning. The first is an <em>autoencoder</em>, which allows us to learn a meaningful, latent representation of the input data. The idea of autoencoders is quite natural: when we don’t have labels for our data, let’s use the data itself as a label.</p>
+<p>Let <span class="math inline">\(d\)</span> be the dimension of the input data. We will map the input data to a compressed representation in <span class="math inline">\(k\)</span> dimensions. Let <span class="math inline">\(f_0: \mathbb{R}^d \to \mathbb{R}^k\)</span> be the encoder, often a neural network, that maps the input data <span class="math inline">\(\boldsymbol{x}\)</span> to the latent representation <span class="math inline">\(\boldsymbol{z} = f_0(\boldsymbol{x})\)</span>. We will then map the latent representation back to the original space with a decoder <span class="math inline">\(f_1: \mathbb{R}^k \to \mathbb{R}^d\)</span>, also a neural network, where <span class="math inline">\(\tilde{\boldsymbol{x}} = f_1(\boldsymbol{z})\)</span> is the reconstruction of the original input <span class="math inline">\(\boldsymbol{x}\)</span>.</p>
+<p>Our goal is to minimize the reconstruction error, which is typically measured as the mean squared error (MSE) between the original input <span class="math inline">\(\boldsymbol{x}\)</span> and the reconstructed input <span class="math inline">\(\tilde{\boldsymbol{x}}\)</span>:</p>
+<p><span class="math display">\[
+\mathcal{L}_{\text{recon}} = \frac1{n} \sum_{i=1}^n \| \boldsymbol{x}^{(i)} - \tilde{\boldsymbol{x}}^{(i)} \|^2_2.
+\]</span></p>
+<center>
+<img src="images/autoencoder_bottleneck.svg" class="responsive-img">
+</center>
+<p>Notice that this problem is trivial when <span class="math inline">\(k \geq d\)</span>, since we can simply represent <span class="math inline">\(\boldsymbol{z} = \boldsymbol{x}\)</span> in the latent space without any loss of information. Crucially, our architecture must have a bottleneck, meaning that we need to enforce <span class="math inline">\(k &lt; d\)</span> in order to learn a non-trivial representation.</p>
+<p>There are many applications of autoencoders:</p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Data_compression">data compression</a> (for example, JPEG is a form of lossy compression that can be interpreted as an autoencoder),</li>
+<li><a href="https://en.wikipedia.org/wiki/Total_variation_denoising">denoising</a> (removing noise from images),</li>
+<li><a href="https://en.wikipedia.org/wiki/Inpainting">inpainting</a> (filling in missing parts of images),</li>
+<li><a href="https://en.wikipedia.org/wiki/Feature_learning">representation learning</a> (discovering useful features that can be used in downstream applications).</li>
+</ul>
+<p>When we map from <span class="math inline">\(\mathbb{R}^d\)</span> to a smaller dimension <span class="math inline">\(\mathbb{R}^k\)</span>, we are necessarily losing information. However, much of this information isn’t useful. With images, for example, most <span class="math inline">\(d\)</span>-dimensional vectors are not natural images that we would recognize. Instead, there is a <em>manifold</em> of <span class="math inline">\(d\)</span>-dimensional natural images. Learning this manifold directly is challenging, and autoencoders provide a powerful tool for mapping to a lower-dimensional space and back.</p>
+<center>
+<img src="images/autoencoder_manifold.svg" class="responsive-img">
+</center>
+<p>Once we represent the data in the latent space, we can use it for various tasks such as classification, clustering, and generation. Instead of working in the <em>pixel-space</em>, for example, we can work in a lower dimension that captures the essential features of the data. Since all of our machine learning algorithms run in time dependent on the dimensionality of the input space, reducing the dimensionality can lead to significant speedups. Such latent representations form the backbone of state-of-the-art models in various domains, including computer vision, natural language processing, and speech recognition.</p>
+</section>
+<section id="variational-autoencoders" class="level3">
+<h3 class="anchored" data-anchor-id="variational-autoencoders">Variational Autoencoders</h3>
+<p>The natural manifold of our data in <span class="math inline">\(\mathbb{R}^d\)</span> is generally complicated and non-convex. For example, we may have two images of the same cat, but the linear combination of these two images at the pixel-level does not lie on the manifold of cat images.</p>
+<p>When we build the autoencoder, we have a chance to make the latent space more structured. One method is called <em>Variational Autoencoders</em>, which impose a probabilistic structure on the latent space. Instead of the latent <span class="math inline">\(\boldsymbol{z} = f_0(\boldsymbol{x})\)</span> being a deterministic function of the input, we model it as a distribution. Because of the many <a href="https://youtu.be/d_qvLDhkg00?si=NWXyyZKczpfUB6RL">elegant</a> <a href="https://youtu.be/zeJD6dqJ5lo?si=NFJTZunCeT8t5DaL">properties</a> of Gaussian distributions, we often choose to model the latent space as a multivariate Gaussian distribution. Then, the latent is drawn from a Gaussian distribution i.e., <span class="math inline">\(\boldsymbol{z} \sim \mathcal{N}(\boldsymbol{\mu}_\boldsymbol{x}, \boldsymbol{\Sigma}_\boldsymbol{x})\)</span> is a random variable, where <span class="math inline">\(\boldsymbol{\mu}_\boldsymbol{x}\)</span> is the input-dependent mean and <span class="math inline">\(\boldsymbol{\Sigma}_\boldsymbol{x}\)</span> is the input-dependent covariance.</p>
+<p>In variational autoencoders, the loss consists of the normal reconstruction error and a measure of the distance between the learned distribution and a well-behaved prior distribution, typically the standard Gaussian <span class="math inline">\(\mathcal{N}(\boldsymbol{0}, \boldsymbol{I})\)</span>: <span class="math display">\[
+\mathcal{L}_\text{VAE} = \alpha \mathcal{L}_{\text{recon}} + (1-\alpha) D_{\text{KL}}(\mathcal{N}(\boldsymbol{\mu}_\boldsymbol{x}, \boldsymbol{\Sigma}_\boldsymbol{x}) || \mathcal{N}(\boldsymbol{0}, \boldsymbol{I})),
+\]</span> where <span class="math inline">\(\alpha \in (0,1)\)</span> is a hyperparameter that balances the two terms, and <span class="math inline">\(D_{KL}\)</span> is the <a href="https://en.wikipedia.org/wiki/Kullback%E2%80%93Leibler_divergence">Kullback-Leibler divergence</a>. Formally, <span class="math display">\[
+D_{\text{KL}}(P, Q) =
+\mathbb{E}_{\boldsymbol{z} \sim P} \left[ \log \frac{P(\boldsymbol{z})}{Q(\boldsymbol{z})} \right],
+\]</span> where <span class="math inline">\(P\)</span> is the learned distribution and <span class="math inline">\(Q\)</span> is the prior distribution. The two losses will push the variational autoencoder in different directions: The reconstruction loss encourages the model to generate realistic samples, while the KL divergence encourages the latent space to always resemble the standard Gaussian distribution with mean <span class="math inline">\(\boldsymbol{0}\)</span> and covariance <span class="math inline">\(\boldsymbol{I}\)</span>. These two goals are naturally at odds: if the encoder always outputted the mean <span class="math inline">\(\boldsymbol{\mu}_\boldsymbol{x}=\boldsymbol{0}\)</span>, and the covariance <span class="math inline">\(\boldsymbol{\Sigma}_\boldsymbol{x}=\boldsymbol{I}\)</span>, the KL divergence would be 0 but there would be no information for the decoder to reconstruct the input. However, by simultaneously training to achieve both goals, we can learn a meaningful latent space that captures the essential features of the data while also being structured.</p>
+<center>
+<img src="images/autoencoder_vae.svg" class="responsive-img">
+</center>
+<p>We will use gradient descent to train the parameters of the encoder <span class="math inline">\(f_0\)</span> and the decoder <span class="math inline">\(f_1\)</span>. However, when we use KL divergence as the loss, it’s not immediately clear how to backpropagate through a random sample <span class="math inline">\(\boldsymbol{z} \sim \mathcal{N}(\boldsymbol{\mu}_\boldsymbol{x}, \boldsymbol{\Sigma}_\boldsymbol{x})\)</span>. Instead, we will use the encoder to generate <span class="math inline">\(\boldsymbol{\mu}_\boldsymbol{x}\)</span> and <span class="math inline">\(\boldsymbol{\Sigma}_\boldsymbol{x}\)</span>, and set <span class="math inline">\(\boldsymbol{z} = \boldsymbol{\mu}_\boldsymbol{x} + \boldsymbol{\Sigma}_\boldsymbol{x}^{1/2} \boldsymbol{\epsilon}\)</span>, where <span class="math inline">\(\boldsymbol{\epsilon} \sim \mathcal{N}(\boldsymbol{0}, \boldsymbol{I})\)</span> is a standard normal variable.</p>
+</section>
+<section id="principal-component-analysis" class="level3">
+<h3 class="anchored" data-anchor-id="principal-component-analysis">Principal Component Analysis</h3>
+<p>Principal component analysis (PCA) is the “linear regression” of unsupervised learning, offering a simple but powerful technique for dimensional reduction. PCA is the simplest kind of autoencoder, where the encoder and decoder are each a fully connected linear layer without activation functions.</p>
+<p>Let <span class="math inline">\(\mathbf{W}_0 \in \mathbb{R}^{k \times d}\)</span> be the encoder weight matrix, and <span class="math inline">\(\mathbf{W}_1 \in \mathbb{R}^{d \times k}\)</span> be the decoder weight matrix. The latent for input <span class="math inline">\(\mathbf{x}\)</span> is <span class="math inline">\(\mathbf{z}^\top = \mathbf{x}^\top \mathbf{W}_0\)</span>, and the reconstruction is <span class="math inline">\(\tilde{\mathbf{x}}^\top = \mathbf{z}^\top \mathbf{W}_1  = \mathbf{x}^\top \mathbf{W}_0 \mathbf{W}_1\)</span>.</p>
+<center>
+<img src="images/pca_single.svg" class="responsive-img">
+</center>
+<p>We train the encoder and decoder on <span class="math inline">\(n\)</span> (unlabelled) data points <span class="math inline">\(\mathbf{x}^{(1)}, \ldots, \mathbf{x}^{(n)}\)</span>. Let <span class="math inline">\(\mathbf{X} \in \mathbf{R}^{n \times d}\)</span> be the matrix of input data, where the <span class="math inline">\(i\)</span>th row corresponds to data point <span class="math inline">\({\mathbf{x}^{(i)}}^\top\)</span>.</p>
+<center>
+<img src="images/pca_all.svg" class="responsive-img">
+</center>
+<p>The goal is for the input matrix <span class="math inline">\(\mathbf{X}\)</span> to be well approximated by the reconstruction <span class="math inline">\(\tilde{\mathbf{X}} = \mathbf{X} \mathbf{W}_0 \mathbf{W}_1\)</span>. In particular, <span class="math display">\[
+\mathcal{L}( \mathbf{W}_0, \mathbf{W}_1)
+= \sum_{i=1}^n \| \mathbf{x}^{(i)} - \tilde{\mathbf{x}}^{(i)} \|^2
+= \sum_{i=1}^n \sum_{j=1}^d (x_j^{(i)} - \tilde{x}_j^{(i)})^2
+= \| \mathbf{X} - \tilde{\mathbf{X}} \|_\text{F}^2
+\]</span> where the Frobenius norm <span class="math inline">\(\| \mathbf{A} \|_\text{F}^2\)</span> is the sum of squared entries of <span class="math inline">\(\mathbf{A}\)</span>, and the last equality follows because <span class="math inline">\([\mathbf{X}]_{i,j} = x_j^{(i)}\)</span> is the <span class="math inline">\(j\)</span>th feature of the <span class="math inline">\(i\)</span>th data point.</p>
+<p>We could apply gradient descent to minimize this loss with respect to the weights <span class="math inline">\(\mathbf{W}_0\)</span> and <span class="math inline">\(\mathbf{W}_1\)</span>. But, like with linear regression, we can actually derive the optimal solution. Let’s revisit some linear algebra to see how we can do this derivation.</p>
+<p>While only some matrices have eigendecompositions, all matrices have singular value decompositions (SVDs). In particular, let <span class="math inline">\(r\)</span> be the rank of <span class="math inline">\(\mathbf{X}\)</span>, then we can write <span class="math display">\[
+\mathbf{X} = \mathbf{U} \mathbf{\Sigma} \mathbf{V}^\top
+\]</span> where <span class="math inline">\(\mathbf{U} \in \mathbb{R}^{n \times r}\)</span> and <span class="math inline">\(\mathbf{V} \in \mathbb{R}^{d \times r}\)</span> have orthonormal columns, and <span class="math inline">\(\mathbf{\Sigma} \in \mathbb{R}^{r \times r}\)</span> is a diagonal matrix with non-negative entries.</p>
+<center>
+<img src="images/pca_svd.svg" class="responsive-img">
+</center>
+<p>Because the columns of <span class="math inline">\(\mathbf{U}\)</span> and <span class="math inline">\(\mathbf{V}\)</span> are orthonormal, we have <span class="math display">\[
+\mathbf{U}^\top \mathbf{U} = \mathbf{I}_r = \mathbf{V}^\top \mathbf{V}.
+\]</span> Using our outerproduct perspective on matrix multiplication, we can write <span class="math display">\[
+\mathbf{X} = \sum_{i=1}^r \mathbf{u}_i \sigma_i \mathbf{v}_i^\top
+\]</span> where <span class="math inline">\(\sigma_1 \geq \sigma_2 \geq \ldots \geq \sigma_r \geq 0\)</span> are the singular values of <span class="math inline">\(\mathbf{X}\)</span>, and <span class="math inline">\(\mathbf{u}_i \in \mathbb{R}^{n \times 1}\)</span> and <span class="math inline">\(\mathbf{v}_i \in \mathbb{R}^{d \times 1}\)</span> are the left and right singular vectors, respectively. Let <span class="math inline">\(\mathbf{X}_k\)</span> be the rank-<span class="math inline">\(k\)</span> approximation <span class="math display">\[
+\mathbf{X}_k = \sum_{i=1}^k \mathbf{u}_i \sigma_i \mathbf{v}_i^\top.
+\]</span> With this notation, we are ready to state a useful linear algebra result.</p>
+<p><strong>Eckart-Young-Mirsky Theorem</strong>: The best rank-<span class="math inline">\(k\)</span> approximation of a matrix <span class="math inline">\(\mathbf{X}\)</span> in the Frobenius norm is given by its top <span class="math inline">\(k\)</span> singular values and corresponding singular vectors i.e., <span class="math display">\[
+\mathbf{X}_k = \arg \min_{\text{rank}-k \text{ } \tilde{\mathbf{X}}} \| \mathbf{X} - \tilde{\mathbf{X}} \|_\text{F}^2.
+\]</span></p>
+<div class="proof-block">
+<details open="">
+<summary>
+Proof of Eckart-Young-Mirsky Theorem
+</summary>
+<p>We’ll prove the theorem using several properties of the <em>trace</em>. For a square matrix <span class="math inline">\(\mathbf{M}\)</span>, the trace <span class="math inline">\(\text{tr}(\mathbf{M})\)</span> is the sum of the diagonal entries, and it has the following three properties:</p>
+<p>First, <span class="math inline">\(\| \mathbf{X} \|_\text{F}^2 = \text{tr}(\mathbf{X}^\top \mathbf{X})\)</span> for any <span class="math inline">\(\mathbf{X} \in \mathbb{R}^{n \times d}\)</span>. To see why, observe that <span class="math display">\[\| \mathbf{X} \|_\text{F}^2 = \sum_{i=1}^n \sum_{j=1}^d [\mathbf{X}]_{i,j}^2 = \sum_{i=1}^n \| [\mathbf{X}]_{i,} \|_2^2 = \text{tr}(\mathbf{X}^\top \mathbf{X}).\]</span></p>
+<p>Second, <span class="math inline">\(\text{tr}(\mathbf{A} \mathbf{B}) = \text{tr}(\mathbf{B} \mathbf{A})\)</span> for any matrices <span class="math inline">\(\mathbf{A} \in \mathbb{R}^{n \times d}\)</span> and <span class="math inline">\(\mathbf{B} \in \mathbb{R}^{d \times n}\)</span>. To see why, observe that <span class="math display">\[
+\text{tr}(\mathbf{A} \mathbf{B}) = \sum_{i=1}^n [\mathbf{A B}]_{i,i}
+= \sum_{i=1}^n \sum_{j=1}^d [\mathbf{A}]_{i,j} [\mathbf{B}]_{j,i}
+= \sum_{j=1}^d \sum_{i=1}^n [\mathbf{B}]_{j,i} [\mathbf{A}]_{i,j}
+= \sum_{j=1}^d [\mathbf{B A }]_{j,j}
+= \text{tr}(\mathbf{B} \mathbf{A}).
+\]</span></p>
+<p>Third, <span class="math inline">\(\| \mathbf{XV} \|_\text{F}^2 = \| \mathbf{X} \|_\text{F}^2\)</span>, where the columns of <span class="math inline">\(\mathbf{V} \in \mathbb{R}^{d \times r}\)</span> are orthonormal. (The analogous result holds for multiplying <span class="math inline">\(\mathbf{X}\)</span> on the left by <span class="math inline">\(\mathbf{U}^\top\)</span>, where the columns of <span class="math inline">\(\mathbf{U} \in \mathbb{R}^{n \times r}\)</span> are orthonormal.) To see why, observe that <span class="math display">\[
+\| \mathbf{XV} \|_\text{F}^2
+= \text{tr}((\mathbf{XV})^\top (\mathbf{XV}))
+= \text{tr}(\mathbf{V}^\top \mathbf{X}^\top \mathbf{X} \mathbf{V})
+= \text{tr}(\mathbf{X}^\top \mathbf{X} \mathbf{V} \mathbf{V}^\top)
+= \text{tr}(\mathbf{X}^\top \mathbf{X})
+= \| \mathbf{X} \|_\text{F}^2,
+\]</span> where we used the first property in the first and last equality, the second property in the third equality, and the orthonormality of the columns of <span class="math inline">\(\mathbf{V}\)</span> in the fourth equality.</p>
+<p>With these properties, we are finally ready to prove the theorem. We have <span class="math display">\[
+\begin{align}
+\| \mathbf{X} - \tilde{\mathbf{X}} \|_\text{F}^2
+= \| \mathbf{U \Sigma V}^\top - \tilde{\mathbf{X}} \|_\text{F}^2
+= \| \mathbf{U}^\top \mathbf{U \Sigma V}^\top \mathbf{V} - \mathbf{U}^\top \tilde{\mathbf{X}} \mathbf{V} \|_\text{F}^2
+= \| \mathbf{\Sigma} - \mathbf{C} \|_\text{F}^2,
+\end{align}
+\]</span> where we use <span class="math inline">\(\mathbf{C} = \mathbf{U}^\top \tilde{\mathbf{X}} \mathbf{V}\)</span> for notational convenience. Continuing, <span class="math display">\[
+\| \mathbf{\Sigma} - \mathbf{C} \|_\text{F}^2
+= \sum_{i=1}^r (\sigma_i - [\mathbf{C}]_{i,i})^2
++ \sum_{i\neq j} [\mathbf{C}]_{i,j}^2.
+\]</span> When we choose <span class="math inline">\(\mathbf{C}\)</span>, we can minimize this expression by setting <span class="math inline">\([\mathbf{C}]_{i,j} = 0\)</span> for all <span class="math inline">\(i \neq j\)</span>. This means that the optimal <span class="math inline">\(\mathbf{C}\)</span> is diagonal, and we can choose up to <span class="math inline">\(k\)</span> non-zero entries. Setting <span class="math inline">\([\mathbf{C}]_{i,i} = \sigma_i\)</span> for <span class="math inline">\(i \leq k\)</span> and <span class="math inline">\(0\)</span> otherwise gives us the best rank-<span class="math inline">\(k\)</span> approximation. If we chose some <span class="math inline">\(i' &gt; k\)</span> instead of <span class="math inline">\(i \leq k\)</span>, we would be choosing a smaller singular value, which would increase the overall error. With the optimal choice <span class="math inline">\(\mathbf{C} = \boldsymbol{\Sigma}_k\)</span>, we have <span class="math inline">\(\tilde{\mathbf{X}} = \mathbf{U} \boldsymbol{\Sigma}_k \mathbf{V}^\top = \mathbf{X}_k\)</span>, and error <span class="math display">\[
+\| \mathbf{X} - \tilde{\mathbf{X}} \|_\text{F}^2
+= \sum_{i=k+1}^r \sigma_i^2.
+\]</span></p>
+</details>
+</div>
+<p>The Eckart-Young-Mirsky theorem tells us that the best rank-<span class="math inline">\(k\)</span> approximation of a matrix is given by its top <span class="math inline">\(k\)</span> singular values and corresponding singular vectors. So we’d like to choose <span class="math inline">\(\mathbf{W}_0\)</span> and <span class="math inline">\(\mathbf{W}_1\)</span> so that <span class="math inline">\(\tilde{\mathbf{X}} = \mathbf{X} \mathbf{W}_0 \mathbf{W}_1\)</span>. Setting <span class="math inline">\(\mathbf{W}_0 = \mathbf{V}_k\)</span> and <span class="math inline">\(\mathbf{W}_1 = \mathbf{V}_k^\top\)</span> gives <span class="math display">\[
+\tilde{\mathbf{X}}
+= \mathbf{X} \mathbf{V}_k \mathbf{V}_k^\top
+= \sum_{i=1}^r \mathbf{u}_i \sigma_i  \mathbf{v}_i^\top \sum_{j=1}^k \mathbf{v}_j \mathbf{v}_j^\top
+= \sum_{i=1}^k \mathbf{u}_i \sigma_i \mathbf{v}_i^\top = \mathbf{X}_k,
+\]</span> where the second equality follows because <span class="math inline">\(\mathbf{v}_i^\top \mathbf{v}_j=1\)</span> if <span class="math inline">\(i=j\)</span> and <span class="math inline">\(0\)</span> otherwise.</p>
+<p>We call <span class="math inline">\(\mathbf{X} \mathbf{V}_k = \mathbf{U}_k \boldsymbol{\Sigma}_k\)</span> the latent representation, and the columns of <span class="math inline">\(\mathbf{V}_k\)</span> are the principal components. When we perform PCA, we are effectively running a singular value decomposition on <span class="math inline">\(\mathbf{X}\)</span>. In practice, we generally mean-center and normalize <span class="math inline">\(\mathbf{X}\)</span> first; in particular, we subtract the mean from each column, and divide each column by its <span class="math inline">\(\ell_2\)</span>-norm.</p>
+<p>We could compute the singular value decomposition directly using e.g., the scipy library: Returning the full decomposition requires <span class="math inline">\(O(nd^2)\)</span> time, while computing a rank-<span class="math inline">\(k\)</span> approximation can be done in <span class="math inline">\(O(ndk)\)</span> time. We could have also computed the eigendecomposition of <span class="math inline">\(\mathbf{X}^\top \mathbf{X} = \mathbf{V} \boldsymbol{\Sigma}^2 \mathbf{V}^\top\)</span>, and <span class="math inline">\(\mathbf{X} \mathbf{X}^\top = \mathbf{U} \boldsymbol{\Sigma}^2 \mathbf{U}^\top\)</span>. But, this approach is generally less efficient since it requires computing the full eigendecomposition of a <span class="math inline">\(d \times d\)</span> matrix and a <span class="math inline">\(n\times n\)</span>, which is roughly <span class="math inline">\(O(d^3 + n^3)\)</span>.</p>
+<p>In practice, PCA gives us a low-dimensional representation of the data that captures the most important variance.</p>
+<center>
+<img src="images/pca_approximations.svg" class="responsive-img">
+</center>
+<p>As we increase the rank of the approximation, the reconstruction error decreases. Recall from the proof of the Eckart-Young-Mirsky theorem that the error of the rank-<span class="math inline">\(k\)</span> approximation is given by <span class="math display">\[
+\sum_{i=k+1}^r \sigma_i^2.
+\]</span> When the singular values are all similar, the reconstruction error decreases more slowly as we add more components. However, if the singular values decay quickly, we can achieve a significant reduction in error by adding just a few components.</p>
+<center>
+<img src="images/pca_spectrum.svg" class="responsive-img">
+</center>
+<p>The reconstruction error is also smaller when the rank is lower. So if we have columns that are linear related, then the error tends to be lower. For example, in a housing dataset, maybe we have features like square footage, lot size, and yard size. Since these features are all related, we can capture their relationships more easily with fewer dimensions. Other kinds of data with low-rank structure include image data, where pixels in a small region are often correlated, and text data, where word usage patterns can be captured with a small number of topics.</p>
+<p>Consider an individual data point <span class="math inline">\(\mathbf{x}\)</span>. The latent vector <span class="math inline">\(\mathbf{z}\)</span> is obtained by projecting <span class="math inline">\(\mathbf{x}\)</span> onto the principal components: <span class="math display">\[
+\mathbf{z} = \sum_{i=1}^k \langle \mathbf{x}, \mathbf{v}_i \rangle.
+\]</span> Then the reconstruction is given by <span class="math display">\[
+\tilde{\mathbf{x}} = \sum_{i=1}^k z_i \mathbf{v}_i = \sum_{i=1}^k \langle \mathbf{x}, \mathbf{v}_i \rangle \mathbf{v}_i.
+\]</span></p>
+<center>
+<img src="images/pca_embedding.svg" class="responsive-img">
+</center>
+<p>The magnitude of the reconstruction is the same as the magnitude of the latent representation. To see why, observe that <span class="math display">\[
+\| \tilde{\mathbf{x}} \|_2^2
+= \left \| \sum_{i=1}^k \langle \mathbf{x}, \mathbf{v}_i \rangle \mathbf{v}_i \right \|_2^2
+= \langle \sum_{i=1}^k \langle \mathbf{x}, \mathbf{v}_i \rangle \mathbf{v}_i, \sum_{j=1}^k \langle \mathbf{x}, \mathbf{v}_j \rangle \mathbf{v}_j \rangle
+= \sum_{i=1}^k \langle \mathbf{x}, \mathbf{v}_i \rangle^2
+= \sum_{i=1}^k z_i^2 = \| \mathbf{z} \|_2^2.
+\]</span> Similarly, the distance between reconstructed points <span class="math inline">\(\tilde{\mathbf{x}}^{(i)}\)</span> and <span class="math inline">\(\tilde{\mathbf{x}}^{(j)}\)</span> is the same as the distance between the latent representations <span class="math inline">\(\mathbf{z}^{(i)}\)</span> and <span class="math inline">\(\mathbf{z}^{(j)}\)</span>. Do you see why?</p>
+<p>If the original data is close to the reconstructed data, then <span class="math inline">\(\| \tilde{\mathbf{x}} \|_2 \approx \| \mathbf{x} \|_2\)</span>, and the latent representation <span class="math inline">\(\| \mathbf{z} \|_2\)</span> will also be similar. Put another way, the latent representations effectively capture the behavior of the original data. Next, we’ll see how PCA can effectively represent language data.</p>
+</section>
+<section id="semantic-embeddings" class="level3">
+<h3 class="anchored" data-anchor-id="semantic-embeddings">Semantic Embeddings</h3>
+<p>When we discussed transformers, we assumed we could meaningfully represent words as vectors in a continuous space. This idea is at the heart of semantic embeddings, where words with similar meanings are mapped to nearby latent representations.</p>
+<p>Our first attempt will be with a document-word matrix <span class="math inline">\(\mathbf{X} \in \mathbb{R}^{n \times d}\)</span>. Each row of <span class="math inline">\(\mathbf{X}\)</span> corresponds to a document, and each column corresponds to a word. The entry <span class="math inline">\(X_{ij}\)</span> represents whether word <span class="math inline">\(j\)</span> appears in document <span class="math inline">\(i\)</span>. When we apply PCA to this matrix, we can obtain a low-dimensional representation of the documents, and of the words!</p>
+<center>
+<img src="images/semantic_document_matrix.svg" class="responsive-img">
+</center>
+<p>Among other applications, the latent document representations are useful for efficient search. By representing documents in a lower-dimensional space, we can quickly find similar documents using techniques like nearest neighbor search.</p>
+<p>Let <span class="math inline">\(\mathbf{z}\)</span> be the latent representation of a document <span class="math inline">\(\mathbf{x}\)</span>. Consider the principal components <span class="math inline">\(\mathbf{v}_i\)</span> and <span class="math inline">\(\mathbf{v}_j\)</span> associated with words <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span>. If the reconstruction <span class="math inline">\(\tilde{\mathbf{X}}\)</span> is close to the original <span class="math inline">\(\mathbf{X}\)</span>, then <span class="math inline">\(\langle \mathbf{z}, \mathbf{v}_i \rangle \approx 1\)</span> if word <span class="math inline">\(i\)</span> appears in the document, and <span class="math inline">\(\langle \mathbf{z}, \mathbf{v}_j \rangle \approx 1\)</span> if word <span class="math inline">\(j\)</span> appears. In this case, <span class="math inline">\(\langle \mathbf{v}_i, \mathbf{v}_j \rangle\)</span> will likely be large. In this way, the principal components can capture the meaning of words.</p>
+<center>
+<img src="images/semantic_words.svg" class="responsive-img">
+</center>
+<p>One interesting application is that we can do “word math” like <span class="math display">\[
+\mathbf{y}_\text{dog} - \mathbf{y}_\text{old} + \mathbf{y}_\text{young} \approx \mathbf{y}_\text{puppy}.
+\]</span></p>
+<p>For our document-word matrix, we defined the document representations as <span class="math inline">\(\mathbf{X} \mathbf{V}_k = \mathbf{U}_k \mathbf{\Sigma}_k\)</span> and the word representations as <span class="math inline">\(\mathbf{V}_k^\top\)</span>. But, we could have just as easily defined the document representations as <span class="math inline">\(\mathbf{U}_k\)</span> and the word representations as <span class="math inline">\(\mathbf{\Sigma}_k \mathbf{V}_k^\top\)</span>. With this definition, we can write the outer product between the word representations and itself as: <span class="math display">\[
+\left( \mathbf{\Sigma}_k \mathbf{V}_k^\top\right)^\top \left( \mathbf{\Sigma}_k \mathbf{V}_k^\top \right)
+= \mathbf{V}_k \mathbf{\Sigma}_k^\top \mathbf{\Sigma}_k \mathbf{V}_k^\top
+= \tilde{\mathbf{X}}^\top \tilde{\mathbf{X}}.
+\]</span> When <span class="math inline">\(\tilde{\mathbf{X}}\)</span> is close to <span class="math inline">\(\mathbf{X}\)</span>, the inner product between word vectors <span class="math inline">\(\mathbf{y}_i\)</span> and <span class="math inline">\(\mathbf{y}_j\)</span> can be approximated as: <span class="math display">\[
+\langle \mathbf{y}_i, \mathbf{y}_j \rangle \approx [\mathbf{X}^\top \mathbf{X}]_{i,j}
+= \text{\# documents with both $i$ and $j$}
+\]</span></p>
+<p>More generally, we can compress a variety of language data beyond document and word matrices. As a general recipe, we can compute the similarity between all word pairs <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span>, and store the results in a matrix <span class="math inline">\(\mathbf{M} \in \mathbb{R}^{d \times d}\)</span>. We find a low-rank approximation <span class="math inline">\(\mathbf{M} \approx \mathbf{Y}^\top \mathbf{Y}\)</span> for some <span class="math inline">\(\mathbf{Y} \in \mathbb{R}^{d \times k}\)</span>. Then, we can define the word representations as the rows of <span class="math inline">\(\mathbf{Y}\)</span>.</p>
+<p>For example, one approach is to define similarity as the number of times a word appears in the same context as another word. This can be captured by counting co-occurrences in a sliding window over a corpus of text.</p>
+<center>
+<img src="images/semantic_window.svg" class="responsive-img">
+</center>
+<p>We then could process the co-occurrence counts with non-linearities to account for <a href="https://en.wikipedia.org/wiki/Zipf%27s_law">Zipf’s law</a>. In the popular word2vec algorithm, for example, the similarity is given by <span class="math display">\[
+[\mathbf{M}]_{i,j} = \log \frac{\text{\# contexts with both $i$ and $j$}}{\text{\# contexts with $i$}\cdot{\text{\# contexts with $j$}}}.
+\]</span></p>
+<p>Note: If <span class="math inline">\(\mathbf{M}\)</span> is not symmetric, then the factorization may be of the form <span class="math inline">\(\mathbf{M} \approx \mathbf{W}^\top \mathbf{Y}\)</span>, where <span class="math inline">\(\mathbf{W} \neq \mathbf{Y}\)</span>. In this case, we can take the rows of either <span class="math inline">\(\mathbf{W}\)</span> or <span class="math inline">\(\mathbf{Y}\)</span> as the word representations.</p>
+<p>There are many interesting applications of latent representations.</p>
+<section id="unsupervised-translation" class="level4">
+<h4 class="anchored" data-anchor-id="unsupervised-translation">Unsupervised Translation</h4>
+<p>Using our co-occurrence strategy, we can turn documents or even transcribed conversations into language data <span class="math inline">\(\mathbf{X}\)</span>, and then semantic embeddings <span class="math inline">\(\mathbf{Y}\)</span> without any supervision. In fact, we can construct these embeddings for multiple languages in parallel. If the languages have similar structures (e.g., family relationships), we can leverage this to rotate one language’s embeddings into another’s space.</p>
+<center>
+<img src="images/semantic_clouds.svg" class="responsive-img">
+</center>
+<p>While not perfect, the aligned vectors can give a translation strategy without any supervision. Some researchers are even applying these strategies to map the sounds of monkeys or whales to human language!</p>
+</section>
+<section id="graph-representations" class="level4">
+<h4 class="anchored" data-anchor-id="graph-representations">Graph Representations</h4>
+<p>The applications of autoencoders go far beyond language. One particularly versatile data structure is a <em>graph</em>, where nodes represent entities and edges represent relationships. For example, we can use a graph to represent social networks (people are nodes and friendships are edges), road infrastructure (intersections are nodes and roads are edges), or even knowledge graphs (concepts are nodes and relationships are edges). Even when the underlying graph is massive, we can use a random walk through the graph and apply our co-occurrence strategy to learn embeddings for the nodes.</p>
+<center>
+<img src="images/semantic_graph.svg" class="responsive-img">
+</center>
+</section>
+<section id="multi-modal-contrastive-learning" class="level4">
+<h4 class="anchored" data-anchor-id="multi-modal-contrastive-learning">Multi-modal Contrastive Learning</h4>
+<p>A particularly interesting feature of modern machine learning is the connection between different modalities of data e.g., generating images from text descriptions or vice versa. The method for achieving this connection is known as <em>contrastive learning</em>, and can be viewed as yet another application of autoencoders.</p>
+<p>Consider a dataset of captioned images where each image is paired with a descriptive caption. We can use neural networks (e.g., a convolutional network for the image, and a transformer for the text) to map the data to latent representations. Then we represent the similarity of the image and text embeddings in a similarity matrix <span class="math inline">\(\mathbf{M} = \mathbf{I}\)</span>, where pairs of related images and captions that match have a value of 1, and all other pairs have a value of 0. The resulting embeddings, trained with updates to the networks so that <span class="math inline">\(\mathbf{M} \approx \mathbf{W}^\top \mathbf{Y}\)</span>, can then be used for various tasks such as image captioning or text-to-image generation.</p>
+<center>
+<img src="images/semantic_contrastive.svg" class="responsive-img">
+</center>
+<p>We can then use the embeddings in downstream techniques like <a href="https://www.rtealwitter.com/deeplearning2023/diffusion.html">diffusion</a> to generate images from text descriptions.</p>
+
+
+
+</section>
+</section>
+
+</main> <!-- /main -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const wordsPerMinute = 200;
+  const text = document.body.innerText;
+  const words = text.trim().split(/\s+/).length;
+  const readingTime = Math.ceil(words / wordsPerMinute);
+
+  const readTimeEl = document.createElement("div");
+  readTimeEl.innerText = `⏱️ ${readingTime} min read`;
+
+  // Style it to appear centered
+  readTimeEl.style.fontSize = "0.9em";
+  readTimeEl.style.margin = "1em auto";
+  readTimeEl.style.textAlign = "left";
+  readTimeEl.style.width = "100%";
+
+  const title = document.querySelector("h1");
+  if (title) {
+    title.parentNode.insertBefore(readTimeEl, title.nextSibling);
+  }
+});
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

@@ -1,0 +1,755 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Linear Algebra Review</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../eve.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-c5a5d5e27fcc88644031c24cff017230.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link rel="shortcut icon" href="../eve.ico">
+<script id="MathJax-script" async="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+
+
+<!-- Google tag (gtag.js) -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-GZHXTPTRRE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-GZHXTPTRRE');
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Spring 2026</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://discord.gg/dES3fSPEeC"> 
+<span class="menu-text">Discord</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://www.gradescope.com/courses/1091652"> 
+<span class="menu-text">Gradescope</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://www.rtealwitter.com/datamining2025/"> 
+<span class="menu-text">Fall 2025</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#derivatives" id="toc-derivatives" class="nav-link active" data-scroll-target="#derivatives">Derivatives</a></li>
+  <li><a href="#chain-rule-and-product-rule" id="toc-chain-rule-and-product-rule" class="nav-link" data-scroll-target="#chain-rule-and-product-rule">Chain Rule and Product Rule</a></li>
+  <li><a href="#gradients" id="toc-gradients" class="nav-link" data-scroll-target="#gradients">Gradients</a></li>
+  <li><a href="#vector-and-matrix-multiplication" id="toc-vector-and-matrix-multiplication" class="nav-link" data-scroll-target="#vector-and-matrix-multiplication">Vector and Matrix Multiplication</a></li>
+  <li><a href="#eigenvalues-and-eigenvectors" id="toc-eigenvalues-and-eigenvectors" class="nav-link" data-scroll-target="#eigenvalues-and-eigenvectors">Eigenvalues and Eigenvectors</a></li>
+  <li><a href="#matrix-inversion" id="toc-matrix-inversion" class="nav-link" data-scroll-target="#matrix-inversion">Matrix Inversion</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><strong>Linear Algebra Review</strong></h1>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>When I first heard about machine <em>learning</em>, I imagined a computer that was rewarded every time it gave the right answer. Maybe there were electric carrots and sticks that no one had bothered to tell me about? While I now know as little as I did then about computer hardware, I have learned that machine learning is fundamentally a mathematical process.</p>
+<p>Luckily, we’ve been learning about the very mathematical ideas that make machine learning work for years! We’ll review the basics of these concepts here.</p>
+<section id="derivatives" class="level3">
+<h3 class="anchored" data-anchor-id="derivatives">Derivatives</h3>
+<p>Consider a function <span class="math inline">\({f}: \mathbb{R} \to \mathbb{R}\)</span>. The mapping notation means that <span class="math inline">\({f}\)</span> takes a single real number as input and outputs a single real number. In general, mathematicians tell us to be careful about whether we can differentiate a function. But, we’re computer scientists so we’ll risk it for the biscuit.</p>
+<p>Let <span class="math inline">\(x \in \mathbb{R}\)</span> be the input to <span class="math inline">\({f}\)</span>. The derivative of <span class="math inline">\({f}\)</span> with respect to its input <span class="math inline">\(x\)</span> is mathematically denoted by <span class="math inline">\(f'(x) = \frac{d}{d x}[{f}(x)]\)</span>.</p>
+<p>Formally, the derivative is defined as <span class="math display">\[
+\frac{d}{d x}[{f}(x)]
+= \lim_{h \to 0} \frac{{f}(x + h) - {f}(x)}{h}.
+\]</span> If we were to plot <span class="math inline">\({f}\)</span>, the derivative at a point <span class="math inline">\(x\)</span> would be the slope of the tangent line to the curve at that point.</p>
+<p>Here are several examples of functions and their derivatives that you might remember from calculus.</p>
+<table style="width: 100%; border-collapse: collapse; text-align: center;">
+<tbody><tr>
+<td>
+<b>Function: <span class="math inline">\({f}(x)\)</span> </b>
+</td>
+<td>
+<b>Derivative: <span class="math inline">\(\frac{\partial}{\partial x}[{f}(x)]\)</span></b>
+</td>
+</tr>
+<tr>
+<td>
+<span class="math display">\[x^2\]</span>
+</td>
+<td>
+<span class="math display">\[2x\]</span>
+</td>
+</tr>
+<tr>
+<td>
+<span class="math display">\[x^a\]</span>
+</td>
+<td>
+<span class="math display">\[a x^{a-1}\]</span>
+</td>
+</tr>
+<tr>
+<td>
+<span class="math display">\[ax + b\]</span>
+</td>
+<td>
+<span class="math display">\[a\]</span>
+</td>
+</tr>
+<tr>
+<td>
+<span class="math display">\[\ln(x)\]</span>
+</td>
+<td>
+<span class="math display">\[\frac{1}{x}\]</span>
+</td>
+</tr>
+<tr>
+<td>
+<span class="math display">\[e^x\]</span>
+</td>
+<td>
+<span class="math display">\[e^x\]</span>
+</td>
+</tr>
+</tbody></table>
+</section>
+<section id="chain-rule-and-product-rule" class="level3">
+<h3 class="anchored" data-anchor-id="chain-rule-and-product-rule">Chain Rule and Product Rule</h3>
+<p>While working with a simple basic function is easy, we’re not always so lucky. Modern machine learning chains many many complicated functions together. Fortunately, we will think of these operations modularly.</p>
+<p>Let <span class="math inline">\(g: \mathbb{R} \to \mathbb{R}\)</span> be another function. Consider the composite function <span class="math inline">\(g({f}(x))\)</span>.</p>
+<p>By the chain rule, the derivative of <span class="math inline">\(g({f}(x))\)</span> with respect to <span class="math inline">\(x\)</span> is <span class="math display">\[
+\frac{d}{d x}[g({f}(x))]
+= g'(f(x)) f'(x).
+\]</span></p>
+<p>Often, we will also multiply functions together. The product rule tells us that <span class="math display">\[
+\frac{d}{d x}[g(x) {f}(x)]
+= g(x) \frac{d}{d x}[{f}(x)]
++ {f}(x) \frac{d}{d x}[g(x)].
+\]</span></p>
+</section>
+<section id="gradients" class="level3">
+<h3 class="anchored" data-anchor-id="gradients">Gradients</h3>
+<p>In machine learning, we process high-dimensional data so we are interested in functions with multivariate input. Consider <span class="math inline">\({f}: \mathbb{R}^d \to \mathbb{R}\)</span>. The output of the function is still a real number but the input consists of <span class="math inline">\(d\)</span> real numbers. We will use the vector <span class="math inline">\(\mathbf{x} \in \mathbb{R}^d\)</span> to represent all <span class="math inline">\(d\)</span> inputs <span class="math inline">\(x_1, \ldots, x_d\)</span>.</p>
+<p>Instead of the derivative, we will use the partial derivative. The partial derivative with respect to <span class="math inline">\(x_i\)</span> is denoted by <span class="math inline">\(\frac{\partial}{\partial x_i}[{f}(\mathbf{x})]\)</span>. In effect, the partial derivative tells us how <span class="math inline">\({f}\)</span> changes when we change <span class="math inline">\(x_i\)</span>, while keeping all other inputs fixed.</p>
+<p>The gradient stores all the partial derivatives in a vector. The <span class="math inline">\(i\)</span>th entry of this vector is given by the partial derivative of <span class="math inline">\({f}\)</span> with respect to <span class="math inline">\(x_i\)</span>. In mathematical notation, <span class="math display">\[
+\nabla_\mathbf{x} {f} = \left[\begin{smallmatrix} \frac{\partial}{\partial x_1}[{f}(\mathbf{x})] \\ \vdots \\ \frac{\partial}{\partial x_d}[{f}(\mathbf{x})] \\ \end{smallmatrix}\right]
+\]</span></p>
+<p>Just like the derivative in one dimension, the gradient contains information about the slope of <span class="math inline">\({f}\)</span> with respect to each of the <span class="math inline">\(d\)</span> dimensions in its input.</p>
+</section>
+<section id="vector-and-matrix-multiplication" class="level3">
+<h3 class="anchored" data-anchor-id="vector-and-matrix-multiplication">Vector and Matrix Multiplication</h3>
+<p>Vector and matrix multiplication lives at the heart of machine learning. In fact, neural networks only really started to take off when researchers realized that the Graphics Processing Unit (GPU) could be used to perform gradient updates in addition to the matrix multiplication it was designed to do for gaming.</p>
+<p>Consider two vectors <span class="math inline">\(\mathbf{u} \in \mathbb{R}^d\)</span> and <span class="math inline">\(\mathbf{v} \in \mathbb{R}^d\)</span>. We will use <span class="math inline">\(\mathbf{u} \cdot \mathbf{v} = \sum_{i=1}^d u_i v_i\)</span> to denote the inner product of <span class="math inline">\(\mathbf{u}\)</span> and <span class="math inline">\(\mathbf{v}\)</span>. We can also write the inner product as <span class="math inline">\(\mathbf{u}^\top \mathbf{v}\)</span>, where <span class="math inline">\(\mathbf{u}^\top \in \mathbb{R}^{1\times d}\)</span> is the transpose of <span class="math inline">\(\mathbf{u}\)</span>. The <span class="math inline">\(\ell_2\)</span>-norm of <span class="math inline">\(\mathbf{v}\)</span> is given by <span class="math inline">\(\|\mathbf{v}\|_2 = \sqrt{\mathbf{v} \cdot \mathbf{v}}\)</span>.</p>
+<p>Consider two matrices: <span class="math inline">\(\mathbf{A} \in \mathbb{R}^{d \times m}\)</span> and <span class="math inline">\(\mathbf{B} \in \mathbb{R}^{m \times n}\)</span> where <span class="math inline">\(d \neq n\)</span>. We can only multiply two matrices when their <em>inner</em> dimension agrees. Because the number of columns in <span class="math inline">\(\mathbf{A}\)</span> is the same as the number of rows in <span class="math inline">\(\mathbf{B}\)</span>, we can compute <span class="math inline">\(\mathbf{AB}\)</span>. However, because the number of columns in <span class="math inline">\(\mathbf{B}\)</span> is not the same as the number of rows in <span class="math inline">\(\mathbf{A}\)</span>, the product <span class="math inline">\(\mathbf{BA}\)</span> is not defined.</p>
+<p>When we <em>can</em> multiply two matrices, the <span class="math inline">\((i,j)\)</span> entry in <span class="math inline">\(\mathbf{AB}\)</span> is given by the inner product between the <span class="math inline">\(i\)</span>th row of <span class="math inline">\(\mathbf{A}\)</span> and the <span class="math inline">\(j\)</span>th column of <span class="math inline">\(\mathbf{B}\)</span>. In mathematical notation, we write <span class="math display">\[
+[\mathbf{AB}]_{i,j} = \sum_{k=1}^m [\mathbf{A}]_{i,k} [\mathbf{B}]_{k,j}.
+\]</span> The resulting dimensions of the matrix product will be the number of rows in <span class="math inline">\(\mathbf{A}\)</span> by the number of columns in <span class="math inline">\(\mathbf{B}\)</span>.</p>
+<center>
+<img src="images/linalg_matmul0.svg" class="responsive-img">
+</center>
+<p>Beyond this inner product matrix multiplication that we are used to from linear algebra, there is also an <em>outer product</em> way to multiply two matrices. Consider the index <span class="math inline">\(k \in \{1, \ldots, m\}\)</span>. Let <span class="math inline">\([\mathbf{A}]_{,k}\)</span> denote the <span class="math inline">\(k\)</span>th column of <span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\([\mathbf{B}]_{k,}\)</span> denote the <span class="math inline">\(k\)</span>th row of <span class="math inline">\(\mathbf{B}\)</span>. We can write the matrix product as a sum of outer products for each <span class="math inline">\(k\)</span>: <span class="math display">\[
+\mathbf{AB} = \sum_{k=1}^m [\mathbf{A}]_{,k} [\mathbf{B}]_{k,}.
+\]</span> By checking the <span class="math inline">\((i,j)\)</span> entry of the outer product, we see that the outer product definition is equivalent to the inner product matrix multiplication. We will soon see that this outer product definition is a surprisingly useful way to think about matrix multiplication.</p>
+<center>
+<img src="images/linalg_matmul1.svg" class="responsive-img">
+</center>
+</section>
+<section id="eigenvalues-and-eigenvectors" class="level3">
+<h3 class="anchored" data-anchor-id="eigenvalues-and-eigenvectors">Eigenvalues and Eigenvectors</h3>
+<p>The primary challenge when dealing with matrices is that our favorite operations on scalar real numbers do not always work on matrices. For example, it’s not obvious how to divide one matrix by another, or how to take the square root of a matrix. Eigenvalues and eigenvectors provide a way to decompose matrices into simpler components that we can work with in more familiar ways.</p>
+<p>Consider a square and symmetric matrix <span class="math inline">\(\mathbf{A} \in \mathbb{R}^{d \times d}\)</span>. As we may remember from linear algebra, an eigenvector of <span class="math inline">\(\mathbf{A}\)</span> is a vector <span class="math inline">\(\mathbf{v} \in \mathbb{R}^d\)</span> such that <span class="math inline">\(\mathbf{Av} = \lambda \mathbf{v}\)</span> for some scalar <span class="math inline">\(\lambda\)</span>. Let <span class="math inline">\(r\)</span> be the <em>rank</em>, i.e., the number of eigenvectors with nonzero eigenvalues (counting multiplicity). Then, we can write the eigenvectors as <span class="math inline">\(\mathbf{v}_1, \ldots, \mathbf{v}_r\)</span>, with corresponding eigenvalues <span class="math inline">\(\lambda_1 \geq \ldots \geq \lambda_r\)</span>. The eigenvectors are orthonormal, meaning that <span class="math inline">\(\mathbf{v}_i \cdot \mathbf{v}_j = 0\)</span> for <span class="math inline">\(i \neq j\)</span> and <span class="math inline">\(\|\mathbf{v}_i\|_2 = 1\)</span> for all <span class="math inline">\(i\)</span>.</p>
+<p>Given these properties, we can write <span class="math display">\[\mathbf{A} = \mathbf{V} \mathbf{\Lambda} \mathbf{V}^\top\]</span> where <span class="math inline">\(\mathbf{V} = [\mathbf{v}_1, \ldots, \mathbf{v}_r] \in \mathbb{R}^{d \times r}\)</span> is the matrix of eigenvectors and <span class="math inline">\(\mathbf{\Lambda} = \text{diag}(\lambda_1, \ldots, \lambda_r) \in \mathbb{R}^{r \times r}\)</span> is the diagonal matrix of eigenvalues. This decomposition is known as the <em>eigenvalue decomposition</em> of <span class="math inline">\(\mathbf{A}\)</span>.</p>
+<center>
+<img src="images/linalg_eigs.svg" class="responsive-img">
+</center>
+<p>Using our outer product definition of matrix multiplication, we can equivalently write the eigenvalue decomposition as <span class="math display">\[\mathbf{A} = \sum_{i=1}^r \lambda_i \mathbf{v}_i \mathbf{v}_i^\top\]</span> where <span class="math inline">\(\mathbf{v}_i \mathbf{v}_i^\top\)</span> is the outer product of the eigenvector <span class="math inline">\(\mathbf{v}_i\)</span> with itself. We can check that the eigenvalue decomposition is correct by multiplying by each eigenvector. Since the eigenvectors are orthonormal, we have <span class="math inline">\(\mathbf{A} \mathbf{v}_i = \lambda_i \mathbf{v}_i\)</span> for each <span class="math inline">\(i\)</span>.</p>
+</section>
+<section id="matrix-inversion" class="level3">
+<h3 class="anchored" data-anchor-id="matrix-inversion">Matrix Inversion</h3>
+<p>Let’s see the power of the eigenvalue decomposition in the context of matrix inversion. If we have a scalar equation <span class="math inline">\(ax = b\)</span>, we can simply solve for <span class="math inline">\(x\)</span> by dividing both sides by <span class="math inline">\(a\)</span>. In effect, we are applying the inverse of <span class="math inline">\(a\)</span> to <span class="math inline">\(a\)</span> i.e., <span class="math inline">\(\frac1{a} a =1\)</span>. The same principle applies to matrices. The <span class="math inline">\(d \times d\)</span> identity matrix generalizes the scalar identity <span class="math inline">\(1\)</span>. This identity matrix is denoted by <span class="math inline">\(\mathbf{I}_{d \times d} \in \mathbb{R}^{d \times d}\)</span>: the on-diagonal entries <span class="math inline">\((i,i)\)</span> are 1 while the off-diagonal entries <span class="math inline">\((i,j)\)</span> for <span class="math inline">\(i\neq j\)</span> are 0.</p>
+<p>For a matrix <span class="math inline">\(\mathbf{A} \in \mathbb{R}^{d \times d}\)</span>, we use <span class="math inline">\(\mathbf{A}^{-1}\)</span> to denote its inverse. (When <span class="math inline">\(\mathbf{A}\)</span> does not have full rank, i.e., <span class="math inline">\(r &lt; d\)</span>, the inverse is not defined, but we can still use the eigenvalue decomposition to find a pseudo-inverse.) The inverse is defined so that <span class="math inline">\(\mathbf{A}^{-1} \mathbf{A} = \mathbf{I}_{d \times d}\)</span> where <span class="math inline">\(\mathbf{I}_{d \times d}\)</span> is the identity matrix. In terms of our eigenvalue decomposition, the inverse of <span class="math inline">\(\mathbf{A}\)</span> is given by <span class="math display">\[\mathbf{A}^{-1} = \mathbf{V} \mathbf{\Lambda}^{-1} \mathbf{V}^\top\]</span> where <span class="math inline">\(\mathbf{\Lambda}^{-1} = \text{diag}(\frac{1}{\lambda_1}, \ldots, \frac{1}{\lambda_r})\)</span> is the diagonal matrix of the inverses of the eigenvalues. To see this, note that: <span class="math display">\[
+\mathbf{A}^{-1} \mathbf{A} = \left(\mathbf{V} \mathbf{\Lambda}^{-1} \mathbf{V}^\top\right) \left(\mathbf{V} \mathbf{\Lambda} \mathbf{V}^\top\right)
+= \mathbf{V} \mathbf{\Lambda}^{-1} \mathbf{\Lambda} \mathbf{V}^\top
+= \mathbf{V} \mathbf{I}_{r \times r} \mathbf{V}^\top
+= \mathbf{V} \mathbf{V}^\top
+= \mathbf{I}_{d \times d},
+\]</span> where we repeatedly used the fact that <span class="math inline">\(\mathbf{V}^\top \mathbf{V} = \mathbf{I}_{r \times r}\)</span> because the eigenvectors are orthonormal. The last equality requires that the matrix is full rank, i.e., <span class="math inline">\(r=d\)</span>. If <span class="math inline">\(r &lt; d\)</span>, the inverse doesn’t exist; instead, the Moore–Penrose pseudoinverse is <span class="math inline">\(\mathbf{A}^{+} = \mathbf{V}\,\mathbf{\Lambda}^{+}\mathbf{V}^\top\)</span> with <span class="math inline">\(\mathbf{\Lambda}^{+} = \mathrm{diag}\!\left(\tfrac{1}{\lambda_1}, \ldots, \tfrac{1}{\lambda_r}\right).\)</span></p>
+<p>In our outer product form, we can write the inverse as <span class="math display">\[\mathbf{A}^{-1} = \sum_{i=1}^r \frac{1}{\lambda_i} \mathbf{v}_i \mathbf{v}_i^\top\]</span> where <span class="math inline">\(\mathbf{v}_i\)</span> are the eigenvectors of <span class="math inline">\(\mathbf{A}\)</span>. Can you more easily see why <span class="math inline">\(\mathbf{A}^{-1} \mathbf{A} = \mathbf{I}_{d \times d}\)</span>?</p>
+<p>Going forward, we will apply the linear algebra tools we learned today to understand machine learning algorithms. The first algorithm we will study is PageRank, which, at its foundation, simply uses the eigenvalue decomposition to find the most important pages on the internet.</p>
+
+
+
+</section>
+
+</main> <!-- /main -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const wordsPerMinute = 200;
+  const text = document.body.innerText;
+  const words = text.trim().split(/\s+/).length;
+  const readingTime = Math.ceil(words / wordsPerMinute);
+
+  const readTimeEl = document.createElement("div");
+  readTimeEl.innerText = `⏱️ ${readingTime} min read`;
+
+  // Style it to appear centered
+  readTimeEl.style.fontSize = "0.9em";
+  readTimeEl.style.margin = "1em auto";
+  readTimeEl.style.textAlign = "left";
+  readTimeEl.style.width = "100%";
+
+  const title = document.querySelector("h1");
+  if (title) {
+    title.parentNode.insertBefore(readTimeEl, title.nextSibling);
+  }
+});
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

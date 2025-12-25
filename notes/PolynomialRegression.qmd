@@ -1,0 +1,127 @@
+---
+title: "**Polynomial Regression**"
+format:
+  html:
+    toc: true
+    math: mathjax
+    include-after-body: readtime.html
+---
+
+We have so far focused on linear regression.
+In the last lecture, we saw how to more efficiently train linear models using gradient descent.
+However, we still have the issue that linear models ultimately fit linear functions, which may not be expressive enough to capture the underlying patterns in the data.
+In this lecture, we will see how to make linear models more expressive by adding additional features.
+
+## Polynomial Regression
+
+A linear model learns weights for each feature i.e.,
+
+$$
+f(\mathbf{x}) = w_0 + w_1 x_1 + w_2 x_2 + \ldots + w_d x_d.
+$$
+
+In polynomial regression, we add additional features that are polynomial functions of the original features, e.g.,
+$$
+f(\mathbf{x}) = w_0 + w_1 x_1 + w_2 x_2 + w_3 x_1 x_2 + w_4 x_1^2 + w_5 x_2^2
+$$
+
+In terms of matrix multiplication view of linear regression, we can think of adding additional columns to the feature matrix $\mathbf{X}$ by multiplying existing columns together, or raising them to a power.
+
+<center><img src="images/regression_extra_columns.svg" class="responsive-img"></center>
+
+Notice that the model is still linear in the parameters, so we can still use the same techniques to fit the model; the only change is that we have more features.
+Do these additional features help?
+
+**Claim:** The fit of the regression model can only be improved by adding additional features. Formally,
+
+$$
+\min_{\mathbf{w} \in \mathbb{R}^{d_\text{aug}}} \|\mathbf{y} - \mathbf{X}_{\text{aug}}\mathbf{w}\|^2_2 \leq \min_{\mathbf{w} \in \mathbb{R}^{d}} \|\mathbf{y} - \mathbf{X}\mathbf{w}\|^2_2
+$$
+
+where $\mathbf{X}$ is the original data matrix with $d$ features, and $\mathbf{X}_{\text{aug}}$ is the augmented data matrix with additional polynomial features, for a total of $d_{\text{aug}} > d$ features.
+
+To see this, note that any weight vector $\mathbf{w}$ for the original data matrix $\mathbf{X}$ can be extended to a weight vector $\mathbf{w}'$ for the augmented data matrix $\mathbf{X}_{\text{aug}}$ by setting the weights corresponding to the additional features to zero.
+
+Let's see an example of polynomial regression in action.
+Consider a quadratic function with some noise defined on $x \in [-1, 1]$.
+We will fit polynomial regression models of varying degrees to this data.
+
+<center><img src="images/regression_polynomial.svg" class="responsive-img"></center>
+
+The degree-1 polynomial (linear regression) does not fit the data well, the degree-2 polynomial gives a much better fit, and the degree-10 polynomial fits the data perfectly.
+However, the degree-10 polynomial appears to be fitting even the noise in the data, to the point where it appears to be oscillating wildly between data points.
+This phenomenon is called *overfitting*, where the model effectively memorizes the training data.
+
+In the picture, we can tell that the degree-2 polynomial fits the pattern well, without overfitting to the noise.
+But how can we identify the right fit in general for higher dimensional and large datasets?
+
+### Generalization Error
+
+If a model memorizes the training data to the point of overfitting, it will not generalize well to new data.
+We can measure how well it will generalize by splitting the data into a training set and a validation set.
+We train the model on the training set, and measure the performance on both the training set and the validation set.
+
+Because the validation set is a random sample from the true data distribution, it gives us an unbiased estimate of the generalization error.
+We can use the validation loss as an approximation for the generalization error when we choose the best model and hyperparameters.
+
+The most common way to split the data is to use 80% of the data for training and 10% for validation and 10% for testing.
+However, this is not ideal because it reduces the amount of data available for training and for approximating the generalization error.
+An alternative is to use *cross-validation*, where we split the non-test data into $k$ folds, and use each fold as the validation set while training on the remaining $k-1$ folds.
+This gives a better estimate of the generalization error, and allows us to use more data for training.
+However, the cost is the increased computational cost of training the model $k$ times.
+On the problem set, we saw how to circumvent this cost for linear regression by exactly computing leave-one-out predictions.
+
+In practice, we often introduce a bias by using the validation set to tune the model.
+When we train and evaluate a model multiple times on the same validation set to update the model (e.g., change hyperparameters, architecture, training method), we are effectively using the validation set as part of the training process.
+Eventually, the model can achieve better performance on the validation data, even though we never used the validation data to train the model.
+More broadly, this phenomenon is related to the more general problem of [$p$-hacking in scientific research](https://xkcd.com/882/), where researchers try multiple analyses and only report the ones that give significant results.
+Our solution is to use a separate test set that is only used once at the very end to report the final performance of the model.
+
+### Regularization
+
+So what model achieves lowest generalization error?
+According to [Occam's razor](https://en.wikipedia.org/wiki/Occam%27s_razor), the simplest model that explains the data is often the best choice.
+However, we'll need to define what we mean by "simple".
+
+In polynomial regression, we can think of the degree of the polynomial as a measure of complexity.
+However, this is not a very general measure of complexity, and it ignores how each degree is used.
+
+In the example above, we fit the data with a degree-1, degree-2, and degree-10 polynomial.
+Let's inspect the weights learned by each model.
+The histogram (below) shows that the degree-1 and degree-2 polynomials have small weights, while the degree-10 polynomial has some very large weights.
+This suggests that the degree-10 polynomial is a far more complex model, as it can achieve large changes in the output for small changes in the input.
+
+<center><img src="images/regression_polynomial_weights.svg" class="responsive-img"></center>
+
+One way of encouraging models to be simpler is to add a term to the loss function that penalizes large weights, e.g., we could use the following regularized loss function:
+$$
+\begin{align*}
+\mathcal{L}(\mathbf{w}) + \lambda \|\mathbf{w}\|^2_2,
+\end{align*}
+$$
+where $\mathcal{L}(\mathbf{w})$ is the original loss function (e.g., mean squared error for regression), and $\|\mathbf{w}\|^2_2$ is the penalty term with hyperparameter $\lambda > 0$.
+Increasing the value of $\lambda$ increases the strength of the penalty, which encourages the model to learn smaller weights and thus simplifies the model.
+
+When we use the $\ell_2$ norm for regularization, this is called *ridge* regression.
+We can also use the $\ell_1$ norm, this is called *lasso* regression, and it has the effect of encouraging sparsity in the model, i.e., some weights will be exactly zero.
+For some intuition on why $\ell_1$ regularization encourages sparsity, check out [these notes](https://www.rtealwitter.com/rads2024/notes/19_sparse_recovery.html#Efficient_Algorithm).
+Lasso regression is particularly useful when we have many features, but we believe only a few of them are actually relevant to the prediction.
+
+### Double Descent
+
+Historically, people believed there is a tradeoff between performance on the training data and performance on the test data:
+If we train a model for too long, or use a model that is too complex, it will overfit to the training data and perform poorly on the test data.
+Instead, the story went, we should monitor both the training and validation loss, and stop training when the validation loss starts to increase.
+
+One of the key insights of modern machine learning is that this story is incomplete.
+If we *keep* training a model that appears to be overfitting, we can often see the validation loss start to decrease again.
+
+<center><img src="images/regression_polynomial_loss.svg" class="responsive-img"></center>
+
+This phenomenon is called *double descent*, because the validation loss curve descends first as the model fits the training data better, then ascends as the model overfits, and finally descends again.
+One explanation for the second descent is that the model is *implicitly regularized* by the training process.
+(Check out [these notes](https://www.rtealwitter.com/deeplearning2023/regularization.html) for a proof of implicit regularization in linear regression.)
+
+There is also another form of double descent that occurs as we increase the number of parameters in the model.
+When the number of parameters is greater than the number of training examples, the model can perfectly fit the training data, but it may not generalize well to new data.
+However, as we increase the number of parameters even further, it appears empirically that models implicitly regularize themselves and generalize better.

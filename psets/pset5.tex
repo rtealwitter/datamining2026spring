@@ -1,0 +1,158 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[a4paper, total={6in, 8in}]{geometry}
+\usepackage{amsmath, amsfonts}
+\usepackage{hyperref, graphicx}
+\usepackage{tikz}
+
+\DeclareMathOperator*{\argmin}{arg\,min}
+\DeclareMathOperator*{\argmax}{arg\,max}
+
+\title{CSCI 145 Problem Set 5}
+\author{} % TODO: Put your name here
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\subsection*{Submission Instructions}
+
+Please upload \textit{your} work by
+\textbf{11:59pm Tuesday September 30, 2025.}
+\begin{itemize}
+\item You are encouraged to discuss ideas
+and work with your classmates. However, you
+\textbf{must acknowledge} your collaborators
+at the top of each solution on which
+you collaborated with others 
+and you \textbf{must write} your solutions
+independently.
+\item Your solutions to theory questions must
+be written legibly, or typeset in LaTeX or markdown.
+If you would like to use LaTeX, you can import the source of this document (available from the course webpage) to Overleaf.
+\item I recommend that you write your solutions to coding questions in a Jupyter notebook using Google Colab.
+\item You should submit your solutions as a \textbf{single PDF} via the assignment on Gradescope.
+\end{itemize}
+
+\noindent
+\textbf{Grading:} The point of the problem set is for \textit{you} to learn. To this end, I hope to disincentivize the use of LLMs by \textbf{not} grading your work for correctness. Instead, you will grade your own work by comparing it to my solutions. This self-grade is due the Friday \textit{after} the problem set is due, also on Gradescope.
+
+\newpage
+\section*{Problem 1: Regularization}
+
+In this problem, we'll investigate the effect of regularization in optimization.
+Consider an optimization problem with $d$ weights $\mathbf{w} \in \mathbb{R}^d$.
+Let $\mathcal{L}: \mathbb{R}^d \to \mathbb{R}$ be a loss function, and $\lambda > 0$ is a regularization hyperparameter.
+Define the optimal weights
+\begin{align}
+    \mathbf{w}^*_\lambda = \argmin_{\mathbf{w} \in \mathbb{R}^d} 
+    \mathcal{L}(\mathbf{w}) + \lambda \| \mathbf{w}\|_2^2.
+\end{align}
+
+Suppose that $\lambda_1 \geq \lambda_2$.
+
+\subsection*{Part A: Regularization Term}
+
+Show that
+\begin{align}
+    \| \mathbf{w}^*_{\lambda_1} \|_2^2 \leq
+    \| \mathbf{w}^*_{\lambda_2} \|_2^2.
+\end{align}
+
+\textbf{Hint:} Use the optimality conditions i.e., the optimal solution to the optimization problem must be better than every other solution. Plus some algebra.
+
+
+\subsection*{Part B: Objective Term}
+
+Show that
+\begin{align}
+    \mathcal{L}(\mathbf{w}^*_{\lambda_1}) \geq
+    \mathcal{L}(\mathbf{w}^*_{\lambda_2}).
+\end{align}
+
+\textbf{Hint:} Use the previous part, plus some algebra.
+
+\subsection*{Part C: Empirical Check}
+
+Adapt your code from the logistic regression problem last week so that the loss function is binary cross entropy (with logits) plus a regularization term.
+Write a function to return the training loss and $\ell_2$ norm of the weights for every epoch with hyperparameter $\lambda$.
+
+Make one plot with the objective term (BCE) by iteration and one plot with the regularization term by iteration for some $\lambda_1 > \lambda_2$ of your choice.
+Does the theory we did in the prior parts hold?
+If not, what went wrong?
+
+%\input{solutions/solution5_1}
+
+\newpage
+\section*{Problem 2: Soft Margin SVMs}
+
+In this problem, we will derive the dual formulation of the soft margin SVM, solve for it numerically on a dataset, and plot the resulting decision boundary.
+
+\subsection*{Part A: Dual Derivation}
+
+Consider the soft margin SVM with tradeoff parameter $C > 0$ given by:
+
+\begin{align}
+    \argmin_{\mathbf{w} \in \mathbb{R}^d, b \in \mathbb{R}, \boldsymbol{\xi} \in \mathbb{R}^n}
+    \frac12 \| \mathbf{w} \|_2^2 + C \sum_{i=1}^n \xi_i
+    \quad \textnormal{ s.t. } \quad
+    y^{(i)} \left( \langle \mathbf{w}, \mathbf{x}^{(i)} \rangle -b\right) \geq 1 - \xi_i,\quad \xi_i \geq 0 \quad  \forall i .
+\end{align}
+
+By (minimally) adapting the steps from class, show that the dual formulation is given by:
+
+\begin{align}
+    \argmax_{\boldsymbol{\alpha} \in \mathbb{R}^n}
+    -\frac12 \sum_{i,j=1}^n \alpha_i y^{(i)}
+    \langle \mathbf{x}^{(i)}, \mathbf{x}^{(j)} \rangle
+    y^{(j)} \alpha_j
+    + \sum_{i=1}^n \alpha_i
+    \quad \textnormal{ s.t. } \quad
+    \sum_{i=1}^n y^{(i)} \alpha_i = 0, \quad 0 \leq \alpha_i \leq C \quad \forall i.
+    \label{eq:dual}
+\end{align}
+
+\textbf{Hint:} In addition to setting the gradient of the Lagrangian with respect to $\mathbf{w}$ and $b$ equal to 0, do so for $\boldsymbol{\xi}$.
+
+\subsection*{Part B: \texttt{cvxopt} Formulation}
+
+% min (1/2) alpha^T P alpha + q^T alpha  s.t. G alpha <= h,  A alpha = b
+
+We will be using the python library \texttt{cvxopt} to solve the dual problem.
+However, we'll need to convert to their formulation first:
+In particular, we'll call \texttt{cvxopt.solvers.qp}($\mathbf{P, q, G, h, A, b}$) for the quadratic programming problem:
+
+\begin{align}
+    \label{eq:cvxopt}
+    \argmin_{\boldsymbol{\alpha} \in \mathbb{R}^n}
+    \frac12 \boldsymbol{\alpha}^\top \mathbf{P} \boldsymbol{\alpha}
+    + \mathbf{q}^\top \boldsymbol{\alpha}
+    \quad \textnormal{s.t.} \quad
+    \mathbf{G} \boldsymbol{\alpha} \leq \mathbf{h},
+    \quad \mathbf{A} \boldsymbol{\alpha} = \mathbf{b}.
+\end{align}
+Define $\mathbf{P, q, G, h, A, b}$ so that Equation \ref{eq:cvxopt} and Equation \ref{eq:dual} are equivalent.
+
+\subsection*{Part C: Code!}
+
+Load a 2D binary classification dataset in python.
+I used:
+
+\begin{verbatim}
+    X, y = sklearn.datasets.make_classification(
+        n_features=2, n_redundant=0, n_informative=2, 
+        random_state=0, n_clusters_per_class=1
+    )
+    y = 2*y - 1 # Convert y to -1, 1
+\end{verbatim}
+
+Compute $\mathbf{P, q, G, h, A, b}$ in terms of your dataset (you'll have to wrap the \texttt{numpy} matrices in \texttt{cvxopt.matrix}).
+Then solve for $\boldsymbol{\alpha}$, and find the optimal line $\mathbf{w}^*$ and $b^*$.
+Finally plot the data and your line.
+
+\textbf{Hint:} Generative AI is your friend for documentation, debugging, and examples!
+
+%\input{solutions/solution5_2}
+
+\end{document}
