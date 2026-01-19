@@ -165,7 +165,7 @@ Since the eigenvectors are orthonormal, we have $\mathbf{A} \mathbf{v}_i = \lamb
 
 Let's see the power of the eigenvalue decomposition in the context of matrix inversion.
 If we have a scalar equation $ax = b$, we can simply solve for $x$ by dividing both sides by $a$.
-In effect, we are applying the inverse of $a$ to $a$ i.e., $\frac1{a} a =1$.
+In effect, we are applying the inverse of $a$ to $a$ i.e., $(a)^{-1} a =1$.
 The same principle applies to matrices.
 The $d \times d$ identity matrix generalizes the scalar identity $1$.
 This identity matrix is denoted by $\mathbf{I}_{d \times d} \in \mathbb{R}^{d \times d}$: the on-diagonal entries $(i,i)$ are 1 while the off-diagonal entries $(i,j)$ for $i\neq j$ are 0.

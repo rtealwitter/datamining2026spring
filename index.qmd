@@ -34,7 +34,7 @@ output:
   </div>
 </div>
 
-**Resources**: Most of the material we cover comes from either Chris Musco's phenomenal [machine learning course](https://www.chrismusco.com/machinelearning2024_grad/), or Chinmay Hegde's fantastic [deep learning course](https://chinmayhegde.github.io/dl-notes/). While we do not have a textbook, we do have typed notes; I **highly** recommend you read the notes before each class.
+**Resources**: Most of the material we cover comes from either Chris Musco's phenomenal [machine learning course](https://www.chrismusco.com/machinelearning2024_grad/), or Chinmay Hegde's fantastic [deep learning course](https://chinmayhegde.github.io/dl-notes/). While we do not have a textbook, we do have readings for each lecture; I **highly** recommend you do these readings before each class.
 
 <table style="width: 100%; border-collapse: collapse;">
   <tr>
