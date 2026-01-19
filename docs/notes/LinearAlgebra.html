@@ -200,9 +200,9 @@ window.Quarto = {
 <section id="derivatives" class="level3">
 <h3 class="anchored" data-anchor-id="derivatives">Derivatives</h3>
 <p>Consider a function <span class="math inline">\({f}: \mathbb{R} \to \mathbb{R}\)</span>. The mapping notation means that <span class="math inline">\({f}\)</span> takes a single real number as input and outputs a single real number. In general, mathematicians tell us to be careful about whether we can differentiate a function. But, we’re computer scientists so we’ll risk it for the biscuit.</p>
-<p>Let <span class="math inline">\(x \in \mathbb{R}\)</span> be the input to <span class="math inline">\({f}\)</span>. The derivative of <span class="math inline">\({f}\)</span> with respect to its input <span class="math inline">\(x\)</span> is mathematically denoted by <span class="math inline">\(f'(x) = \frac{d}{d x}[{f}(x)]\)</span>.</p>
+<p>Let <span class="math inline">\(x \in \mathbb{R}\)</span> be the input to <span class="math inline">\({f}\)</span>. The derivative of <span class="math inline">\({f}\)</span> with respect to its input <span class="math inline">\(x\)</span> is mathematically denoted by <span class="math inline">\(f'(x) = \frac{\partial}{\partial x}[{f}(x)]\)</span>.</p>
 <p>Formally, the derivative is defined as <span class="math display">\[
-\frac{d}{d x}[{f}(x)]
+\frac{\partial}{\partial x}[{f}(x)]
 = \lim_{h \to 0} \frac{{f}(x + h) - {f}(x)}{h}.
 \]</span> If we were to plot <span class="math inline">\({f}\)</span>, the derivative at a point <span class="math inline">\(x\)</span> would be the slope of the tangent line to the curve at that point.</p>
 <p>Here are several examples of functions and their derivatives that you might remember from calculus.</p>
@@ -262,13 +262,13 @@ window.Quarto = {
 <p>While working with a simple basic function is easy, we’re not always so lucky. Modern machine learning chains many many complicated functions together. Fortunately, we will think of these operations modularly.</p>
 <p>Let <span class="math inline">\(g: \mathbb{R} \to \mathbb{R}\)</span> be another function. Consider the composite function <span class="math inline">\(g({f}(x))\)</span>.</p>
 <p>By the chain rule, the derivative of <span class="math inline">\(g({f}(x))\)</span> with respect to <span class="math inline">\(x\)</span> is <span class="math display">\[
-\frac{d}{d x}[g({f}(x))]
+\frac{\partial}{\partial x}[g({f}(x))]
 = g'(f(x)) f'(x).
 \]</span></p>
 <p>Often, we will also multiply functions together. The product rule tells us that <span class="math display">\[
-\frac{d}{d x}[g(x) {f}(x)]
-= g(x) \frac{d}{d x}[{f}(x)]
-+ {f}(x) \frac{d}{d x}[g(x)].
+\frac{\partial}{\partial x}[g(x) {f}(x)]
+= g(x) \frac{\partial}{\partial x}[{f}(x)]
++ {f}(x) \frac{\partial}{\partial x}[g(x)].
 \]</span></p>
 </section>
 <section id="gradients" class="level3">

@@ -19,11 +19,11 @@ In general, mathematicians tell us to be careful about whether we can differenti
 But, we're computer scientists so we'll risk it for the biscuit.
 
 Let $x \in \mathbb{R}$ be the input to ${f}$.
-The derivative of ${f}$ with respect to its input $x$ is mathematically denoted by $f'(x) = \frac{d}{d x}[{f}(x)]$.
+The derivative of ${f}$ with respect to its input $x$ is mathematically denoted by $f'(x) = \frac{\partial}{\partial x}[{f}(x)]$.
 
 Formally, the derivative is defined as
 $$
-\frac{d}{d x}[{f}(x)]
+\frac{\partial}{\partial x}[{f}(x)]
 = \lim_{h \to 0} \frac{{f}(x + h) - {f}(x)}{h}.
 $$
 If we were to plot ${f}$, the derivative at a point $x$ would be the slope of the tangent line to the curve at that point.
@@ -68,16 +68,16 @@ Consider the composite function $g({f}(x))$.
 
 By the chain rule, the derivative of $g({f}(x))$ with respect to $x$ is
 $$
-\frac{d}{d x}[g({f}(x))]
+\frac{\partial}{\partial x}[g({f}(x))]
 = g'(f(x)) f'(x).
 $$
 
 Often, we will also multiply functions together.
 The product rule tells us that
 $$
-\frac{d}{d x}[g(x) {f}(x)]
-= g(x) \frac{d}{d x}[{f}(x)]
-+ {f}(x) \frac{d}{d x}[g(x)].
+\frac{\partial}{\partial x}[g(x) {f}(x)]
+= g(x) \frac{\partial}{\partial x}[{f}(x)]
++ {f}(x) \frac{\partial}{\partial x}[g(x)].
 $$
 
 ### Gradients
