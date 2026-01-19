@@ -53,7 +53,7 @@ output:
     <td>Week 1 (1/20 and 1/22)</td>
     <td><a href="notes/LinearAlgebra.html">Math Review</a></td>
     <td><a href="notes/LinearAlgebra.html">Linear Algebra</a></td>
-    <td></td>
+    <td><a href="slides/Week01.pdf">Slides</a></td>
     <td></td>
   </tr>
   <tr>
