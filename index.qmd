@@ -54,7 +54,7 @@ output:
     <td><a href="notes/LinearAlgebra.html">Math Review</a></td>
     <td><a href="notes/LinearAlgebra.html">Linear Algebra</a></td>
     <td><a href="slides/Week01.pdf">Slides</a></td>
-    <td></td>
+    <td><a href="https://colab.research.google.com/drive/13vdcmMG1id_Fmzt50i2PjBzf0N8cZH93?usp=sharing">Problem 1</a></td>
   </tr>
   <tr>
     <td>Week 2 (1/27 and 1/29)</td>
