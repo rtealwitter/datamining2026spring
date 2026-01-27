@@ -60,7 +60,7 @@ output:
     <td>Week 2 (1/27 and 1/29)</td>
     <td><a href="notes/PageRank.html">PageRank</a></td>
     <td><a href="notes/PageRank.html">PageRank</a></td>
-    <td></td>
+    <td><a href="slides/Week02.pdf">Slides</a></td>
     <td><a href="https://colab.research.google.com/drive/1GLO44bxqvnbIxy3D_e2jpkeXpP7cu5Gd?usp=sharing">Problem 2</a></td>
   </tr>
 
