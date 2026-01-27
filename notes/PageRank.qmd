@@ -116,9 +116,8 @@ while the left eigenvectors satisfy
 $$
 \mathbf{w}_i^\top \mathbf{M} = \lambda_i \mathbf{w}_i^\top.
 $$
-The left and right eigenvectors are orthonormal, i.e., $\mathbf{w}_i^\top \mathbf{w}_j = 0 = \mathbf{v}_i^\top \mathbf{v}_j$ for $i \neq j$ and $1$ if $i=j$.
-In addition, they satisfy a biorthonormal property, i.e., $\mathbf{w}_i^\top \mathbf{v}_j = 0$ for $i \neq j$.
-To see this, observe that
+Unlike symmetric matrices, the eigenvectors of $\mathbf{M}$ are not necessarily orthogonal to each other. However, the left and right eigenvectors satisfy a property called biorthogonality i.e., $\mathbf{w}_j^\top \mathbf{v}_i = 0$ whenever $i \neq j$.
+To see why, start from the definition of the right eigenvector:
 $$
 \mathbf{M} \mathbf{v}_i = \lambda_i \mathbf{v}_i
 \Leftrightarrow
@@ -129,14 +128,24 @@ $$
 (\lambda_j - \lambda_i) \mathbf{w}_j^\top \mathbf{v}_i = 0.
 $$
 So, if $\lambda_j \neq \lambda_i$, then $\mathbf{w}_j^\top \mathbf{v}_i = 0$.
+We can further normalize the eigenvectors so that $\mathbf{w}_i^\top \mathbf{v}_i = 1$ for all $i$.
 
-When we repeatedly multiply by $\mathbf{M}$, the biorthonormal property gives us a surprisingly simple result:
+When we calculate $\mathbf{M}^2$, we multiply the sum by itself. To keep track of the terms, let's use the index $i$ for the first sum and $j$ for the second sum:
 $$
-\mathbf{M}^2 = \sum_{i=1}^r \mathbf{v}_i \lambda_i \mathbf{w}_i^\top
-\sum_{j=1}^r \mathbf{v}_j \lambda_j \mathbf{w}_j^\top
-= \sum_{i=1}^r \mathbf{v}_i \lambda_i \mathbf{w}_i^\top \mathbf{v}_i \lambda_i \mathbf{w}_i^\top = \sum_{i=1}^r \lambda_i^2 \mathbf{v}_i \mathbf{w}_i^\top.
+\begin{aligned}
+\mathbf{M}^2 &= \left( \sum_{i=1}^r \lambda_i \mathbf{v}_i \mathbf{w}_i^\top \right) \left( \sum_{j=1}^r \lambda_j \mathbf{v}_j \mathbf{w}_j^\top \right) \\
+&= \sum_{i=1}^r \sum_{j=1}^r \lambda_i \mathbf{v}_i \underbrace{\mathbf{w}_i^\top \mathbf{v}_j}_{\text{Scalar}} \lambda_j \mathbf{w}_j^\top.
+\end{aligned}
 $$
-In general, $\mathbf{M}^t = \sum_{i=1}^r \lambda_i^t \mathbf{v}_i \mathbf{w}_i^\top$.
+The term in the middle, $\mathbf{w}_i^\top \mathbf{v}_j$, is just a scalar number (a dot product). Because of the biorthogonality property, this scalar is very special: It equals 0 if $i \neq j$ and 1 if $i = j$ (based on our normalization choice). This means that in the double sum, every term where $i$ and $j$ are different vanishes. The only terms that survive are the ones where $i=j$. This collapses the double loop into a single summation:
+$$
+\begin{aligned}
+\mathbf{M}^2 &= \sum_{i=1}^r \lambda_i \mathbf{v}_i (1) \lambda_i \mathbf{w}_i^\top \\
+&= \sum_{i=1}^r \lambda_i^2 \mathbf{v}_i \mathbf{w}_i^\top.
+\end{aligned}
+$$
+By induction, this pattern holds for any power $t$:
+$$\mathbf{M}^t = \sum_{i=1}^r \lambda_i^t \mathbf{v}_i \mathbf{w}_i^\top.$$
 
 Returning to the probability vector, we can write
 $$
@@ -145,7 +154,7 @@ $$
 = \lambda_1^t \sum_{i=1}^r \left( \frac{\lambda_i}{\lambda_1} \right)^t \mathbf{v}_i \mathbf{w}_i^\top \mathbf{p}^{(0)}.
 $$
 When $\lambda_1 > \lambda_2$, the term $\left( \frac{\lambda_i}{\lambda_1} \right)^t$ will go to 0 for all $i \geq 2$ as $t$ increases.
-As long as $\mathbf{v}_1^\top \mathbf{p}^{(0)}$ is non-zero, the first term will dominate the sum, and
+As long as $\mathbf{w}_1^\top \mathbf{p}^{(0)}$ is non-zero, the first term will dominate the sum, and
 $$
 \lim_{t \to \infty} \mathbf{p}^{(t)} = \lambda_1^t \mathbf{v}_1 \left(\mathbf{w}_1^\top \mathbf{p}^{(0)}\right).
 $$

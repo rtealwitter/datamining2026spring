@@ -242,7 +242,7 @@ p_i^{(t+1)} = \sum_{j=1}^n \mathbb{1}[j \text{ links to } i] \frac{p_j^{(t)}}{d_
 \mathbf{M} \mathbf{v}_i = \lambda_i \mathbf{v}_i
 \]</span> while the left eigenvectors satisfy <span class="math display">\[
 \mathbf{w}_i^\top \mathbf{M} = \lambda_i \mathbf{w}_i^\top.
-\]</span> The left and right eigenvectors are orthonormal, i.e., <span class="math inline">\(\mathbf{w}_i^\top \mathbf{w}_j = 0 = \mathbf{v}_i^\top \mathbf{v}_j\)</span> for <span class="math inline">\(i \neq j\)</span> and <span class="math inline">\(1\)</span> if <span class="math inline">\(i=j\)</span>. In addition, they satisfy a biorthonormal property, i.e., <span class="math inline">\(\mathbf{w}_i^\top \mathbf{v}_j = 0\)</span> for <span class="math inline">\(i \neq j\)</span>. To see this, observe that <span class="math display">\[
+\]</span> Unlike symmetric matrices, the eigenvectors of <span class="math inline">\(\mathbf{M}\)</span> are not necessarily orthogonal to each other. However, the left and right eigenvectors satisfy a property called biorthogonality i.e., <span class="math inline">\(\mathbf{w}_j^\top \mathbf{v}_i = 0\)</span> whenever <span class="math inline">\(i \neq j\)</span>. To see why, start from the definition of the right eigenvector: <span class="math display">\[
 \mathbf{M} \mathbf{v}_i = \lambda_i \mathbf{v}_i
 \Leftrightarrow
 \mathbf{w}_j^\top \mathbf{M} \mathbf{v}_i = \lambda_i \mathbf{w}_j^\top \mathbf{v}_i
@@ -250,17 +250,23 @@ p_i^{(t+1)} = \sum_{j=1}^n \mathbb{1}[j \text{ links to } i] \frac{p_j^{(t)}}{d_
 (\mathbf{w}_j^\top \lambda_j - \lambda_i \mathbf{w}_j^\top) \mathbf{v}_i = 0
 \Leftrightarrow
 (\lambda_j - \lambda_i) \mathbf{w}_j^\top \mathbf{v}_i = 0.
-\]</span> So, if <span class="math inline">\(\lambda_j \neq \lambda_i\)</span>, then <span class="math inline">\(\mathbf{w}_j^\top \mathbf{v}_i = 0\)</span>.</p>
-<p>When we repeatedly multiply by <span class="math inline">\(\mathbf{M}\)</span>, the biorthonormal property gives us a surprisingly simple result: <span class="math display">\[
-\mathbf{M}^2 = \sum_{i=1}^r \mathbf{v}_i \lambda_i \mathbf{w}_i^\top
-\sum_{j=1}^r \mathbf{v}_j \lambda_j \mathbf{w}_j^\top
-= \sum_{i=1}^r \mathbf{v}_i \lambda_i \mathbf{w}_i^\top \mathbf{v}_i \lambda_i \mathbf{w}_i^\top = \sum_{i=1}^r \lambda_i^2 \mathbf{v}_i \mathbf{w}_i^\top.
-\]</span> In general, <span class="math inline">\(\mathbf{M}^t = \sum_{i=1}^r \lambda_i^t \mathbf{v}_i \mathbf{w}_i^\top\)</span>.</p>
+\]</span> So, if <span class="math inline">\(\lambda_j \neq \lambda_i\)</span>, then <span class="math inline">\(\mathbf{w}_j^\top \mathbf{v}_i = 0\)</span>. We can further normalize the eigenvectors so that <span class="math inline">\(\mathbf{w}_i^\top \mathbf{v}_i = 1\)</span> for all <span class="math inline">\(i\)</span>.</p>
+<p>When we calculate <span class="math inline">\(\mathbf{M}^2\)</span>, we multiply the sum by itself. To keep track of the terms, let’s use the index <span class="math inline">\(i\)</span> for the first sum and <span class="math inline">\(j\)</span> for the second sum: <span class="math display">\[
+\begin{aligned}
+\mathbf{M}^2 &amp;= \left( \sum_{i=1}^r \lambda_i \mathbf{v}_i \mathbf{w}_i^\top \right) \left( \sum_{j=1}^r \lambda_j \mathbf{v}_j \mathbf{w}_j^\top \right) \\
+&amp;= \sum_{i=1}^r \sum_{j=1}^r \lambda_i \mathbf{v}_i \underbrace{\mathbf{w}_i^\top \mathbf{v}_j}_{\text{Scalar}} \lambda_j \mathbf{w}_j^\top.
+\end{aligned}
+\]</span> The term in the middle, <span class="math inline">\(\mathbf{w}_i^\top \mathbf{v}_j\)</span>, is just a scalar number (a dot product). Because of the biorthogonality property, this scalar is very special: It equals 0 if <span class="math inline">\(i \neq j\)</span> and 1 if <span class="math inline">\(i = j\)</span> (based on our normalization choice). This means that in the double sum, every term where <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> are different vanishes. The only terms that survive are the ones where <span class="math inline">\(i=j\)</span>. This collapses the double loop into a single summation: <span class="math display">\[
+\begin{aligned}
+\mathbf{M}^2 &amp;= \sum_{i=1}^r \lambda_i \mathbf{v}_i (1) \lambda_i \mathbf{w}_i^\top \\
+&amp;= \sum_{i=1}^r \lambda_i^2 \mathbf{v}_i \mathbf{w}_i^\top.
+\end{aligned}
+\]</span> By induction, this pattern holds for any power <span class="math inline">\(t\)</span>: <span class="math display">\[\mathbf{M}^t = \sum_{i=1}^r \lambda_i^t \mathbf{v}_i \mathbf{w}_i^\top.\]</span></p>
 <p>Returning to the probability vector, we can write <span class="math display">\[
 \mathbf{p}^{(t)}
 = \mathbf{M}^t \mathbf{p}^{(0)} = \sum_{i=1}^r \lambda_i^t \mathbf{v}_i \mathbf{w}_i^\top \mathbf{p}^{(0)}
 = \lambda_1^t \sum_{i=1}^r \left( \frac{\lambda_i}{\lambda_1} \right)^t \mathbf{v}_i \mathbf{w}_i^\top \mathbf{p}^{(0)}.
-\]</span> When <span class="math inline">\(\lambda_1 &gt; \lambda_2\)</span>, the term <span class="math inline">\(\left( \frac{\lambda_i}{\lambda_1} \right)^t\)</span> will go to 0 for all <span class="math inline">\(i \geq 2\)</span> as <span class="math inline">\(t\)</span> increases. As long as <span class="math inline">\(\mathbf{v}_1^\top \mathbf{p}^{(0)}\)</span> is non-zero, the first term will dominate the sum, and <span class="math display">\[
+\]</span> When <span class="math inline">\(\lambda_1 &gt; \lambda_2\)</span>, the term <span class="math inline">\(\left( \frac{\lambda_i}{\lambda_1} \right)^t\)</span> will go to 0 for all <span class="math inline">\(i \geq 2\)</span> as <span class="math inline">\(t\)</span> increases. As long as <span class="math inline">\(\mathbf{w}_1^\top \mathbf{p}^{(0)}\)</span> is non-zero, the first term will dominate the sum, and <span class="math display">\[
 \lim_{t \to \infty} \mathbf{p}^{(t)} = \lambda_1^t \mathbf{v}_1 \left(\mathbf{w}_1^\top \mathbf{p}^{(0)}\right).
 \]</span> Since every entry of <span class="math inline">\(\mathbf{M}\)</span> is at most <span class="math inline">\(1\)</span> and <span class="math inline">\(\mathbf{1}^\top \mathbf{M} = \mathbf{1}^\top\)</span>, it’s possible to show that <span class="math inline">\(\lambda_1 = 1\)</span>.</p>
 <p>In summary, the vector that Google uses to measure the importance of a page is simply a multiple of the first eigenvector of the matrix <span class="math inline">\(\mathbf{M}\)</span>. Repeatedly multiplying matrices is known as the <em>power method</em>, and results in the dominant eigenvector(s) of a matrix.</p>
