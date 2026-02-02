@@ -18,7 +18,7 @@ output:
   
   **Class Times**: Tuesdays and Thursdays from 4:15 to 5:30pm in Kravis 164.
   
-  **Office Hours**: Mondays and Thursdays from 12:30 to 2pm in Adams 213.
+  **Office Hours**: Mondays and Thursdays from 12:30 to 2:00pm in Adams 213.
 
   **Problem Sets**: Your primary opportunity to learn the material will be on problem sets. You may work with others to solve the problems, but you must write your solutions by yourself, and explicitly acknowledge any outside help (e.g., websites, people, LLMs).
 
