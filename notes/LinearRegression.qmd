@@ -152,6 +152,11 @@ In mathematical notation, we will set $\nabla_\mathbf{w} \mathcal{L}(\mathbf{w}^
 The intuition is that such a point is a local minimum in every direction; that is, we cannot improve the loss by moving in any of the dimensions.
 Since the loss is convex, there can be only one minima.
 
+**Lemma:** $\nabla_\mathbf{w} \mathcal{L}(\mathbf{w}) = \frac2{n} \mathbf{X}^\top (\mathbf{X w - y})$.
+
+::: {.proof-block}
+<details open>
+<summary>Proof of Lemma</summary>
 As you may recall from multivariate calculus, the gradient $\nabla_\mathbf{w} \mathcal{L}(\mathbf{w})$ is simply a vector with the same dimension as $\mathbf{w}$; the value in the $i$th dimension is $\frac{\partial \mathcal{L}(\mathbf{w})}{\partial w_i}$.
 
 Let's compute this quantity
@@ -189,6 +194,9 @@ $$
 \end{align}
 = 2 \mathbf{X}^\top (\mathbf{X} \mathbf{w} - \mathbf{y}).
 $$
+
+</details>
+:::
 
 By the convexity of the loss function $\mathcal{L}$, we know that $\nabla_\mathbf{w}\mathcal{L}(\mathbf{w}^*)=0$ at the optimal weights $\mathbf{w}^*$.
 Solving for $\mathbf{w}^*$ yields

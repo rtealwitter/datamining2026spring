@@ -35,7 +35,7 @@ We will use the following update rule:
 $$
 p_i^{(t+1)} = \sum_{j=1}^n \mathbb{1}[j \text{ links to } i] \frac{p_j^{(t)}}{d_j},
 $$
-where $d_j$ is the out-degree of page $j$, i.e., the number of pages that page $j$ links to.
+where $d_j$ is the out-degree of page $j$, i.e., the number of pages that page $j$ links to, and $\mathbbm{1}[\cdot]$ is the indicator function that is 1 if the condition is true and 0 otherwise.
 Why do we divide by $d_j$?
 If we didn't, then a page with many outgoing links would dominate the importance of the pages it links to.
 

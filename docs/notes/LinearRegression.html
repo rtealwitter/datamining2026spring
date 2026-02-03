@@ -289,6 +289,12 @@ w = \frac{\sum_{i=1}^n y^{(i)} \cdot x^{(i)}}{\sum_{i=1}^n (x^{(i)})^2}.
 <section id="exact-optimization-1" class="level3">
 <h3 class="anchored" data-anchor-id="exact-optimization-1">Exact Optimization</h3>
 <p>Just like computing the derivative and setting it to <span class="math inline">\(0\)</span>, we can compute the gradient and set it to the zero vector <span class="math inline">\(\mathbf{0} \in \mathbb{R}^d\)</span>. In mathematical notation, we will set <span class="math inline">\(\nabla_\mathbf{w} \mathcal{L}(\mathbf{w}^*) = \mathbf{0}\)</span> and solve for <span class="math inline">\(\mathbf{w}^*\)</span>. The intuition is that such a point is a local minimum in every direction; that is, we cannot improve the loss by moving in any of the dimensions. Since the loss is convex, there can be only one minima.</p>
+<p><strong>Lemma:</strong> <span class="math inline">\(\nabla_\mathbf{w} \mathcal{L}(\mathbf{w}) = \frac2{n} \mathbf{X}^\top (\mathbf{X w - y})\)</span>.</p>
+<div class="proof-block">
+<details open="">
+<summary>
+Proof of Lemma
+</summary>
 <p>As you may recall from multivariate calculus, the gradient <span class="math inline">\(\nabla_\mathbf{w} \mathcal{L}(\mathbf{w})\)</span> is simply a vector with the same dimension as <span class="math inline">\(\mathbf{w}\)</span>; the value in the <span class="math inline">\(i\)</span>th dimension is <span class="math inline">\(\frac{\partial \mathcal{L}(\mathbf{w})}{\partial w_i}\)</span>.</p>
 <p>Let’s compute this quantity <span class="math display">\[
 \begin{align}
@@ -316,6 +322,8 @@ w = \frac{\sum_{i=1}^n y^{(i)} \cdot x^{(i)}}{\sum_{i=1}^n (x^{(i)})^2}.
 \end{align}
 = 2 \mathbf{X}^\top (\mathbf{X} \mathbf{w} - \mathbf{y}).
 \]</span></p>
+</details>
+</div>
 <p>By the convexity of the loss function <span class="math inline">\(\mathcal{L}\)</span>, we know that <span class="math inline">\(\nabla_\mathbf{w}\mathcal{L}(\mathbf{w}^*)=0\)</span> at the optimal weights <span class="math inline">\(\mathbf{w}^*\)</span>. Solving for <span class="math inline">\(\mathbf{w}^*\)</span> yields <span class="math display">\[
 \begin{align}
 \nabla_\mathbf{w}\mathcal{L}(\mathbf{w}^*)
