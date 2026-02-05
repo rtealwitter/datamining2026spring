@@ -279,8 +279,7 @@ $$
 \frac{1}{\sqrt{2\pi \sigma}} \exp\left( - \frac{(y^{(i)}- \langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)^2}{2\sigma^2} \right)
 \notag \\
 &= {\arg\min}_{\mathbf{w} \in \mathbb{R}^d}
-- \log \left( 
-\frac{1}{\sqrt{2\pi \sigma}} \exp\left(\sum_{i=1}^n - \frac{(y^{(i)}- \langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)^2}{2\sigma^2} \right)\right)
+- \log \left(  \exp\left(\sum_{i=1}^n - \frac{(y^{(i)}- \langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)^2}{2\sigma^2} \right)\right)
 \notag \\
 &= {\arg\min}_{\mathbf{w} \in \mathbb{R}^d}
 - \sum_{i=1}^n - (y^{(i)}- \langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)^2.
