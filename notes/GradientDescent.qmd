@@ -1,5 +1,5 @@
 ---
-title: "**Gradient Descent and Polynomial Regression**"
+title: "**Gradient Descent**"
 format:
   html:
     toc: true
@@ -122,23 +122,25 @@ that is just right, allowing us to make progress towards the minimum without ove
 
 There are several strategies for choosing the step size:
 
-- When searching manually, we often exponentially increase and decrease the step size e.g., multiply by a factor of $2$ or $1/2$. If the loss consistently improves over several iterations of gradient descent, then we try increasing the step size; if the loss is unstable, then we try decreasing the step size.
+- **Manual Search:** We often exponentially increase and decrease the step size (e.g., multiply by a factor of $3$ or $1/3$). If the loss consistently improves, we try increasing the step size; if the loss diverges or oscillates, we decrease it.
 
-- Learning rate schedules offer a more automated approach, where we start with a large step size and then decrease it over time. This is often done by multiplying the step size by a factor less than $1$ after each iteration. The intuition is that we want to take large steps at the beginning to quickly find a good region of the parameter space, and then take smaller steps so as to not overshoot the minima as we get closer. 
+- **Learning Rate Decay:** This is an automated schedule where we start with a large step size to quickly find a good region of the parameter space, and then decrease it over time (e.g., $\alpha^{(t)} = \alpha^{(0)} / (1 + kt)$). This allows for coarse adjustments early on and fine-tuned adjustments as we approach the minimum.
 
-- An even more automated approach is to use an adaptive learning rate, where we adjust the step size based on the gradient. If the gradient is large, then we can decrease the step size to avoid overshooting; if the gradient is small, then we can increase the step size to speed up convergence.
-One implementation of this idea is as follows:
+- **Adaptive Step Sizes (Adagrad):** A more advanced approach is to adapt the learning rate for each parameter individually based on the history of gradients. The intuition is as follows: if a parameter has a large gradient (steep slope), we are at risk of overshooting, so we should decrease its effective step size. If a parameter has a small gradient (flat slope), progress is slow, so we should maintain a larger step size to speed up convergence. One implementation of this idea (Adagrad) accumulates the sum of squared gradients:
 $$
-\alpha^{(t+1)} \gets \frac{\alpha^{(t)}}{\sqrt{G^{(t)}+\epsilon}},
+G_i^{(t)} = \sum_{\tau=1}^{t} \left( \frac{\partial \mathcal{L}(\mathbf{w}^{(\tau)})}{\partial w_i} \right)^2
 $$
-where $G^{(t)}$ is the sum of the squares of the gradients up to time $t$, and $\epsilon$ is a small constant to prevent division by zero.
-Notice that the division is element-wise, so we are adjusting the step size for each parameter individually based on the squared partial derivative of that parameter.
+We then update the parameter $w_i$ using a base learning rate $\eta$, scaled by this history:
+$$
+w_i^{(t+1)} \gets w_i^{(t)} - \frac{\eta}{\sqrt{G_i^{(t)} + \epsilon}} \cdot \frac{\partial \mathcal{L}(\mathbf{w}^{(t)})}{\partial w_i}
+$$
+Here, $\epsilon$ is a small constant (e.g., $10^{-8}$) to ensure we never divide by zero. Notice that parameters with constantly steep gradients accumulate a large $G_i$, naturally dampening their learning rate to prevent oscillation.
 
-In addition the step size, the direction of each step is also important.
+In addition to the step size, the direction of each step is also important.
 
 ### Momentum
 The idea of gradient descent is to converge to a local minimum of the loss function, but things can go wrong even if we have the right step size:
-The gradient may not point in the direction of the minima if, for example, the loss function is not symmetric.
+The gradient may not point in the direction of the minimum if, for example, the loss function is not symmetric.
 The plot illustrates this issue for a convex loss function on two parameters ${w}_1$ and ${w}_2$, where the loss function is given by level sets.
 In the plot, a standard gradient descent approach takes many steps but the directions cancel out, resulting in a zig-zag pattern that slows convergence.
 
@@ -147,11 +149,11 @@ In the plot, a standard gradient descent approach takes many steps but the direc
 Our solution is to keep track of the direction we have been moving in and use that to inform our next step.
 This idea, called *momentum*, retains a running average of the gradients, which allows us to smooth out the direction of the steps.
 We can think of momentum as a ball rolling down a hill, even when the ball is pushed left or right, it will continue to roll downwards.
-An implementation of momentum is as follows:
+A standard implementation of momentum is as follows:
 $$
 \begin{align}
-\mathbf{m}^{(t+1)} &= \beta \mathbf{m}^{(t)} + (1 - \beta) \nabla_\mathbf{w} \mathcal{L}_S(\mathbf{w}^{(t)}) \\
-\mathbf{w}^{(t+1)} &= \mathbf{w}^{(t)} - \alpha \mathbf{m}^{(t+1)},
+\mathbf{v}^{(t+1)} &= \beta \mathbf{v}^{(t)} + \nabla_\mathbf{w} \mathcal{L}_S(\mathbf{w}^{(t)}) \\
+\mathbf{w}^{(t+1)} &= \mathbf{w}^{(t)} - \alpha \mathbf{v}^{(t+1)}
 \end{align}
 $$
-where $\beta$ is a hyperparameter that controls the amount of history we keep in the momentum vector $\mathbf{m}^{(t)}$.
+Here, $\beta \in [0, 1)$ is a hyperparameter (often set to $0.9$) that represents "friction" or how much of the previous velocity is retained. By adding a fraction of the previous update to the current one, the oscillations in opposite directions cancel each other out, while the steps along the flat valley add up, accelerating convergence toward the minimum.

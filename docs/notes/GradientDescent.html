@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Gradient Descent and Polynomial Regression</title>
+<title>Gradient Descent</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -176,7 +176,7 @@ window.Quarto = {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><strong>Gradient Descent and Polynomial Regression</strong></h1>
+<h1 class="title"><strong>Gradient Descent</strong></h1>
 </div>
 
 
@@ -247,26 +247,28 @@ window.Quarto = {
 </center>
 <p>There are several strategies for choosing the step size:</p>
 <ul>
-<li><p>When searching manually, we often exponentially increase and decrease the step size e.g., multiply by a factor of <span class="math inline">\(2\)</span> or <span class="math inline">\(1/2\)</span>. If the loss consistently improves over several iterations of gradient descent, then we try increasing the step size; if the loss is unstable, then we try decreasing the step size.</p></li>
-<li><p>Learning rate schedules offer a more automated approach, where we start with a large step size and then decrease it over time. This is often done by multiplying the step size by a factor less than <span class="math inline">\(1\)</span> after each iteration. The intuition is that we want to take large steps at the beginning to quickly find a good region of the parameter space, and then take smaller steps so as to not overshoot the minima as we get closer.</p></li>
-<li><p>An even more automated approach is to use an adaptive learning rate, where we adjust the step size based on the gradient. If the gradient is large, then we can decrease the step size to avoid overshooting; if the gradient is small, then we can increase the step size to speed up convergence. One implementation of this idea is as follows: <span class="math display">\[
-\alpha^{(t+1)} \gets \frac{\alpha^{(t)}}{\sqrt{G^{(t)}+\epsilon}},
-\]</span> where <span class="math inline">\(G^{(t)}\)</span> is the sum of the squares of the gradients up to time <span class="math inline">\(t\)</span>, and <span class="math inline">\(\epsilon\)</span> is a small constant to prevent division by zero. Notice that the division is element-wise, so we are adjusting the step size for each parameter individually based on the squared partial derivative of that parameter.</p></li>
+<li><p><strong>Manual Search:</strong> We often exponentially increase and decrease the step size (e.g., multiply by a factor of <span class="math inline">\(3\)</span> or <span class="math inline">\(1/3\)</span>). If the loss consistently improves, we try increasing the step size; if the loss diverges or oscillates, we decrease it.</p></li>
+<li><p><strong>Learning Rate Decay:</strong> This is an automated schedule where we start with a large step size to quickly find a good region of the parameter space, and then decrease it over time (e.g., <span class="math inline">\(\alpha^{(t)} = \alpha^{(0)} / (1 + kt)\)</span>). This allows for coarse adjustments early on and fine-tuned adjustments as we approach the minimum.</p></li>
+<li><p><strong>Adaptive Step Sizes (Adagrad):</strong> A more advanced approach is to adapt the learning rate for each parameter individually based on the history of gradients. The intuition is as follows: if a parameter has a large gradient (steep slope), we are at risk of overshooting, so we should decrease its effective step size. If a parameter has a small gradient (flat slope), progress is slow, so we should maintain a larger step size to speed up convergence. One implementation of this idea (Adagrad) accumulates the sum of squared gradients: <span class="math display">\[
+G_i^{(t)} = \sum_{\tau=1}^{t} \left( \frac{\partial \mathcal{L}(\mathbf{w}^{(\tau)})}{\partial w_i} \right)^2
+\]</span> We then update the parameter <span class="math inline">\(w_i\)</span> using a base learning rate <span class="math inline">\(\eta\)</span>, scaled by this history: <span class="math display">\[
+w_i^{(t+1)} \gets w_i^{(t)} - \frac{\eta}{\sqrt{G_i^{(t)} + \epsilon}} \cdot \frac{\partial \mathcal{L}(\mathbf{w}^{(t)})}{\partial w_i}
+\]</span> Here, <span class="math inline">\(\epsilon\)</span> is a small constant (e.g., <span class="math inline">\(10^{-8}\)</span>) to ensure we never divide by zero. Notice that parameters with constantly steep gradients accumulate a large <span class="math inline">\(G_i\)</span>, naturally dampening their learning rate to prevent oscillation.</p></li>
 </ul>
-<p>In addition the step size, the direction of each step is also important.</p>
+<p>In addition to the step size, the direction of each step is also important.</p>
 </section>
 <section id="momentum" class="level3">
 <h3 class="anchored" data-anchor-id="momentum">Momentum</h3>
-<p>The idea of gradient descent is to converge to a local minimum of the loss function, but things can go wrong even if we have the right step size: The gradient may not point in the direction of the minima if, for example, the loss function is not symmetric. The plot illustrates this issue for a convex loss function on two parameters <span class="math inline">\({w}_1\)</span> and <span class="math inline">\({w}_2\)</span>, where the loss function is given by level sets. In the plot, a standard gradient descent approach takes many steps but the directions cancel out, resulting in a zig-zag pattern that slows convergence.</p>
+<p>The idea of gradient descent is to converge to a local minimum of the loss function, but things can go wrong even if we have the right step size: The gradient may not point in the direction of the minimum if, for example, the loss function is not symmetric. The plot illustrates this issue for a convex loss function on two parameters <span class="math inline">\({w}_1\)</span> and <span class="math inline">\({w}_2\)</span>, where the loss function is given by level sets. In the plot, a standard gradient descent approach takes many steps but the directions cancel out, resulting in a zig-zag pattern that slows convergence.</p>
 <center>
 <img src="images/regression_momentum.svg" class="responsive-img">
 </center>
-<p>Our solution is to keep track of the direction we have been moving in and use that to inform our next step. This idea, called <em>momentum</em>, retains a running average of the gradients, which allows us to smooth out the direction of the steps. We can think of momentum as a ball rolling down a hill, even when the ball is pushed left or right, it will continue to roll downwards. An implementation of momentum is as follows: <span class="math display">\[
+<p>Our solution is to keep track of the direction we have been moving in and use that to inform our next step. This idea, called <em>momentum</em>, retains a running average of the gradients, which allows us to smooth out the direction of the steps. We can think of momentum as a ball rolling down a hill, even when the ball is pushed left or right, it will continue to roll downwards. A standard implementation of momentum is as follows: <span class="math display">\[
 \begin{align}
-\mathbf{m}^{(t+1)} &amp;= \beta \mathbf{m}^{(t)} + (1 - \beta) \nabla_\mathbf{w} \mathcal{L}_S(\mathbf{w}^{(t)}) \\
-\mathbf{w}^{(t+1)} &amp;= \mathbf{w}^{(t)} - \alpha \mathbf{m}^{(t+1)},
+\mathbf{v}^{(t+1)} &amp;= \beta \mathbf{v}^{(t)} + \nabla_\mathbf{w} \mathcal{L}_S(\mathbf{w}^{(t)}) \\
+\mathbf{w}^{(t+1)} &amp;= \mathbf{w}^{(t)} - \alpha \mathbf{v}^{(t+1)}
 \end{align}
-\]</span> where <span class="math inline">\(\beta\)</span> is a hyperparameter that controls the amount of history we keep in the momentum vector <span class="math inline">\(\mathbf{m}^{(t)}\)</span>.</p>
+\]</span> Here, <span class="math inline">\(\beta \in [0, 1)\)</span> is a hyperparameter (often set to <span class="math inline">\(0.9\)</span>) that represents “friction” or how much of the previous velocity is retained. By adding a fraction of the previous update to the current one, the oscillations in opposite directions cancel each other out, while the steps along the flat valley add up, accelerating convergence toward the minimum.</p>
 
 
 
