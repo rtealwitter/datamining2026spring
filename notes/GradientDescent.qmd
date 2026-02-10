@@ -80,7 +80,7 @@ Then, we have $\mathcal{L}(\mathbf{w} - \alpha \nabla_\mathbf{w} \mathcal{L}(\ma
 
 Could we choose a better direction $\mathbf{v}'$ to move in? Well, recall for any vectors $\mathbf{a}$ and $\mathbf{b}$, we have $\langle \mathbf{a}, \mathbf{b} \rangle = \|\mathbf{a}\| \|\mathbf{b}\| \cos(\theta)$, where $\theta$ is the angle between the two vectors.
 The largest value of $\cos(\theta)$ is $1$, which occurs when the two vectors are in the same direction.
-Notice we achieve the largest magnitude of the inner product when we take the step in the direction of the gradient, i.e., $- \nabla_\mathbf{w} \mathcal{L}(\mathbf{w})$.
+Notice we achieve the largest magnitude of the inner product when we take the step in the direction of the negative gradient, i.e., $- \nabla_\mathbf{w} \mathcal{L}(\mathbf{w})$.
 
 For linear models, we already know the gradient of the mean squared error loss:
 $$
@@ -129,8 +129,9 @@ There are several strategies for choosing the step size:
 - An even more automated approach is to use an adaptive learning rate, where we adjust the step size based on the gradient. If the gradient is large, then we can decrease the step size to avoid overshooting; if the gradient is small, then we can increase the step size to speed up convergence.
 One implementation of this idea is as follows:
 $$
-\alpha^{(t+1)} \gets \frac{\alpha^{(t)}}{(\nabla_\mathbf{w} \mathcal{L}(\mathbf{w}^{(t)}))^2}.
+\alpha^{(t+1)} \gets \frac{\alpha^{(t)}}{\sqrt{G^{(t)}+\epsilon}},
 $$
+where $G^{(t)}$ is the sum of the squares of the gradients up to time $t$, and $\epsilon$ is a small constant to prevent division by zero.
 Notice that the division is element-wise, so we are adjusting the step size for each parameter individually based on the squared partial derivative of that parameter.
 
 In addition the step size, the direction of each step is also important.
