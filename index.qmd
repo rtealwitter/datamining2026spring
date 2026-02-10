@@ -80,7 +80,7 @@ output:
     <td><a href="notes/LinearRegression.html">Exact Optimization</a></td>
     <td><a href="notes/GradientDescent.html">Gradient Descent</a></td>
     <td><a href="slides/Week04.pdf">Slides</a></td>
-    <td></td>
+    <td><a href="https://colab.research.google.com/drive/1RgIQa0M5dZBfe4rXCqOcHiRUXhjL6Vwb?usp=sharing">Problem 6</a></td>
   </tr>
   <tr>
     <td>Week 5 (2/17 and 2/19)</td>
