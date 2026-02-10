@@ -63,7 +63,7 @@ Then $w^{(t+1)} = w^{(t)} - \alpha \frac{\partial \mathcal{L}(w^{(t)})}{\partial
 
 In the multi-dimensional setting, the partial derivative of the loss function with respect to each parameter is given by the gradient:
 $$
-\frac{\partial \mathcal{L}}{\partial w_i} = \lim_{\Delta \to 0} \frac{\mathcal{L}(\mathbf{w} + \Delta \mathbf{e}_i) - \mathcal{L}(\mathbf{w})}{\Delta},
+\frac{\partial \mathcal{L}(\mathbf{w})}{\partial w_i} = \lim_{\Delta \to 0} \frac{\mathcal{L}(\mathbf{w} + \Delta \mathbf{e}_i) - \mathcal{L}(\mathbf{w})}{\Delta},
 $$
 where $\mathbf{e}_i$ is the $i$th standard basis vector.
 Then, for small $\Delta$, we can approximate the loss function as
@@ -71,9 +71,17 @@ $$
 \mathcal{L}(\mathbf{w} + \Delta \mathbf{e}_i) - \mathcal{L}(\mathbf{w}) \approx \frac{\partial \mathcal{L}}{\partial w_i} \cdot \Delta
 = \langle \nabla_\mathbf{w} \mathcal{L}(\mathbf{w}), \Delta \mathbf{e}_i \rangle.
 $$
-For a general vector $\mathbf{v}$, we can write
+We can write a general vector $\mathbf{v}$ as a linear combination of the standard basis vectors, i.e., $\mathbf{v} = \sum_{i=1}^d v_i \mathbf{e}_i$.
+Then, we have
 $$
-\mathcal{L}(\mathbf{w} + \Delta \mathbf{v}) - \mathcal{L}(\mathbf{w}) \approx \langle \nabla_\mathbf{w} \mathcal{L}(\mathbf{w}), \Delta \mathbf{v} \rangle.
+\begin{align*}
+\mathcal{L}(\mathbf{w} + \Delta \mathbf{v})
+- \mathcal{L}(\mathbf{w})
+&\approx
+\sum_{i=1}^d (\text{change in loss from stepping in the direction of } \mathbf{e}_i)
+\\&\approx
+\sum_{i=1}^d \Delta v_i \frac{\partial \mathcal{L}(\mathbf{w})}{\partial w_i}.
+\end{align*}
 $$
 If we want to move in the direction of steepest descent, we can set $\Delta \mathbf{v} = -\alpha \nabla_\mathbf{w} \mathcal{L}(\mathbf{w})$, where $\alpha$ is a small positive constant.
 Then, we have $\mathcal{L}(\mathbf{w} - \alpha \nabla_\mathbf{w} \mathcal{L}(\mathbf{w})) - \mathcal{L}(\mathbf{w}) \approx -\alpha \langle \nabla_\mathbf{w} \mathcal{L}(\mathbf{w}), \nabla_\mathbf{w} \mathcal{L}(\mathbf{w}) \rangle = -\alpha \|\nabla_\mathbf{w} \mathcal{L}(\mathbf{w})\|^2$.

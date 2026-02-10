@@ -79,7 +79,7 @@ output:
     <td>Week 4 (2/10 and 2/12)</td>
     <td><a href="notes/LinearRegression.html">Exact Optimization</a></td>
     <td><a href="notes/GradientDescent.html">Gradient Descent</a></td>
-    <td></td>
+    <td><a href="slides/Week04.pdf">Slides</a></td>
     <td></td>
   </tr>
   <tr>

@@ -218,12 +218,19 @@ window.Quarto = {
 \end{align*}
 \]</span> We want <span class="math inline">\(\mathcal{L}(w+\Delta)\)</span> to be smaller than <span class="math inline">\(\mathcal{L}(w)\)</span>, so we want <span class="math inline">\(\frac{\partial \mathcal{L}(w)}{\partial w} \Delta &lt; 0\)</span>. This can be achieved by setting <span class="math inline">\(\Delta = -\alpha \frac{\partial \mathcal{L}(w)}{\partial w}\)</span>, where <span class="math inline">\(\alpha\)</span> is a small positive constant. Then <span class="math inline">\(w^{(t+1)} = w^{(t)} - \alpha \frac{\partial \mathcal{L}(w^{(t)})}{\partial w}\)</span> is a step in the direction of descent.</p>
 <p>In the multi-dimensional setting, the partial derivative of the loss function with respect to each parameter is given by the gradient: <span class="math display">\[
-\frac{\partial \mathcal{L}}{\partial w_i} = \lim_{\Delta \to 0} \frac{\mathcal{L}(\mathbf{w} + \Delta \mathbf{e}_i) - \mathcal{L}(\mathbf{w})}{\Delta},
+\frac{\partial \mathcal{L}(\mathbf{w})}{\partial w_i} = \lim_{\Delta \to 0} \frac{\mathcal{L}(\mathbf{w} + \Delta \mathbf{e}_i) - \mathcal{L}(\mathbf{w})}{\Delta},
 \]</span> where <span class="math inline">\(\mathbf{e}_i\)</span> is the <span class="math inline">\(i\)</span>th standard basis vector. Then, for small <span class="math inline">\(\Delta\)</span>, we can approximate the loss function as <span class="math display">\[
 \mathcal{L}(\mathbf{w} + \Delta \mathbf{e}_i) - \mathcal{L}(\mathbf{w}) \approx \frac{\partial \mathcal{L}}{\partial w_i} \cdot \Delta
 = \langle \nabla_\mathbf{w} \mathcal{L}(\mathbf{w}), \Delta \mathbf{e}_i \rangle.
-\]</span> For a general vector <span class="math inline">\(\mathbf{v}\)</span>, we can write <span class="math display">\[
-\mathcal{L}(\mathbf{w} + \Delta \mathbf{v}) - \mathcal{L}(\mathbf{w}) \approx \langle \nabla_\mathbf{w} \mathcal{L}(\mathbf{w}), \Delta \mathbf{v} \rangle.
+\]</span> We can write a general vector <span class="math inline">\(\mathbf{v}\)</span> as a linear combination of the standard basis vectors, i.e., <span class="math inline">\(\mathbf{v} = \sum_{i=1}^d v_i \mathbf{e}_i\)</span>. Then, we have <span class="math display">\[
+\begin{align*}
+\mathcal{L}(\mathbf{w} + \Delta \mathbf{v})
+- \mathcal{L}(\mathbf{w})
+&amp;\approx
+\sum_{i=1}^d (\text{change in loss from stepping in the direction of } \mathbf{e}_i)
+\\&amp;\approx
+\sum_{i=1}^d \Delta v_i \frac{\partial \mathcal{L}(\mathbf{w})}{\partial w_i}.
+\end{align*}
 \]</span> If we want to move in the direction of steepest descent, we can set <span class="math inline">\(\Delta \mathbf{v} = -\alpha \nabla_\mathbf{w} \mathcal{L}(\mathbf{w})\)</span>, where <span class="math inline">\(\alpha\)</span> is a small positive constant. Then, we have <span class="math inline">\(\mathcal{L}(\mathbf{w} - \alpha \nabla_\mathbf{w} \mathcal{L}(\mathbf{w})) - \mathcal{L}(\mathbf{w}) \approx -\alpha \langle \nabla_\mathbf{w} \mathcal{L}(\mathbf{w}), \nabla_\mathbf{w} \mathcal{L}(\mathbf{w}) \rangle = -\alpha \|\nabla_\mathbf{w} \mathcal{L}(\mathbf{w})\|^2\)</span>.</p>
 <p>Could we choose a better direction <span class="math inline">\(\mathbf{v}'\)</span> to move in? Well, recall for any vectors <span class="math inline">\(\mathbf{a}\)</span> and <span class="math inline">\(\mathbf{b}\)</span>, we have <span class="math inline">\(\langle \mathbf{a}, \mathbf{b} \rangle = \|\mathbf{a}\| \|\mathbf{b}\| \cos(\theta)\)</span>, where <span class="math inline">\(\theta\)</span> is the angle between the two vectors. The largest value of <span class="math inline">\(\cos(\theta)\)</span> is <span class="math inline">\(1\)</span>, which occurs when the two vectors are in the same direction. Notice we achieve the largest magnitude of the inner product when we take the step in the direction of the negative gradient, i.e., <span class="math inline">\(- \nabla_\mathbf{w} \mathcal{L}(\mathbf{w})\)</span>.</p>
 <p>For linear models, we already know the gradient of the mean squared error loss: <span class="math display">\[
