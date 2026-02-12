@@ -25,14 +25,14 @@ $$
 f(\mathbf{x}) = w_0 + w_1 x_1 + w_2 x_2 + w_3 x_1 x_2 + w_4 x_1^2 + w_5 x_2^2
 $$
 
-In terms of matrix multiplication view of linear regression, we can think of adding additional columns to the feature matrix $\mathbf{X}$ by multiplying existing columns together, or raising them to a power.
+In terms of the matrix multiplication view of linear regression, we can think of adding additional columns to the feature matrix $\mathbf{X}$ by multiplying existing columns together, or raising them to a power.
 
 <center><img src="images/regression_extra_columns.svg" class="responsive-img"></center>
 
 Notice that the model is still linear in the parameters, so we can still use the same techniques to fit the model; the only change is that we have more features.
 Do these additional features help?
 
-**Claim:** The fit of the regression model can only be improved by adding additional features. Formally,
+**Claim:** The training fit of the regression model can only be improved by adding additional features. Formally,
 
 $$
 \min_{\mathbf{w} \in \mathbb{R}^{d_\text{aug}}} \|\mathbf{y} - \mathbf{X}_{\text{aug}}\mathbf{w}\|^2_2 \leq \min_{\mathbf{w} \in \mathbb{R}^{d}} \|\mathbf{y} - \mathbf{X}\mathbf{w}\|^2_2
@@ -66,7 +66,7 @@ We can use the validation loss as an approximation for the generalization error 
 
 The most common way to split the data is to use 80% of the data for training and 10% for validation and 10% for testing.
 However, this is not ideal because it reduces the amount of data available for training and for approximating the generalization error.
-An alternative is to use *cross-validation*, where we split the non-test data into $k$ folds, and use each fold as the validation set while training on the remaining $k-1$ folds.
+An alternative is to use *cross-validation*, where we split the non-test data into $k$ folds, and use each fold as the validation set once while training on the remaining $k-1$ folds.
 This gives a better estimate of the generalization error, and allows us to use more data for training.
 However, the cost is the increased computational cost of training the model $k$ times.
 On the problem set, we saw how to circumvent this cost for linear regression by exactly computing leave-one-out predictions.
@@ -103,7 +103,7 @@ where $\mathcal{L}(\mathbf{w})$ is the original loss function (e.g., mean square
 Increasing the value of $\lambda$ increases the strength of the penalty, which encourages the model to learn smaller weights and thus simplifies the model.
 
 When we use the $\ell_2$ norm for regularization, this is called *ridge* regression.
-We can also use the $\ell_1$ norm, this is called *lasso* regression, and it has the effect of encouraging sparsity in the model, i.e., some weights will be exactly zero.
+We can also use the $\ell_1$ norm; this is called *lasso* regression, and it has the effect of encouraging sparsity in the model, i.e., some weights will be exactly zero.
 For some intuition on why $\ell_1$ regularization encourages sparsity, check out [these notes](https://www.rtealwitter.com/rads2024/notes/19_sparse_recovery.html#Efficient_Algorithm).
 Lasso regression is particularly useful when we have many features, but we believe only a few of them are actually relevant to the prediction.
 
