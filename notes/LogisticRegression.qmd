@@ -7,16 +7,16 @@ format:
     include-after-body: readtime.html
 ---
 
-With a little probability, we saw how the Naive Bayes Classifier can be used to make predictions.
-However, the Naive Bayes Classifier assumes that the value of each feature is independent of the others, which is often not the case in practice (e.g., if the word "discount" appears in an email, it is more likely that the word "sale" also appears).
-As an alternative approach to classification problems, we will see how we can generalize linear regression, with a little non-linearity.
+So far, we have seen how to use linear regression to predict a continuous value from a set of features.
+However, in many settings, we are interested in predicting a discrete value, such as a class label.
+Today, we will see how we can generalize linear regression to the classification setting by introducing a non-linearity to the model, which gives us *logistic regression*.
 
-Our setup will be the standard supervised learning setting, where we have labelled data $(\mathbf{x}^{(1)}, y^{(1)}), \ldots, (\mathbf{x}^{(n)}, y^{(n)})$, for $\mathbf{x}^{(i)} \in \mathbb{R}^d$ the feature vector for the $i$th example. 
-However, unlike regression where we predict a continuous value $y^{(i)} \in \mathbb{R}$, we will now predict a binary value $y^{(i)} \in \{0, 1\}$.
+Our setup will be the standard supervised learning setting, where we have labeled data $(\mathbf{x}^{(1)}, y^{(1)}), \ldots, (\mathbf{x}^{(n)}, y^{(n)})$, for $\mathbf{x}^{(i)} \in \mathbb{R}^d$ the feature vector for the $i$th example. 
+However, unlike regression where we output a continuous value $y^{(i)} \in \mathbb{R}$, we will now predict a binary value $y^{(i)} \in \{0, 1\}$.
 We can use the same linear model as before, i.e., we will predict the output as $\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle$, where $\mathbf{w} \in \mathbb{R}^d$ is the weight vector.
 But, we run into an issue: the output of the linear model can take on any real value, but we want to predict a binary value.
 
-### Model and Loss
+### Model
 
 We'll explore several attempts to convert our linear model into a binary classifier.
 
@@ -28,11 +28,53 @@ Attempt #3: We can apply the *sigmoid function* to the output of the linear mode
 
 <center><img src="images/classification_outputs.svg" class="responsive-img"></center>
 
+### Cross-Entropy Loss
+
 To train our model, we need a loss function that measures how well our predicted probabilities match the true labels. A common choice is the *binary cross-entropy loss*, which is defined as
 $$\mathcal{L}(\mathbf{w}) = - \sum_{i=1}^n \left[y^{(i)} \log(f(\mathbf{x}^{(i)})) + (1 - y^{(i)}) \log(1 - f(\mathbf{x}^{(i)}))\right].$$
-This loss function measures the distance (in a sense we'll explore later in the course) between the predicted probabilities and the true labels. It is differentiable, so we can use gradient descent to optimize it.
 
 <center><img src="images/classification_loss.svg" class="responsive-img"></center>
+
+While MSE measures the geometric distance between two points, Cross-Entropy measures the difference between two probability distributions. Since our logistic model predicts probabilities, cross-entropy is the more natural choice. To understand why, we can look at it from two perspectives: the intuition behind the loss function, and the mathematical justification for it.
+
+#### The Intuition: Penalizing "Confident" Mistakes
+
+Intuitively, we want a loss function that punishes the model heavily when it makes a wrong prediction with high confidence.
+
+Let's look at the component of the loss for a single example where the true label is positive ($y=1$). The loss simplifies to: $- \log(f(\mathbf{x}))$.
+
+* Scenario A (Good Prediction): If the model predicts $f(\mathbf{x}) = 0.99$, it is confident and correct. The loss is $- \log(0.99) \approx 0.01$. The penalty is tiny.
+
+* Scenario B (Bad Prediction): If the model predicts $f(\mathbf{x}) = 0.01$, it is confident but wrong. The loss is $- \log(0.01) \approx 4.6$. The penalty is huge.
+
+Unlike MSE, which is bounded (the squared error between 0 and 1 can never exceed 1), Cross-Entropy can grow arbitrarily large. This effectively screams at the model to fix parameters that result in confidently wrong predictions.
+
+#### The Math: Maximum Likelihood Estimation (MLE)
+
+The formal justification comes from statistics. In the probabilistic view, we assume the data is generated independently from a Bernoulli distribution.
+For a single data point $(\mathbf{x}^{(i)}, y^{(i)})$, the probability of observing the correct label $y^{(i)}$ given our prediction $f(\mathbf{x}^{(i)})$ is:
+$$
+P(y^{(i)} | \mathbf{x}^{(i)}; \mathbf{w}) = f(\mathbf{x}^{(i)})^{y^{(i)}} (1 - f(\mathbf{x}^{(i)}))^{1 - y^{(i)}}
+$$
+
+If $y^{(i)}=1$, this simplifies to $f(\mathbf{x}^{(i)})$. If $y^{(i)}=0$, this simplifies to $1 - f(\mathbf{x}^{(i)})$. We want to find the weights $\mathbf{w}$ that maximize the probability of the entire dataset. This is the likelihood function:
+$$
+L(\mathbf{w}) = \prod_{i=1}^n P(y^{(i)} | \mathbf{x}^{(i)}; \mathbf{w})
+$$
+Maximizing a product of many small probabilities is numerically unstable (floating point underflow). However, maximizing the likelihood is equivalent to maximizing the log-likelihood (since $\log$ is monotonic).
+$$
+\log L(\mathbf{w}) = \sum_{i=1}^n \log P(y^{(i)} | \mathbf{x}^{(i)}; \mathbf{w})
+$$
+Expanding this term:
+$$
+\log L(\mathbf{w}) = \sum_{i=1}^n \left[ y^{(i)} \log(f(\mathbf{x}^{(i)})) + (1 - y^{(i)}) \log(1 - f(\mathbf{x}^{(i)})) \right]
+$$
+In optimization, we prefer to minimize loss rather than maximize likelihood. So, we take the negative of the log-likelihood.
+$$
+\mathcal{L}(\mathbf{w}) = -\log L(\mathbf{w})
+$$
+
+We have shown that Minimizing Binary Cross-Entropy is mathematically identical to finding the Maximum Likelihood Estimate for our data under a Bernoulli distribution. This provides a rigorous statistical footing for our choice of loss function.
 
 ### Optimization
 
@@ -41,46 +83,37 @@ Once we have a model and loss function, we have seen two ways to optimize the mo
 *Gradient descent*, where we iteratively update the model parameters in the direction of the negative gradient of the loss function.
 Both approaches require the gradient of the loss function with respect to the model parameters, so let's compute the gradient of $\mathcal{L}(\mathbf{w})$ with respect to $\mathbf{w}$.
 
-Plugging in the sigmoid function, we have
+**Lemma:** $\nabla_{\mathbf{w}} \mathcal{L}(\mathbf{w}) =  \mathbf{X}^\top \left(\sigma(\mathbf{X} \mathbf{w}) - \mathbf{y}\right).$
+
+::: {.proof-block}
+<details open>
+<summary>Proof of Lemma</summary>
+
+Let $z = \langle \mathbf{w}, \mathbf{x} \rangle$ and $\hat{y} = \sigma(z)$. We rely on two standard identities:
+
+**Sigmoid Derivative:** $\sigma'(z) = \sigma(z)(1 - \sigma(z)) = \hat{y}(1-\hat{y})$.
+
+**Partial of Loss w.r.t. Prediction:** For binary cross-entropy $\ell = -y \log \hat{y} - (1-y) \log (1-\hat{y})$, the derivative is:
 $$
-\begin{align*}
-\mathcal{L}(\mathbf{w}) &= - \sum_{i=1}^n \left[y^{(i)} \log\left(\frac{1}{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}\right) + (1 - y^{(i)}) \log\left(1 - \frac{1}{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}\right)\right] \\
-\end{align*}
+\frac{\partial \ell}{\partial \hat{y}} = -\frac{y}{\hat{y}} + \frac{1-y}{1-\hat{y}} = \frac{\hat{y} - y}{\hat{y}(1-\hat{y})}
 $$
 
-Observe that $\frac1{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} = \frac{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} + 1}$, so $1-\frac1{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} = \frac{1}{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} + 1}$.
-
-Then, we can rewrite the loss as
+Using the chain rule, we compute the gradient with respect to $\mathbf{w}$ by passing through the logit $z^{(i)}$.
 $$
 \begin{align*}
-\mathcal{L}(\mathbf{w}) &= \sum_{i=1}^n \left[y^{(i)} \log\left(1+e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} \right) + (1 - y^{(i)}) \log\left(e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} + 1\right) \right].
+\nabla_\mathbf{w} \mathcal{L}(\mathbf{w}) 
+&= \sum_{i=1}^n \frac{\partial \ell^{(i)}}{\partial \hat{y}^{(i)}} \cdot \underbrace{\frac{\partial \hat{y}^{(i)}}{\partial z^{(i)}}}_{\text{Sigmoid deriv.}} \cdot \underbrace{\nabla_\mathbf{w} z^{(i)}}_{\mathbf{x}^{(i)}} \\
+&= \sum_{i=1}^n \left( \frac{\hat{y}^{(i)} - y^{(i)}}{\hat{y}^{(i)}(1-\hat{y}^{(i)})} \right) \cdot \left( \hat{y}^{(i)}(1-\hat{y}^{(i)}) \right) \cdot \mathbf{x}^{(i)} \\
+&= \sum_{i=1}^n (\hat{y}^{(i)} - y^{(i)}) \mathbf{x}^{(i)}
 \end{align*}
+$$
+By stacking the vectors $\mathbf{x}^{(i)}$ into the matrix $\mathbf{X}$ and errors into the vector $(\sigma(\mathbf{X}\mathbf{w}) - \mathbf{y})$, this directly vectorizes to:
+$$
+\nabla_\mathbf{w} \mathcal{L}(\mathbf{w}) = \mathbf{X}^\top (\sigma(\mathbf{X}\mathbf{w}) - \mathbf{y}).
 $$
 
-Let's compute the partial derivative of the loss with respect to $w_j$. Applying the chain rule, we have
-$$
-\begin{align*}
-\frac{\partial}{\partial w_j} \mathcal{L}(\mathbf{w}) &= \sum_{i=1}^n 
-\left[y^{(i)} \frac1{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} \cdot e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} (-x_j^{(i)}) + (1 - y^{(i)}) \frac1{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} + 1} \cdot e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} x_j^{(i)}\right]\\
-\end{align*}
-$$
-
-Observe that $\frac{e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} = \frac{1+e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} - \frac1{1 + e^{-\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}} = 1-\sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)$, and $\frac{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle}}{e^{\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle} + 1} = \sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)$.
-Then, we can rewrite the partial derivative as
-$$
-\begin{align*}
-\frac{\partial}{\partial w_j} \mathcal{L}(\mathbf{w}) &= \sum_{i=1}^n 
-\left[-y^{(i)} (1 - \sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle)) x_j^{(i)} + (1 - y^{(i)}) \sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle) x_j^{(i)}\right]\\
-&= \sum_{i=1}^n 
-x_j^{(i)} \left[\sigma(\langle \mathbf{w}, \mathbf{x}^{(i)} \rangle) - y^{(i)}\right]\\
-&= \mathbf{X}_j^\top \left(\sigma(\mathbf{X} \mathbf{w}) - \mathbf{y}\right),
-\end{align*}
-$$
-where $\sigma(\cdot)$ is applied element-wise to the vector $\mathbf{X} \mathbf{w}$, and $\mathbf{X}_j$ is the $j$th column of the design matrix $\mathbf{X}$.
-Finally, we can write the gradient of the loss with respect to the weight vector $\mathbf{w}$ as
-$$
-\nabla_{\mathbf{w}} \mathcal{L}(\mathbf{w}) =  \mathbf{X}^\top \left(\sigma(\mathbf{X} \mathbf{w}) - \mathbf{y}\right).
-$$
+</details>
+:::
 
 Our exact optimization approach would be to set the gradient to zero and solve for $\mathbf{w}$.
 Do you see why this doesn't work with the non-linear sigmoid function?
@@ -96,8 +129,8 @@ In the image below, we add a new feature $x_1^2 + x_2^2$ to the data, which allo
 
 <center><img src="images/classification_transformation.svg" class="responsive-img"></center>
 
-It is not a priori clear which non-linear transformation will work best for a given dataset.
-In several lectures, we will explore how to use kernel methods to implicitly map the data to a higher-dimensional space, which captures many of the non-linear transformations we might want to use.
+It is not *a priori* clear which non-linear transformation will work best for a given dataset.
+One approach is to use [kernel methods](KernelMethods.html) to implicitly map the data to a higher-dimensional space, which captures many of the non-linear transformations we might want to use.
 
 ### Measuring Error in Binary Classification
 
@@ -149,9 +182,9 @@ A model with an AUC of 1 is perfect, while a model with an AUC of 0.5 is no bett
 In many settings, we are interested in classifying data into more than two classes.
 For example, we might want to classify images into different categories, such as cats, dogs, and birds.
 In this case, we need to extend our binary classification model to handle multiple classes.
-Our supervised learning setup remains the same, where we have labelled data $(\mathbf{x}^{(1)}, y^{(1)}), \ldots, (\mathbf{x}^{(n)}, y^{(n)})$, but now $y^{(i)} \in \{1, 2, \ldots, k\}$, for $k$ the number of classes.
+Our supervised learning setup remains the same, where we have labeled data $(\mathbf{x}^{(1)}, y^{(1)}), \ldots, (\mathbf{x}^{(n)}, y^{(n)})$, but now $y^{(i)} \in \{1, 2, \ldots, k\}$, for $k$ the number of classes.
 
-We can still use the same ideas that we used for binary logistic regression, but we need to extend the output of the model to predict a probability distribution over each of the $k$ classes.
+We can still use the same ideas that we used for binary logistic regression, but we need to extend the output of the model to predict a probability distribution over the $k$ classes.
 Instead of a single output, which we can interpret as the probability of the positive class, we will have a vector of outputs $\mathbf{f}(\mathbf{x}^{(i)}) \in \mathbb{R}^k$, where $k$ is the number of classes.
 
 To ensure this vector is a valid probability distribution, we can use the *softmax function*, defined as
@@ -165,7 +198,7 @@ $$
 \end{bmatrix}
 \end{align*}
 $$
-Softmax applies the exponential function to each element of the vector, and then normalizes the resulting vector so that the sum of the resulting vector is 1.
+Softmax applies the exponential function to each element of the vector, and then normalizes the resulting vector so that the sum of the elements in the resulting vector is 1.
 This ensures that the output is a valid probability distribution, where each probability is between 0 and 1 and the sum of all elements is 1.
 
 The loss function for multi-class classification is the *cross-entropy loss*, which is a generalization of the binary cross-entropy loss:

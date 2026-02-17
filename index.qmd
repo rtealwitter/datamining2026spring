@@ -86,7 +86,7 @@ output:
     <td>Week 5 (2/17 and 2/19)</td>
     <td><a href="notes/PolynomialRegression.html">Polynomial Regression</a></td>
     <td><a href="notes/LogisticRegression.html">Probability</a></td>
-    <td></td>
+    <td><a href="slides/Week05.pdf">Slides</a></td>
     <td></td>
   </tr>
   <tr>
