@@ -87,7 +87,7 @@ output:
     <td><a href="notes/PolynomialRegression.html">Polynomial Regression</a></td>
     <td><a href="notes/LogisticRegression.html">Probability</a></td>
     <td><a href="slides/Week05.pdf">Slides</a></td>
-    <td></td>
+    <td><a href="https://colab.research.google.com/drive/1txlvdOJV7gRtFiO_95lJI1KxFT37c929?usp=sharing">Problem 7</a>, <a href="https://colab.research.google.com/drive/1IbtzU4uBBDVK0K-9JvXdOYS3pSaUFk0z?usp=sharing">Problem 8</a></td>
   </tr>
   <tr>
     <td>Week 6 (2/24 and 2/26)</td>
