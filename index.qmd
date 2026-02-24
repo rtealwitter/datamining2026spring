@@ -94,7 +94,7 @@ output:
     <td><a href="notes/LogisticRegression.html">Logistic Regression</a></td>
     <td><a href="notes/NeuralNetworks.html">Neural Networks</a></td>
     <td><a href="slides/Week06.pdf">Slides</a></td>
-    <td></td>
+    <td><a href="https://colab.research.google.com/drive/15amS8sXT5H1tyMX5jfdHQ3tNWLXvXUHV?usp=sharing">Problem 9</a></td>
   </tr>
   <tr>
     <td>Week 7 (3/3 and 3/5)</td>
