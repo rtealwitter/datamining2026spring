@@ -72,7 +72,7 @@ $$
 \frac{\partial f}{\partial x_i} = \lim_{t \to 0} \frac{f(x_1, \ldots, x_i + t, \ldots, x_d) - f(x_1, \ldots, x_i, \ldots, x_d)}{t}.
 $$
 
-Consider two functions $f: \mathbb{R} \to \mathbb{R}$ be a function, and $y: \mathbb{R} \to \mathbb{R}$.
+Consider two functions $f: \mathbb{R} \to \mathbb{R}$ and $y: \mathbb{R} \to \mathbb{R}$.
 The chain rule tells us that the derivative of the composition $f(y(x))$ is given by $\frac{df}{dx} = \frac{df}{dy} \cdot \frac{dy}{dx}$.
 To see this, we can write
 $$
@@ -97,7 +97,7 @@ Backpropagation is simply an application of the multivariate chain rule, and is 
 
 During the forward pass, we successively compute the outputs, and feed them into the *next* layer.
 Consider one of the functions in the neural network:
-The function $v : \mathbb{R}^{d_\ell} \to \mathbb{R}$ maps the input(s) parameters $u_1, \ldots, u_d$ to an output, which itself is passed to another function.
+The function $v : \mathbb{R}^{d} \to \mathbb{R}$ maps the input(s) parameters $u_1, \ldots, u_d$ to an output, which itself is passed to another function.
 (In general, $d$ could be 1, e.g., if the $v$ were an activation function.)
 When we compute $v(u_1, \ldots, u_d)$, we crucially only need to know the values of parameters $u_1, \ldots, u_d$, rather than any of the parameters that we used to compute $u_1, \ldots, u_d$.
 
@@ -105,7 +105,7 @@ The time complexity of the forward pass is linear in the number of times a param
 
 <center><img src="images/neural_backward.svg" class="responsive-img"></center>
 
-During the backward pass, we compute the derivative of the loss function with respect to the parameters in one layer, then feed these derivatives into the *prior* layer.
+The backward pass is the reverse of the forward pass: we successively compute the gradients, and feed them into the *prior* layer.
 Suppose the parameter $u$ is used in $n$ different functions $v_1, \ldots, v_n$.
 By the multivariate chain rule, the derivative of the loss function with respect to $u$ is given by
 $$
