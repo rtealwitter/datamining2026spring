@@ -8,3 +8,4 @@ grades/gradescope_grades.csv
 *.log
 *.out
 *.synctex.gz
+txt/
