@@ -108,7 +108,7 @@ output:
     <td><a href="https://chinmayhegde.github.io/dl-notes/notes/lecture04/">Convolutional Networks</a></td>
     <td><a href="https://chinmayhegde.github.io/dl-notes/notes/lecture07/">Transformers</a></td>
     <td><a href="slides/Week08.pdf">Slides</a></td>
-    <td></td>
+    <td><a href="https://colab.research.google.com/drive/1sKgfWMsTWHursW1C6LTqclHlRtvtwx0B?usp=sharing">Problem 10</a>, <a href="https://colab.research.google.com/drive/1irS7fNW61umGn3XsUgCWgAq1U5pCbFtk?usp=sharing">Problem 11</a></td>
   </tr>
   <tr>
     <td>Week 9 (3/17 and 3/19)</td>
