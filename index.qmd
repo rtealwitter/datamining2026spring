@@ -107,7 +107,7 @@ output:
     <td>Week 8 (3/10 and 3/12)</td>
     <td><a href="https://chinmayhegde.github.io/dl-notes/notes/lecture04/">Convolutional Networks</a></td>
     <td><a href="https://chinmayhegde.github.io/dl-notes/notes/lecture07/">Transformers</a></td>
-    <td></td>
+    <td><a href="slides/Week08.pdf">Slides</a></td>
     <td></td>
   </tr>
   <tr>
