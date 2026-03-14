@@ -213,8 +213,8 @@ window.Quarto = {
 \]</span> With a little algebra, we can rewrite this as: <span class="math display">\[
 \mathcal{L}_\text{Gini}(\ell) = \sum_{c} p^{(\ell)}_c - \left(p^{(\ell)}_c\right)^2 = 1 - \sum_{c} \left(p^{(\ell)}_c\right)^2.
 \]</span></p>
-<p><strong>Information Gain</strong>: Like logistic regression, information gain uses the entropy of the leaf to measure the error. That is, <span class="math display">\[
-\mathcal{L}_\text{InfoGain}(\ell) = H(\ell) = -\sum_{c} p^{(\ell)}_c \log(p^{(\ell)}_c).
+<p><strong>Entropy</strong>: Like in logistic regression, we can use the entropy of the leaf to measure the error. That is, <span class="math display">\[
+\mathcal{L}_\text{Entropy}(\ell) = H(\ell) = -\sum_{c} p^{(\ell)}_c \log(p^{(\ell)}_c)
 \]</span> Since the entropy is a measure of uncertainty, we call the reduction in entropy from the prior leaf to the resulting leaves after the split the <em>information gain</em>.</p>
 <p>Previously, we updated the parameters of our model to minimize the loss of our predictions. In decision trees, we search over all possible splits of the data to find the one that minimizes the expected loss. While this sounds expensive, in practice, there are a limited number of feasible splits.</p>
 <p>We’ve discussed decision trees in terms of classification, but they can also be used for regression tasks. What prediction would a leaf make in a regression task? How could we measure the loss of this prediction?</p>
@@ -255,7 +255,7 @@ e^{-\alpha_t} \sum_{i : y^{(i)} = f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1}
 \]</span> Rearranging, we have <span class="math display">\[
 \alpha_t = \frac{1}{2} \log\left(\frac{1-\epsilon_t}{\epsilon_t}\right)
 \]</span> where <span class="math inline">\(\epsilon_t = \frac{\sum_{i : y^{(i)} \neq f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1}}{\sum_{i=1}^n w^{(i)}_{t-1}}\)</span> is the weighted error rate of the model <span class="math inline">\(f_t\)</span>.</p>
-<p>At each iteration <span class="math inline">\(t\)</span>, we compute the weights <span class="math inline">\(w^{(i)}_{t-1}\)</span> based on which points the current ensemble model <span class="math inline">\(F_{t-1}\)</span> are misclassifying. We then learn a new model <span class="math inline">\(f_t\)</span> that minimizes the weighted error, adapting to correct the mistakes of the current ensemble. Finally, we compute the optimal weight <span class="math inline">\(\alpha_t\)</span> for the new model based on its weighted error rate.</p>
+<p>At each iteration <span class="math inline">\(t\)</span>, we compute the weights <span class="math inline">\(w^{(i)}_{t-1}\)</span> based on which points the current ensemble model <span class="math inline">\(F_{t-1}\)</span> is misclassifying. We then learn a new model <span class="math inline">\(f_t\)</span> that minimizes the weighted error, adapting to correct the mistakes of the current ensemble. Finally, we compute the optimal weight <span class="math inline">\(\alpha_t\)</span> for the new model based on its weighted error rate.</p>
 <center>
 <img src="images/tree_adaboost_learning.svg" class="responsive-img">
 </center>
@@ -263,7 +263,7 @@ e^{-\alpha_t} \sum_{i : y^{(i)} = f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1}
 <center>
 <img src="images/tree_adaboost_predicting.svg" class="responsive-img">
 </center>
-<p>The AdaBoost algorithm is agnostic to the choice of weak learner, but decision trees are efficient and interpretable: Each weak learner can be trained quickly, and the resulting decision tree can be understood as a weighted vote of the individual trees.</p>
+<p>The AdaBoost algorithm is agnostic to the choice of weak learner, but decision trees are efficient and interpretable: Each weak learner can be trained quickly, and the resulting ensemble can be understood as a weighted vote of the individual trees.</p>
 </section>
 <section id="gradient-boosting" class="level3">
 <h3 class="anchored" data-anchor-id="gradient-boosting">Gradient Boosting</h3>
@@ -276,14 +276,16 @@ F_t(x) = \alpha_1 f_1(x) + \alpha_2 f_2(x) + \ldots + \alpha_t f_t(x) = F_{t-1}(
 \arg \min_{f_t} \sum_{i=1}^n \mathcal{L}(y^{(i)}, F_{t-1}(\mathbf{x}^{(i)}) + f_t(\mathbf{x}^{(i)})).
 \]</span> Recall that the gradient descent update subtracts the gradient of the parameter (opposite the direction of steepest ascent) for a small learning rate <span class="math inline">\(\alpha\)</span>. Instead of updating the parameters of the model, we will update the predictions of the model. In our boosting language, the gradient descent update for the <span class="math inline">\(i\)</span>th prediction is <span class="math display">\[
 F_t(\mathbf{x}^{(i)}) = F_{t-1}(\mathbf{x}^{(i)}) - \alpha \frac{ \partial \mathcal{L}(y^{(i)}, F_{t-1}(\mathbf{x}^{(i)}))}{\partial F_{t-1}(\mathbf{x}^{(i)})}.
-\]</span> In practice, finding a function that exactly matches the gradient is difficult, so we will instead find a function that <em>approximates</em> the gradient. That is, we train a weak learner <span class="math inline">\(f_t\)</span> to fit the points <span class="math inline">\((\mathbf{x}^{(i)}, \frac{ \partial \mathcal{L}(y^{(i)}, F_{t-1}(\mathbf{x}^{(i)}))}{\partial F_{t-1}(\mathbf{x}^{(i)})})\)</span> for <span class="math inline">\(i \in \{1, \ldots n\}\)</span>. When the loss is the squared error loss, i.e., <span class="math display">\[
+\]</span> In practice, finding a function that exactly matches the negative gradient is difficult, so we will instead find a function that approximates it. That is, we train a weak learner <span class="math inline">\(f_t\)</span> to fit the points <span class="math display">\[
+(\mathbf{x}^{(i)}, -\frac{ \partial \mathcal{L}(y^{(i)}, F_{t-1}(\mathbf{x}^{(i)}))}{\partial F_{t-1}(\mathbf{x}^{(i)})})
+\]</span> for <span class="math inline">\(i \in \{1, \ldots n\}\)</span>. When the loss is the squared error loss, i.e., <span class="math display">\[
 \mathcal{L}(y, F_{t-1}(\mathbf{x})) = \frac12 (F_{t-1}(\mathbf{x}) - y)^2,
-\]</span> the gradient of the loss with respect to the prediction is simply the residual between the prior prediction and the label, i.e., <span class="math display">\[
-\frac{ \partial \mathcal{L}(y, F_{t-1}(\mathbf{x}))}{\partial F_{t-1}(\mathbf{x})} = F_{t-1}(\mathbf{x}) - y.
-\]</span> In this, gradient boosting has a nice interpretation as an iterative process of fitting a model to the residuals of the prior model. Once we have trained the weak learner <span class="math inline">\(f_t\)</span>, we can select the weight <span class="math inline">\(\alpha_t\)</span> to minimize the loss of the composite model: <span class="math display">\[
+\]</span> the negative gradient of the loss with respect to the prediction is exactly the residual between the true label and the prior prediction, i.e., <span class="math display">\[
+-\frac{ \partial \mathcal{L}(y, F_{t-1}(\mathbf{x}))}{\partial F_{t-1}(\mathbf{x})} = y - F_{t-1}(\mathbf{x}).
+\]</span> In this way, gradient boosting has a nice interpretation as an iterative process of fitting a model to the residuals of the prior model. Once we have trained the weak learner <span class="math inline">\(f_t\)</span>, we can select the weight <span class="math inline">\(\alpha_t\)</span> to minimize the loss of the composite model: <span class="math display">\[
 \alpha_t = \arg \min_\alpha \sum_{i=1}^n \mathcal{L}(y^{(i)}, F_{t-1}(\mathbf{x}^{(i)}) + \alpha f_t(\mathbf{x}^{(i)})).
 \]</span> When the loss is differentiable and convex (e.g., mean squared error), we can find the optimal weight <span class="math inline">\(\alpha_t\)</span> by differentiating the loss with respect to <span class="math inline">\(\alpha_t\)</span> and setting it to zero.</p>
-<p>The gradient boosting algorithm called <a href="https://en.wikipedia.org/wiki/XGBoost">XGBoost</a> is a popular implementation. Since 2014, XGboost has basically been the best performing model on many supervised learning tasks. However, foundation models like <a href="https://en.wikipedia.org/wiki/TabPFN">TabPFN</a> are starting to outperform XGBoost on small to medium-sized datasets. Like modern models, TabPFN uses a transformer architecture, and is trained on some 130 million synthetic datasets. While XGBoost requires relearning an ensemble for each new dataset, TabPFN can be run without any training by simply passing labeled example data, and unlabeled validation data as input to the model.</p>
+<p>The gradient boosting algorithm called <a href="https://en.wikipedia.org/wiki/XGBoost">XGBoost</a> is a popular implementation. Since 2014, XGBoost has basically been the best performing model on many supervised learning tasks. However, foundation models like <a href="https://en.wikipedia.org/wiki/TabPFN">TabPFN</a> are starting to outperform XGBoost on small to medium-sized datasets. Like modern models, TabPFN uses a transformer architecture, and is trained on some 130 million synthetic datasets. While XGBoost requires relearning an ensemble for each new dataset, TabPFN can be run without any training by simply passing labeled example data, and unlabeled validation data as input to the model.</p>
 
 
 

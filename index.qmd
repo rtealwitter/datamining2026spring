@@ -122,7 +122,7 @@ output:
     <td>Week 10 (3/24 and 3/26)</td>
     <td><a href="notes/DecisionTrees.html">Decision Trees and Random Forests</a></td>
     <td><a href="notes/DecisionTrees.html">AdaBoost</a></td>
-    <td></td>
+    <td><a href="slides/Week10.pdf">Slides</a></td>
     <td></td>
   </tr>
 
