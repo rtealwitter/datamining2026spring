@@ -121,9 +121,9 @@ output:
   <tr>
     <td>Week 10 (3/24 and 3/26)</td>
     <td><a href="notes/DecisionTrees.html">Decision Trees and Random Forests</a></td>
-    <td><a href="notes/DecisionTrees.html">AdaBoost</a></td>
+    <td><a href="notes/DecisionTrees.html">Gradient Boosting</a></td>
     <td><a href="slides/Week10.pdf">Slides</a></td>
-    <td></td>
+    <td><a href="https://colab.research.google.com/drive/1TqoG4j07RA7_po7hXYZVVlmVZObWPfcQ?usp=sharing">Problem 12</a>, <a href="https://colab.research.google.com/drive/11hAHPweSn4zG5posjjk47QZWZlHOePRt?usp=sharing">Problem 13</a></td>
   </tr>
 
   <tr class="section-header">
