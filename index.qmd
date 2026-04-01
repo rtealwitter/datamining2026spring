@@ -134,8 +134,7 @@ output:
     <td>Week 11 (3/31 and 4/2)</td>
     <td><a href="notes/Autoencoders.html">Autoencoders</a></td>
     <td><a href="notes/Autoencoders.html">Autoencoders</a></td>
-    <td></td>
-    <td></td>
+    <td><a href="https://colab.research.google.com/drive/1sGI2sWPGqDkiNz6GVJ5c7hy5Fo21kLaJ?usp=sharing">Problem 14</a>, <a href="https://colab.research.google.com/drive/1ZjCI9-eu721td9B-PQOWk1gaKl1S0QCV?usp=sharing">Problem 15</a></td>
   </tr>
   <tr>
     <td>Week 12 (4/7 and 4/9)</td>
