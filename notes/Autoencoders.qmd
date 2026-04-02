@@ -91,7 +91,7 @@ Instead, we will use the encoder to generate $\boldsymbol{\mu}_\boldsymbol{x}$ a
 Principal component analysis (PCA) is the "linear regression" of unsupervised learning, offering a simple but powerful technique for dimensional reduction.
 PCA is the simplest kind of autoencoder, where the encoder and decoder are each a fully connected linear layer without activation functions.
 
-Let $\mathbf{W}_0 \in \mathbb{R}^{k \times d}$ be the encoder weight matrix, and $\mathbf{W}_1 \in \mathbb{R}^{d \times k}$ be the decoder weight matrix.
+Let $\mathbf{W}_0 \in \mathbb{R}^{d \times k}$ be the encoder weight matrix, and $\mathbf{W}_1 \in \mathbb{R}^{k \times d}$ be the decoder weight matrix.
 The latent for input $\mathbf{x}$ is $\mathbf{z}^\top = \mathbf{x}^\top \mathbf{W}_0$, and the reconstruction is $\tilde{\mathbf{x}}^\top = \mathbf{z}^\top \mathbf{W}_1  = \mathbf{x}^\top \mathbf{W}_0 \mathbf{W}_1$.
 
 <center><img src="images/pca_single.svg" class="responsive-img"></center>
@@ -130,7 +130,7 @@ $$
 $$
 Using our outerproduct perspective on matrix multiplication, we can write
 $$
-\mathbf{X} = \sum_{i=1}^r \mathbf{u}_i \sigma_i \mathbf{v}_i^\top
+\mathbf{X} = \sum_{i=1}^d \mathbf{u}_i \sigma_i \mathbf{v}_i^\top
 $$
 where $\sigma_1 \geq \sigma_2 \geq \ldots \geq \sigma_d \geq 0$ are the singular values of $\mathbf{X}$, and $\mathbf{u}_i \in \mathbb{R}^{n \times 1}$ and $\mathbf{v}_i \in \mathbb{R}^{d \times 1}$ are the left and right singular vectors, respectively.
 The rank of $\mathbf{X}$ is $r$, which is the number of non-zero singular values.
@@ -196,7 +196,7 @@ where we use $\mathbf{C} = \mathbf{U}^\top \tilde{\mathbf{X}} \mathbf{V}$ for no
 Continuing,
 $$
 \| \mathbf{\Sigma} - \mathbf{C} \|_\text{F}^2
-= \sum_{i=1}^r (\sigma_i - [\mathbf{C}]_{i,i})^2
+= \sum_{i=1}^d (\sigma_i - [\mathbf{C}]_{i,i})^2
 + \sum_{i\neq j} [\mathbf{C}]_{i,j}^2.
 $$
 When we choose $\mathbf{C}$, we can minimize this expression by setting $[\mathbf{C}]_{i,j} = 0$ for all $i \neq j$.
@@ -206,7 +206,7 @@ If we chose some $i' > k$ instead of $i \leq k$, we would be choosing a smaller 
 With the optimal choice $\mathbf{C} = \boldsymbol{\Sigma}_k$, we have $\tilde{\mathbf{X}} = \mathbf{U} \boldsymbol{\Sigma}_k \mathbf{V}^\top = \mathbf{X}_k$, and error
 $$
 \| \mathbf{X} - \tilde{\mathbf{X}} \|_\text{F}^2
-= \sum_{i=k+1}^r \sigma_i^2.
+= \sum_{i=k+1}^d \sigma_i^2.
 $$
 
 </details>
@@ -239,7 +239,7 @@ In practice, PCA gives us a low-dimensional representation of the data that capt
 As we increase the rank of the approximation, the reconstruction error decreases.
 Recall from the proof of the Eckart-Young-Mirsky theorem that the error of the rank-$k$ approximation is given by
 $$
-\sum_{i=k+1}^r \sigma_i^2.
+\sum_{i=k+1}^d \sigma_i^2.
 $$
 When the singular values are all similar, the reconstruction error decreases more slowly as we add more components.
 However, if the singular values decay quickly, we can achieve a significant reduction in error by adding just a few components.

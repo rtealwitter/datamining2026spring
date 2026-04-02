@@ -237,7 +237,7 @@ D_{\text{KL}}(P, Q) =
 <section id="principal-component-analysis" class="level3">
 <h3 class="anchored" data-anchor-id="principal-component-analysis">Principal Component Analysis</h3>
 <p>Principal component analysis (PCA) is the “linear regression” of unsupervised learning, offering a simple but powerful technique for dimensional reduction. PCA is the simplest kind of autoencoder, where the encoder and decoder are each a fully connected linear layer without activation functions.</p>
-<p>Let <span class="math inline">\(\mathbf{W}_0 \in \mathbb{R}^{k \times d}\)</span> be the encoder weight matrix, and <span class="math inline">\(\mathbf{W}_1 \in \mathbb{R}^{d \times k}\)</span> be the decoder weight matrix. The latent for input <span class="math inline">\(\mathbf{x}\)</span> is <span class="math inline">\(\mathbf{z}^\top = \mathbf{x}^\top \mathbf{W}_0\)</span>, and the reconstruction is <span class="math inline">\(\tilde{\mathbf{x}}^\top = \mathbf{z}^\top \mathbf{W}_1  = \mathbf{x}^\top \mathbf{W}_0 \mathbf{W}_1\)</span>.</p>
+<p>Let <span class="math inline">\(\mathbf{W}_0 \in \mathbb{R}^{d \times k}\)</span> be the encoder weight matrix, and <span class="math inline">\(\mathbf{W}_1 \in \mathbb{R}^{k \times d}\)</span> be the decoder weight matrix. The latent for input <span class="math inline">\(\mathbf{x}\)</span> is <span class="math inline">\(\mathbf{z}^\top = \mathbf{x}^\top \mathbf{W}_0\)</span>, and the reconstruction is <span class="math inline">\(\tilde{\mathbf{x}}^\top = \mathbf{z}^\top \mathbf{W}_1  = \mathbf{x}^\top \mathbf{W}_0 \mathbf{W}_1\)</span>.</p>
 <center>
 <img src="images/pca_single.svg" class="responsive-img">
 </center>
@@ -258,7 +258,7 @@ D_{\text{KL}}(P, Q) =
 <p>Because the columns of <span class="math inline">\(\mathbf{U}\)</span> and <span class="math inline">\(\mathbf{V}\)</span> are orthonormal, we have <span class="math display">\[
 \mathbf{U}^\top \mathbf{U} = \mathbf{I}_d =\mathbf{V}^\top \mathbf{V}.
 \]</span> Using our outerproduct perspective on matrix multiplication, we can write <span class="math display">\[
-\mathbf{X} = \sum_{i=1}^r \mathbf{u}_i \sigma_i \mathbf{v}_i^\top
+\mathbf{X} = \sum_{i=1}^d \mathbf{u}_i \sigma_i \mathbf{v}_i^\top
 \]</span> where <span class="math inline">\(\sigma_1 \geq \sigma_2 \geq \ldots \geq \sigma_d \geq 0\)</span> are the singular values of <span class="math inline">\(\mathbf{X}\)</span>, and <span class="math inline">\(\mathbf{u}_i \in \mathbb{R}^{n \times 1}\)</span> and <span class="math inline">\(\mathbf{v}_i \in \mathbb{R}^{d \times 1}\)</span> are the left and right singular vectors, respectively. The rank of <span class="math inline">\(\mathbf{X}\)</span> is <span class="math inline">\(r\)</span>, which is the number of non-zero singular values. Let <span class="math inline">\(\mathbf{X}_k\)</span> be the rank-<span class="math inline">\(k\)</span> approximation <span class="math display">\[
 \mathbf{X}_k = \sum_{i=1}^k \mathbf{u}_i \sigma_i \mathbf{v}_i^\top.
 \]</span> With this notation, we are ready to state a useful linear algebra result.</p>
@@ -298,11 +298,11 @@ Proof of Eckart-Young-Mirsky Theorem
 \end{align}
 \]</span> where we use <span class="math inline">\(\mathbf{C} = \mathbf{U}^\top \tilde{\mathbf{X}} \mathbf{V}\)</span> for notational convenience. Continuing, <span class="math display">\[
 \| \mathbf{\Sigma} - \mathbf{C} \|_\text{F}^2
-= \sum_{i=1}^r (\sigma_i - [\mathbf{C}]_{i,i})^2
+= \sum_{i=1}^d (\sigma_i - [\mathbf{C}]_{i,i})^2
 + \sum_{i\neq j} [\mathbf{C}]_{i,j}^2.
 \]</span> When we choose <span class="math inline">\(\mathbf{C}\)</span>, we can minimize this expression by setting <span class="math inline">\([\mathbf{C}]_{i,j} = 0\)</span> for all <span class="math inline">\(i \neq j\)</span>. This means that the optimal <span class="math inline">\(\mathbf{C}\)</span> is diagonal, and we can choose up to <span class="math inline">\(k\)</span> non-zero entries. Setting <span class="math inline">\([\mathbf{C}]_{i,i} = \sigma_i\)</span> for <span class="math inline">\(i \leq k\)</span> and <span class="math inline">\(0\)</span> otherwise gives us the best rank-<span class="math inline">\(k\)</span> approximation. If we chose some <span class="math inline">\(i' &gt; k\)</span> instead of <span class="math inline">\(i \leq k\)</span>, we would be choosing a smaller singular value, which would increase the overall error. With the optimal choice <span class="math inline">\(\mathbf{C} = \boldsymbol{\Sigma}_k\)</span>, we have <span class="math inline">\(\tilde{\mathbf{X}} = \mathbf{U} \boldsymbol{\Sigma}_k \mathbf{V}^\top = \mathbf{X}_k\)</span>, and error <span class="math display">\[
 \| \mathbf{X} - \tilde{\mathbf{X}} \|_\text{F}^2
-= \sum_{i=k+1}^r \sigma_i^2.
+= \sum_{i=k+1}^d \sigma_i^2.
 \]</span></p>
 </details>
 </div>
@@ -319,7 +319,7 @@ Proof of Eckart-Young-Mirsky Theorem
 <img src="images/pca_approximations.svg" class="responsive-img">
 </center>
 <p>As we increase the rank of the approximation, the reconstruction error decreases. Recall from the proof of the Eckart-Young-Mirsky theorem that the error of the rank-<span class="math inline">\(k\)</span> approximation is given by <span class="math display">\[
-\sum_{i=k+1}^r \sigma_i^2.
+\sum_{i=k+1}^d \sigma_i^2.
 \]</span> When the singular values are all similar, the reconstruction error decreases more slowly as we add more components. However, if the singular values decay quickly, we can achieve a significant reduction in error by adding just a few components.</p>
 <center>
 <img src="images/pca_spectrum.svg" class="responsive-img">
