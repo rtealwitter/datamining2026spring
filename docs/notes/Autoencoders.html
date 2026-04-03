@@ -270,7 +270,7 @@ D_{\text{KL}}(P, Q) =
 <summary>
 Proof of Eckart-Young-Mirsky Theorem
 </summary>
-<p>We’ll prove the theorem using several properties of the <em>trace</em>. For a square matrix <span class="math inline">\(\mathbf{M}\)</span>, the trace <span class="math inline">\(\text{tr}(\mathbf{M})\)</span> is the sum of the diagonal entries, and it has the following three properties:</p>
+<p>We’ll prove the theorem using several properties of the <em>trace</em>. For a square matrix <span class="math inline">\(\mathbf{M}\)</span>, the trace <span class="math inline">\(\text{tr}(\mathbf{M})\)</span> is the sum of the diagonal entries, and it has the following properties:</p>
 <ul>
 <li><p><strong>Frobenius norm</strong>: <span class="math inline">\(\| \mathbf{X} \|_\text{F}^2 = \text{tr}(\mathbf{X}^\top \mathbf{X})\)</span> for any <span class="math inline">\(\mathbf{X} \in \mathbb{R}^{n \times d}\)</span>. To see why, observe that <span class="math display">\[\| \mathbf{X} \|_\text{F}^2 = \sum_{i=1}^n \sum_{j=1}^d [\mathbf{X}]_{i,j}^2 = \sum_{i=1}^n \| [\mathbf{X}]_{i,} \|_2^2 = \text{tr}(\mathbf{X}^\top \mathbf{X}).\]</span></p></li>
 <li><p><strong>Cyclic property</strong>: <span class="math inline">\(\text{tr}(\mathbf{A} \mathbf{B}) = \text{tr}(\mathbf{B} \mathbf{A})\)</span> for any matrices <span class="math inline">\(\mathbf{A} \in \mathbb{R}^{n \times d}\)</span> and <span class="math inline">\(\mathbf{B} \in \mathbb{R}^{d \times n}\)</span>. To see why, observe that <span class="math display">\[
@@ -280,29 +280,46 @@ Proof of Eckart-Young-Mirsky Theorem
 = \sum_{j=1}^d [\mathbf{B A }]_{j,j}
 = \text{tr}(\mathbf{B} \mathbf{A}).
 \]</span></p></li>
-<li><p><strong>Invariance under orthogonal transformations</strong>: <span class="math inline">\(\| \mathbf{XV} \|_\text{F}^2 = \| \mathbf{X} \|_\text{F}^2\)</span>, where the columns of <span class="math inline">\(\mathbf{V} \in \mathbb{R}^{d \times d}\)</span> are orthonormal. (The analogous result holds for multiplying <span class="math inline">\(\mathbf{X}\)</span> on the left by <span class="math inline">\(\mathbf{U}^\top\)</span>, where the columns of <span class="math inline">\(\mathbf{U} \in \mathbb{R}^{n \times r}\)</span> are orthonormal.) To see why, observe that <span class="math display">\[
-\| \mathbf{XV} \|_\text{F}^2
-= \text{tr}((\mathbf{XV})^\top (\mathbf{XV}))
-= \text{tr}(\mathbf{V}^\top \mathbf{X}^\top \mathbf{X} \mathbf{V})
-= \text{tr}(\mathbf{X}^\top \mathbf{X} \mathbf{V} \mathbf{V}^\top)
-= \text{tr}(\mathbf{X}^\top \mathbf{X})
-= \| \mathbf{X} \|_\text{F}^2,
-\]</span> where we used the first property in the first and last equality, the second property in the third equality, and the orthonormality of the columns of <span class="math inline">\(\mathbf{V}\)</span> in the fourth equality. <strong>Note:</strong> We used that <span class="math inline">\(\mathbf{V} \mathbf{V}^\top = \mathbf{I}_d\)</span>, can you see why this is true?</p></li>
 </ul>
-<p>With these properties, we are finally ready to prove the theorem. We have <span class="math display">\[
-\begin{align}
-\| \mathbf{X} - \tilde{\mathbf{X}} \|_\text{F}^2
-= \| \mathbf{U \Sigma V}^\top - \tilde{\mathbf{X}} \|_\text{F}^2
-= \| \mathbf{U}^\top \mathbf{U \Sigma V}^\top \mathbf{V} - \mathbf{U}^\top \tilde{\mathbf{X}} \mathbf{V} \|_\text{F}^2
-= \| \mathbf{\Sigma} - \mathbf{C} \|_\text{F}^2,
-\end{align}
-\]</span> where we use <span class="math inline">\(\mathbf{C} = \mathbf{U}^\top \tilde{\mathbf{X}} \mathbf{V}\)</span> for notational convenience. Continuing, <span class="math display">\[
-\| \mathbf{\Sigma} - \mathbf{C} \|_\text{F}^2
-= \sum_{i=1}^d (\sigma_i - [\mathbf{C}]_{i,i})^2
-+ \sum_{i\neq j} [\mathbf{C}]_{i,j}^2.
-\]</span> When we choose <span class="math inline">\(\mathbf{C}\)</span>, we can minimize this expression by setting <span class="math inline">\([\mathbf{C}]_{i,j} = 0\)</span> for all <span class="math inline">\(i \neq j\)</span>. This means that the optimal <span class="math inline">\(\mathbf{C}\)</span> is diagonal, and we can choose up to <span class="math inline">\(k\)</span> non-zero entries. Setting <span class="math inline">\([\mathbf{C}]_{i,i} = \sigma_i\)</span> for <span class="math inline">\(i \leq k\)</span> and <span class="math inline">\(0\)</span> otherwise gives us the best rank-<span class="math inline">\(k\)</span> approximation. If we chose some <span class="math inline">\(i' &gt; k\)</span> instead of <span class="math inline">\(i \leq k\)</span>, we would be choosing a smaller singular value, which would increase the overall error. With the optimal choice <span class="math inline">\(\mathbf{C} = \boldsymbol{\Sigma}_k\)</span>, we have <span class="math inline">\(\tilde{\mathbf{X}} = \mathbf{U} \boldsymbol{\Sigma}_k \mathbf{V}^\top = \mathbf{X}_k\)</span>, and error <span class="math display">\[
-\| \mathbf{X} - \tilde{\mathbf{X}} \|_\text{F}^2
-= \sum_{i=k+1}^d \sigma_i^2.
+<p>Since <span class="math inline">\(\tilde{\mathbf{X}}\)</span> is a rank-<span class="math inline">\(k\)</span> matrix, we can write <span class="math inline">\(\tilde{\mathbf{X}} = \mathbf{X} \mathbf{W W^\top}\)</span> for some <span class="math inline">\(\mathbf{W} \in \mathbb{R}^{d \times k}\)</span> where <span class="math inline">\(\mathbf{W}^\top \mathbf{W} = \mathbf{I}\)</span>.</p>
+<p>To show that <span class="math inline">\(\mathbf{X}_k\)</span> is the best rank-<span class="math inline">\(k\)</span> approximation to <span class="math inline">\(\mathbf{X}\)</span>, we will first rewrite the objective function in a more convenient form: <span class="math display">\[
+\begin{align*}
+\| \mathbf{X} - \mathbf{X} \mathbf{W} \mathbf{W}^\top \|_F^2
+&amp;= \| \mathbf{X}(\mathbf{I} - \mathbf{W} \mathbf{W}^\top) \|_F^2
+\\&amp;= \text{tr} \left( (\mathbf{I} - \mathbf{W} \mathbf{W}^\top)^\top \mathbf{X}^\top \mathbf{X} (\mathbf{I} - \mathbf{W} \mathbf{W}^\top) \right)
+\\&amp;= \text{tr} \left( \mathbf{X}^\top \mathbf{X} (\mathbf{I} - \mathbf{W} \mathbf{W}^\top) \right)
+\\&amp;= \text{tr}(\mathbf{X}^\top \mathbf{X}) - \text{tr}(\mathbf{X}^\top \mathbf{X} \mathbf{W} \mathbf{W}^\top).
+\end{align*}
+\]</span> In the second equality, we used the trace representation of the Frobenius norm, and that the matrix <span class="math inline">\(\mathbf{I} - \mathbf{W} \mathbf{W}^\top\)</span> is symmetric. In the third equality, we used the cyclic property of the trace, and that <span class="math inline">\((\mathbf{I} - \mathbf{W} \mathbf{W}^\top)^2 = \mathbf{I} - \mathbf{W} \mathbf{W}^\top\)</span> because <span class="math inline">\(\mathbf{W}\)</span> has orthonormal columns. Finally, in the last equality, we used the linearity of trace.</p>
+<p>When optimizing over <span class="math inline">\(\mathbf{W}\)</span>, the first term <span class="math inline">\(\text{tr}(\mathbf{X}^\top \mathbf{X})\)</span> is constant, so we can equivalently write the optimization problem as <span class="math display">\[
+\mathbf{X}_k = \arg\max_{\mathbf{W} \in \mathbb{R}^{d \times k} : \mathbf{W}^\top \mathbf{W} = \mathbf{I}} \text{tr}(\mathbf{X}^\top \mathbf{X} \mathbf{W} \mathbf{W}^\top).
+\]</span></p>
+<p>We will continue to rewrite the objective function in a more convenient form: <span class="math display">\[\begin{align*}
+\text{tr}(\mathbf{X}^\top \mathbf{X} \mathbf{W} \mathbf{W}^\top)
+&amp;= \text{tr}(\mathbf{W}^\top \mathbf{X}^\top \mathbf{X} \mathbf{W})
+\\&amp;= \text{tr} \left( \mathbf{W}^\top \left( \sum_{i=1}^d \sigma_i^2 \mathbf{v}_i \mathbf{v}_i^\top \right) \mathbf{W} \right)
+\\&amp;= \sum_{i=1}^d \sigma_i^2 \text{tr}(\mathbf{W}^\top \mathbf{v}_i \mathbf{v}_i^\top \mathbf{W})
+\\&amp;= \sum_{i=1}^d \sigma_i^2 \| \mathbf{v}_i^\top \mathbf{W} \|_F^2
+\\&amp;= \sum_{i=1}^d \sigma_i^2 z_i,
+\end{align*}\]</span> where <span class="math inline">\(z_i = \| \mathbf{v}_i^\top \mathbf{W} \|_F^2 \geq 0\)</span>. In addition to being non-negative, the <span class="math inline">\(z_i\)</span>’s also sum to <span class="math inline">\(k\)</span>. To see this, we can write <span class="math display">\[\begin{align*}
+\sum_{i=1}^d z_i
+&amp;= \sum_{i=1}^d \| \mathbf{v}_i^\top \mathbf{W} \|_F^2
+= \sum_{i=1}^d \text{tr}(\mathbf{W}^\top \mathbf{v}_i \mathbf{v}_i^\top \mathbf{W})
+\\&amp;= \text{tr} \left( \mathbf{W}^\top \left( \sum_{i=1}^d \mathbf{v}_i \mathbf{v}_i^\top \right) \mathbf{W} \right)
+= \text{tr}(\mathbf{W}^\top \mathbf{W})
+= \text{tr}(\mathbf{I}) = k
+\end{align*}\]</span> Therefore, optimizing the objective function is equivalent to solving the following optimization problem: <span class="math display">\[
+\mathbf{X}_k = \arg\max_{\mathbf{W} \in \mathbb{R}^{d \times k} : \mathbf{W}^\top \mathbf{W} = \mathbf{I}} \sum_{i=1}^d \sigma_i^2 z_i.
+\]</span> Given that <span class="math inline">\(\sigma_1^2 \geq \sigma_2^2 \geq \ldots \geq \sigma_d^2\)</span>, the optimal solution is to set <span class="math inline">\(z_i = 1\)</span> for <span class="math inline">\(i \leq k\)</span> and <span class="math inline">\(z_i = 0\)</span> for <span class="math inline">\(i &gt; k\)</span>. This corresponds to choosing <span class="math inline">\(\mathbf{W} = \sum_{j=1}^k \mathbf{v}_j \mathbf{e}_j^\top\)</span>, which yields <span class="math display">\[
+\begin{align*}
+\mathbf{X}_k &amp;= \mathbf{X W W^\top}
+= \mathbf{X}
+\sum_{j=1}^k \mathbf{v}_j \mathbf{e}_j^\top
+\sum_{\ell=1}^k \mathbf{e}_\ell \mathbf{v}_\ell^\top
+\\&amp;= \sum_{i=1}^d \sigma_i \mathbf{u}_i \mathbf{v}_i^\top
+\sum_{j=1}^k \mathbf{v}_j \mathbf{v}_j^\top
+= \sum_{i=1}^k \sigma_i \mathbf{u}_i \mathbf{v}_i^\top.
+\end{align*}
 \]</span></p>
 </details>
 </div>

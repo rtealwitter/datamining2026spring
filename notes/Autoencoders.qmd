@@ -151,7 +151,7 @@ $$
 <summary>Proof of Eckart-Young-Mirsky Theorem</summary>
 
 We'll prove the theorem using several properties of the *trace*.
-For a square matrix $\mathbf{M}$, the trace $\text{tr}(\mathbf{M})$ is the sum of the diagonal entries, and it has the following three properties:
+For a square matrix $\mathbf{M}$, the trace $\text{tr}(\mathbf{M})$ is the sum of the diagonal entries, and it has the following properties:
 
 * **Frobenius norm**: $\| \mathbf{X} \|_\text{F}^2 = \text{tr}(\mathbf{X}^\top \mathbf{X})$ for any $\mathbf{X} \in \mathbb{R}^{n \times d}$.
 To see why, observe that
@@ -168,45 +168,63 @@ $$
 = \text{tr}(\mathbf{B} \mathbf{A}).
 $$
 
-* **Invariance under orthogonal transformations**: $\| \mathbf{XV} \|_\text{F}^2 = \| \mathbf{X} \|_\text{F}^2$, where the columns of $\mathbf{V} \in \mathbb{R}^{d \times d}$ are orthonormal.
-(The analogous result holds for multiplying $\mathbf{X}$ on the left by $\mathbf{U}^\top$, where the columns of $\mathbf{U} \in \mathbb{R}^{n \times r}$ are orthonormal.)
-To see why, observe that
-$$
-\| \mathbf{XV} \|_\text{F}^2 
-= \text{tr}((\mathbf{XV})^\top (\mathbf{XV}))
-= \text{tr}(\mathbf{V}^\top \mathbf{X}^\top \mathbf{X} \mathbf{V})
-= \text{tr}(\mathbf{X}^\top \mathbf{X} \mathbf{V} \mathbf{V}^\top)
-= \text{tr}(\mathbf{X}^\top \mathbf{X})
-= \| \mathbf{X} \|_\text{F}^2,
-$$
-where we used the first property in the first and last equality, the second property in the third equality, and the orthonormality of the columns of $\mathbf{V}$ in the fourth equality.
-**Note:** We used that $\mathbf{V} \mathbf{V}^\top = \mathbf{I}_d$, can you see why this is true?
+Since $\tilde{\mathbf{X}}$ is a rank-$k$ matrix, we can write $\tilde{\mathbf{X}} = \mathbf{X} \mathbf{W W^\top}$ for some $\mathbf{W} \in \mathbb{R}^{d \times k}$ where $\mathbf{W}^\top \mathbf{W} = \mathbf{I}$.
 
-With these properties, we are finally ready to prove the theorem.
-We have
+To show that $\mathbf{X}_k$ is the best rank-$k$ approximation to $\mathbf{X}$, we will first rewrite the objective function in a more convenient form:
 $$
-\begin{align}
-\| \mathbf{X} - \tilde{\mathbf{X}} \|_\text{F}^2
-= \| \mathbf{U \Sigma V}^\top - \tilde{\mathbf{X}} \|_\text{F}^2
-= \| \mathbf{U}^\top \mathbf{U \Sigma V}^\top \mathbf{V} - \mathbf{U}^\top \tilde{\mathbf{X}} \mathbf{V} \|_\text{F}^2
-= \| \mathbf{\Sigma} - \mathbf{C} \|_\text{F}^2,
-\end{align}
+\begin{align*}
+\| \mathbf{X} - \mathbf{X} \mathbf{W} \mathbf{W}^\top \|_F^2
+&= \| \mathbf{X}(\mathbf{I} - \mathbf{W} \mathbf{W}^\top) \|_F^2
+\\&= \text{tr} \left( (\mathbf{I} - \mathbf{W} \mathbf{W}^\top)^\top \mathbf{X}^\top \mathbf{X} (\mathbf{I} - \mathbf{W} \mathbf{W}^\top) \right)
+\\&= \text{tr} \left( \mathbf{X}^\top \mathbf{X} (\mathbf{I} - \mathbf{W} \mathbf{W}^\top) \right)
+\\&= \text{tr}(\mathbf{X}^\top \mathbf{X}) - \text{tr}(\mathbf{X}^\top \mathbf{X} \mathbf{W} \mathbf{W}^\top).
+\end{align*}
 $$
-where we use $\mathbf{C} = \mathbf{U}^\top \tilde{\mathbf{X}} \mathbf{V}$ for notational convenience.
-Continuing,
+In the second equality, we used the trace representation of the Frobenius norm, and that the matrix $\mathbf{I} - \mathbf{W} \mathbf{W}^\top$ is symmetric.
+In the third equality, we used the cyclic property of the trace, and that $(\mathbf{I} - \mathbf{W} \mathbf{W}^\top)^2 = \mathbf{I} - \mathbf{W} \mathbf{W}^\top$ because $\mathbf{W}$ has orthonormal columns.
+Finally, in the last equality, we used the linearity of trace.
+
+When optimizing over $\mathbf{W}$, the first term $\text{tr}(\mathbf{X}^\top \mathbf{X})$ is constant, so we can equivalently write the optimization problem as
 $$
-\| \mathbf{\Sigma} - \mathbf{C} \|_\text{F}^2
-= \sum_{i=1}^d (\sigma_i - [\mathbf{C}]_{i,i})^2
-+ \sum_{i\neq j} [\mathbf{C}]_{i,j}^2.
+\mathbf{X}_k = \arg\max_{\mathbf{W} \in \mathbb{R}^{d \times k} : \mathbf{W}^\top \mathbf{W} = \mathbf{I}} \text{tr}(\mathbf{X}^\top \mathbf{X} \mathbf{W} \mathbf{W}^\top).
 $$
-When we choose $\mathbf{C}$, we can minimize this expression by setting $[\mathbf{C}]_{i,j} = 0$ for all $i \neq j$.
-This means that the optimal $\mathbf{C}$ is diagonal, and we can choose up to $k$ non-zero entries.
-Setting $[\mathbf{C}]_{i,i} = \sigma_i$ for $i \leq k$ and $0$ otherwise gives us the best rank-$k$ approximation.
-If we chose some $i' > k$ instead of $i \leq k$, we would be choosing a smaller singular value, which would increase the overall error.
-With the optimal choice $\mathbf{C} = \boldsymbol{\Sigma}_k$, we have $\tilde{\mathbf{X}} = \mathbf{U} \boldsymbol{\Sigma}_k \mathbf{V}^\top = \mathbf{X}_k$, and error
+
+We will continue to rewrite the objective function in a more convenient form:
+\begin{align*}
+\text{tr}(\mathbf{X}^\top \mathbf{X} \mathbf{W} \mathbf{W}^\top)
+&= \text{tr}(\mathbf{W}^\top \mathbf{X}^\top \mathbf{X} \mathbf{W})
+\\&= \text{tr} \left( \mathbf{W}^\top \left( \sum_{i=1}^d \sigma_i^2 \mathbf{v}_i \mathbf{v}_i^\top \right) \mathbf{W} \right)
+\\&= \sum_{i=1}^d \sigma_i^2 \text{tr}(\mathbf{W}^\top \mathbf{v}_i \mathbf{v}_i^\top \mathbf{W})
+\\&= \sum_{i=1}^d \sigma_i^2 \| \mathbf{v}_i^\top \mathbf{W} \|_F^2
+\\&= \sum_{i=1}^d \sigma_i^2 z_i,
+\end{align*}
+where $z_i = \| \mathbf{v}_i^\top \mathbf{W} \|_F^2 \geq 0$.
+In addition to being non-negative, the $z_i$'s also sum to $k$.
+To see this, we can write
+\begin{align*}
+\sum_{i=1}^d z_i
+&= \sum_{i=1}^d \| \mathbf{v}_i^\top \mathbf{W} \|_F^2
+= \sum_{i=1}^d \text{tr}(\mathbf{W}^\top \mathbf{v}_i \mathbf{v}_i^\top \mathbf{W})
+\\&= \text{tr} \left( \mathbf{W}^\top \left( \sum_{i=1}^d \mathbf{v}_i \mathbf{v}_i^\top \right) \mathbf{W} \right)
+= \text{tr}(\mathbf{W}^\top \mathbf{W})
+= \text{tr}(\mathbf{I}) = k
+\end{align*}
+Therefore, optimizing the objective function is equivalent to solving the following optimization problem:
 $$
-\| \mathbf{X} - \tilde{\mathbf{X}} \|_\text{F}^2
-= \sum_{i=k+1}^d \sigma_i^2.
+\mathbf{X}_k = \arg\max_{\mathbf{W} \in \mathbb{R}^{d \times k} : \mathbf{W}^\top \mathbf{W} = \mathbf{I}} \sum_{i=1}^d \sigma_i^2 z_i.
+$$
+Given that $\sigma_1^2 \geq \sigma_2^2 \geq \ldots \geq \sigma_d^2$, the optimal solution is to set $z_i = 1$ for $i \leq k$ and $z_i = 0$ for $i > k$.
+This corresponds to choosing $\mathbf{W} = \sum_{j=1}^k \mathbf{v}_j \mathbf{e}_j^\top$, which yields
+$$
+\begin{align*}
+\mathbf{X}_k &= \mathbf{X W W^\top}
+= \mathbf{X}
+\sum_{j=1}^k \mathbf{v}_j \mathbf{e}_j^\top 
+\sum_{\ell=1}^k \mathbf{e}_\ell \mathbf{v}_\ell^\top
+\\&= \sum_{i=1}^d \sigma_i \mathbf{u}_i \mathbf{v}_i^\top
+\sum_{j=1}^k \mathbf{v}_j \mathbf{v}_j^\top 
+= \sum_{i=1}^k \sigma_i \mathbf{u}_i \mathbf{v}_i^\top.
+\end{align*}
 $$
 
 </details>
