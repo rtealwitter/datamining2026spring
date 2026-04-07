@@ -142,7 +142,7 @@ output:
     <td><a href="notes/Autoencoders.html">Autoencoders</a></td>
     <td><a href="notes/Autoencoders.html">Autoencoders</a></td>
     <td><a href="slides/Week12.pdf">Slides</a></td>
-    <td></td>
+    <td><a href="https://colab.research.google.com/drive/1AeSpChJhtPagYQ2T2Nip0BvAKK7retdM?usp=sharing">Problem 16</a>, <a href="https://colab.research.google.com/drive/1ix2f2fy4RDwc5CSbNGXLr7Sw1V9XKSyb?usp=sharing">Problem 17</a></td>
   </tr>
   <tr>
     <td>Week 13 (4/14 and 4/16)</td>
