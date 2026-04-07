@@ -141,7 +141,7 @@ output:
     <td>Week 12 (4/7 and 4/9)</td>
     <td><a href="notes/Autoencoders.html">Autoencoders</a></td>
     <td><a href="notes/Autoencoders.html">Autoencoders</a></td>
-    <td></td>
+    <td><a href="slides/Week12.pdf">Slides</a></td>
     <td></td>
   </tr>
   <tr>
