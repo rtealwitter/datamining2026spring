@@ -148,7 +148,7 @@ output:
     <td>Week 13 (4/14 and 4/16)</td>
     <td><a href="https://chinmayhegde.github.io/dl-notes/notes/lecture09/">Reinforcement Learning</a></td>
     <td><a href="https://chinmayhegde.github.io/dl-notes/notes/lecture09/">Reinforcement Learning</a></td>
-    <td></td>
+    <td><a href="slides/Week13.pdf">Slides</a></td>
     <td></td>
   </tr>
   <tr>
