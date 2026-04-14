@@ -149,7 +149,7 @@ output:
     <td><a href="https://chinmayhegde.github.io/dl-notes/notes/lecture09/">Reinforcement Learning</a></td>
     <td><a href="https://chinmayhegde.github.io/dl-notes/notes/lecture09/">Reinforcement Learning</a></td>
     <td><a href="slides/Week13.pdf">Slides</a></td>
-    <td></td>
+    <td><a href="https://colab.research.google.com/drive/1X6V8xAbGctbVQAIofzKHmGT1DWzhQB4-?usp=sharing">Problem 18</a>, <a href="https://colab.research.google.com/drive/1C8pLW99gSrhuC7v-bVGV0XOX74Dye9Z_?usp=sharing">Problem 19</a></td>
   </tr>
   <tr>
     <td>Week 14 (4/21 and 4/23)</td>
