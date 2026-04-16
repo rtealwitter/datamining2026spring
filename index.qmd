@@ -155,7 +155,7 @@ output:
     <td>Week 14 (4/21 and 4/23)</td>
     <td><i>Project/Exam Preparation</i></td>
     <td><i>Midterm Exam</i></td>
-    <td></td>
+    <td><a href="project/proposal.pdf">Project Proposal</a> (<a href="project/proposal.tex">TeX</a>)</td>
     <td></td>
   </tr>
   <tr>
@@ -168,7 +168,7 @@ output:
     <td>Week 16 (5/5 and 5/7)</td>
     <td><a href="">Muon</a></td>
     <td><i>Reading Day (No Class)</i></td>
-    <td></td>
+    <td><a href="project/project.pdf">Final Project</a> (<a href="project/project.tex">TeX</a>)</td>
     <td></td>
   </tr>
   <tr>
