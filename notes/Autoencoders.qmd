@@ -96,7 +96,7 @@ The latent for input $\mathbf{x}$ is $\mathbf{z}^\top = \mathbf{x}^\top \mathbf{
 
 <center><img src="images/pca_single.svg" class="responsive-img"></center>
 
-We train the encoder and decoder on $n$ (unlabelled) data points $\mathbf{x}^{(1)}, \ldots, \mathbf{x}^{(n)}$.
+We train the encoder and decoder on $n$ (unlabeled) data points $\mathbf{x}^{(1)}, \ldots, \mathbf{x}^{(n)}$.
 Let $\mathbf{X} \in \mathbb{R}^{n \times d}$ be the matrix of input data, where the $i$th row corresponds to data point ${\mathbf{x}^{(i)}}^\top$.
 
 <center><img src="images/pca_all.svg" class="responsive-img"></center>
@@ -128,7 +128,7 @@ Because the columns of $\mathbf{U}$ and $\mathbf{V}$ are orthonormal, we have
 $$
 \mathbf{U}^\top \mathbf{U} = \mathbf{I}_d =\mathbf{V}^\top \mathbf{V}.
 $$
-Using our outerproduct perspective on matrix multiplication, we can write
+Using our outer product perspective on matrix multiplication, we can write
 $$
 \mathbf{X} = \sum_{i=1}^d \mathbf{u}_i \sigma_i \mathbf{v}_i^\top
 $$
@@ -265,7 +265,7 @@ However, if the singular values decay quickly, we can achieve a significant redu
 <center><img src="images/pca_spectrum.svg" class="responsive-img"></center>
 
 The reconstruction error is also smaller when the rank is lower.
-So if we have columns that are linear related, then the error tends to be lower.
+So if we have columns that are linearly related, then the error tends to be lower.
 For example, in a housing dataset, maybe we have features like square footage, lot size, and yard size.
 Since these features are all related, we can capture their relationships more easily with fewer dimensions.
 Other kinds of data with low-rank structure include image data, where pixels in a small region are often correlated, and text data, where word usage patterns can be captured with a small number of topics.
