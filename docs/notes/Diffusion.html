@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.7.33">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Diffusion</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../eve.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-c5a5d5e27fcc88644031c24cff017230.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<link rel="shortcut icon" href="../eve.ico">
+<script id="MathJax-script" async="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+
+
+<!-- Google tag (gtag.js) -->
+<script async="" src="https://www.googletagmanager.com/gtag/js?id=G-GZHXTPTRRE"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-GZHXTPTRRE');
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="../styles.css">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">Spring 2026</span>
+    </a>
+  </div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://discord.gg/dES3fSPEeC"> 
+<span class="menu-text">Discord</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://www.gradescope.com/courses/1233266"> 
+<span class="menu-text">Gradescope</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../syllabus.html"> 
+<span class="menu-text">Syllabus</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="https://www.rtealwitter.com/datamining2025/"> 
+<span class="menu-text">Fall 2025</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link active" data-scroll-target="#motivation">Motivation</a></li>
+  <li><a href="#adding-noise" id="toc-adding-noise" class="nav-link" data-scroll-target="#adding-noise">Adding Noise</a></li>
+  <li><a href="#removing-noise" id="toc-removing-noise" class="nav-link" data-scroll-target="#removing-noise">Removing Noise</a></li>
+  <li><a href="#loss-function" id="toc-loss-function" class="nav-link" data-scroll-target="#loss-function">Loss Function</a></li>
+  <li><a href="#inference" id="toc-inference" class="nav-link" data-scroll-target="#inference">Inference</a></li>
+  <li><a href="#conditioning-and-guidance" id="toc-conditioning-and-guidance" class="nav-link" data-scroll-target="#conditioning-and-guidance">Conditioning and Guidance</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content column-page-left" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title"><strong>Diffusion</strong></h1>
+</div>
+
+
+
+<div class="quarto-title-meta column-page-left">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="motivation" class="level3">
+<h3 class="anchored" data-anchor-id="motivation">Motivation</h3>
+<p>We previously discussed Variational Autoencoders (VAEs). VAEs are elegant models that allow us to sample realistic images by mapping a simple latent distribution (like a standard normal distribution) to the complex data distribution of our images. However, VAEs have a fundamental limitation: they generate the image in a single, fixed forward pass. In a VAE, you pass a latent vector through the decoder, and out pops the image. If the image is slightly blurry or imperfect, there is no way to tell the model to “think longer” or refine the output. The computation expended at inference time is constant.</p>
+<p>This is at odds with the most important lesson of modern deep learning: <strong>scaling inference-time compute improves performance.</strong> We see this prominently in Large Language Models (LLMs) with techniques like Chain-of-Thought reasoning. When an LLM is allowed to generate intermediate reasoning steps before answering, it effectively spends more compute to arrive at a much better final answer.</p>
+<p>How do we bring this “thinking longer” paradigm to image generation? Instead of trying to cross the massive chasm from pure noise to a photorealistic image in one single leap, we can break the journey down into hundreds of tiny, manageable steps. This is the core intuition behind <strong>diffusion</strong>. By repeatedly applying a de-noising process to a state of pure randomness, we trade inference time for generation quality. If we want a better image, we can simply increase the number of de-noising steps, allowing the model to more carefully trace the complex topology of the data distribution. Let’s dive into the details.</p>
+</section>
+<section id="adding-noise" class="level3">
+<h3 class="anchored" data-anchor-id="adding-noise">Adding Noise</h3>
+<p>Our ultimate goal is to turn random noise into a realistic image. But to teach a model how to do that, we first need to define the reverse: turning a realistic image into noise.</p>
+<p>Starting from a real image <span class="math inline">\(x_0\)</span>, we slowly corrupt it by adding Gaussian noise over a series of <span class="math inline">\(T\)</span> steps. At each step <span class="math inline">\(t\)</span>, we determine how much noise to add using our variance schedule, <span class="math inline">\(\beta_t\)</span>.</p>
+<p>The mathematical transition from one step to the next is a Markov chain. Using the reparameterization trick we learned with VAEs, we can write a single step forward as: <span class="math display">\[x_t = \sqrt{1-\beta_t} x_{t-1} + \sqrt{\beta_t}\epsilon_t\]</span></p>
+<center>
+<img src="images/diffusion_noising.png" width="1000">
+</center>
+<p>If we step through this process sequentially <span class="math inline">\(T\)</span> times (where <span class="math inline">\(T\)</span> is usually large, like 1000), the final state <span class="math inline">\(x_T\)</span> becomes indistinguishable from pure, random noise.</p>
+<section id="skipping-steps-direct-jump-property" class="level4">
+<h4 class="anchored" data-anchor-id="skipping-steps-direct-jump-property">Skipping Steps (Direct Jump Property)</h4>
+<p>Iterating step-by-step during training would be incredibly slow. Fortunately, we can use a mathematical shortcut to jump directly from the clean image <span class="math inline">\(x_0\)</span> to any arbitrary noisy step <span class="math inline">\(x_t\)</span>.</p>
+<p>Let’s swap out our noise rate <span class="math inline">\(\beta_t\)</span> for our <strong>signal retention rate</strong>, <span class="math inline">\(\alpha_t = 1 - \beta_t\)</span>. Rewriting our single step yields: <span class="math display">\[x_t = \sqrt{\alpha_t} x_{t-1} + \sqrt{1-\alpha_t}\epsilon_{t}\]</span></p>
+<p>What happens if we substitute the equation for <span class="math inline">\(x_{t-1}\)</span> into the equation for <span class="math inline">\(x_t\)</span>? Let <span class="math inline">\(\epsilon_1, \epsilon_2\)</span> be independent standard normal noise variables. <span class="math display">\[x_t = \sqrt{\alpha_t} (\sqrt{\alpha_{t-1}} x_{t-2} + \sqrt{1-\alpha_{t-1}}\epsilon_2) + \sqrt{1-\alpha_t}\epsilon_1\]</span> <span class="math display">\[x_t = \sqrt{\alpha_t \alpha_{t-1}} x_{t-2} + \left( \sqrt{\alpha_t(1-\alpha_{t-1})}\epsilon_2 + \sqrt{1-\alpha_t}\epsilon_1 \right)\]</span></p>
+<p>A beautiful property of Gaussians is that the sum of two independent normally distributed variables, <span class="math inline">\(\mathcal{N}(0, \sigma_1^2)\)</span> and <span class="math inline">\(\mathcal{N}(0, \sigma_2^2)\)</span>, is a new Gaussian <span class="math inline">\(\mathcal{N}(0, \sigma_1^2 + \sigma_2^2)\)</span>. Let’s calculate the variance of the combined noise term: <span class="math display">\[\sigma_{\text{combined}}^2 = \alpha_t(1-\alpha_{t-1}) + (1-\alpha_t) = \alpha_t - \alpha_t\alpha_{t-1} + 1 - \alpha_t = 1 - \alpha_t\alpha_{t-1}\]</span></p>
+<p>Because the variance gracefully collapses, our two-step jump simplifies to: <span class="math display">\[x_t = \sqrt{\alpha_t \alpha_{t-1}} x_{t-2} + \sqrt{1 - \alpha_t\alpha_{t-1}}\epsilon\]</span></p>
+<p>By induction, if we apply this recursively all the way back to <span class="math inline">\(x_0\)</span>, we can replace the chain of individual <span class="math inline">\(\alpha\)</span> terms with <span class="math inline">\(\bar{\alpha}_t\)</span> (the <strong>cumulative</strong> signal retention). The formula to directly sample a noisy image at any timestep <span class="math inline">\(t\)</span> becomes: <span class="math display">\[x_t = \sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon\]</span></p>
+<p>This equation perfectly encapsulates the forward process: any noisy image <span class="math inline">\(x_t\)</span> is just a weighted blend of the clean image (<span class="math inline">\(x_0\)</span>) and pure noise (<span class="math inline">\(\epsilon\)</span>).</p>
+</section>
+</section>
+<section id="removing-noise" class="level3">
+<h3 class="anchored" data-anchor-id="removing-noise">Removing Noise</h3>
+<p>If we look at the forward process backwards, we have the exact training data needed to teach a model how to <em>remove</em> noise.</p>
+<center>
+<img src="images/diffusion_denoising.png" width="1000">
+</center>
+<p>In probability, we denote the true mathematical reverse step as <span class="math inline">\(q(x_{t-1} | x_t)\)</span>. However, calculating this is impossible without knowing the distribution of all possible images in the universe.</p>
+<p>Here is the brilliant mathematical trick of diffusion: if we condition the reverse step on the <em>original</em> clean image <span class="math inline">\(x_0\)</span>, the step becomes a highly tractable, solvable Gaussian distribution: <span class="math inline">\(q(x_{t-1} | x_t, x_0)\)</span>.</p>
+<p><strong>Claim 1:</strong> The true posterior conditioned on <span class="math inline">\(x_0\)</span> is a Gaussian distribution defined as: <span class="math display">\[q(x_{t-1} | x_t, x_0) = \mathcal{N}(x_{t-1}; \tilde{\mu}_t(x_t, x_0), \tilde{\beta}_t \mathbf{I})\]</span> <em>(Note: We use the tilde (<span class="math inline">\(\sim\)</span>) to denote that these are the mathematically ideal, target values.)</em></p>
+<p>The exact variance and mean required to step backwards are: <span class="math display">\[\tilde{\beta}_t = \frac{1-\bar{\alpha}_{t-1}}{1-\bar{\alpha}_t} \beta_t\]</span> <span class="math display">\[\tilde{\mu}_t(x_t, x_0) = \frac{\sqrt{\alpha_t}(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}x_t + \frac{\sqrt{\bar{\alpha}_{t-1}}\beta_t}{1-\bar{\alpha}_t}x_0\]</span></p>
+<div class="proof-block">
+<details closed="">
+<summary>
+Proof: Derivation of the Tractable Posterior
+</summary>
+<p>By Bayes’ Rule, the reverse step is proportional to the forward steps: <span class="math display">\[q(x_{t-1} | x_t, x_0) \propto q(x_t | x_{t-1}, x_0) q(x_{t-1} | x_0)\]</span> <em>(We drop the denominator <span class="math inline">\(q(x_t | x_0)\)</span> as it acts merely as a normalizing constant that does not depend on <span class="math inline">\(x_{t-1}\)</span>.)</em></p>
+<p>We know these distributions are Gaussians from our forward process equations:</p>
+<ol type="1">
+<li><p><span class="math inline">\(q(x_t | x_{t-1}, x_0) \propto \exp\left(-\frac{1}{2\beta_t} (x_t - \sqrt{\alpha_t}x_{t-1})^2\right)\)</span></p></li>
+<li><p><span class="math inline">\(q(x_{t-1} | x_0) \propto \exp\left(-\frac{1}{2(1-\bar{\alpha}_{t-1})} (x_{t-1} - \sqrt{\bar{\alpha}_{t-1}}x_0)^2\right)\)</span></p></li>
+</ol>
+<p>Multiplying these distributions means adding their exponents. Our goal is to rearrange this combined exponent into the standard Gaussian form: <span class="math inline">\(-\frac{1}{2} \left[ \frac{1}{\tilde{\beta}_t} x_{t-1}^2 - \frac{2\tilde{\mu}_t}{\tilde{\beta}_t} x_{t-1} + C \right]\)</span>.</p>
+<p><strong>Finding the Variance (<span class="math inline">\(\tilde{\beta}_t\)</span>):</strong> By extracting only the <span class="math inline">\(x_{t-1}^2\)</span> terms from the added exponents, we get the inverse variance: <span class="math display">\[\frac{1}{\tilde{\beta}_t} = \frac{\alpha_t}{\beta_t} + \frac{1}{1-\bar{\alpha}_{t-1}}\]</span> Using a common denominator and the identity <span class="math inline">\(\bar{\alpha}_t = \alpha_t \bar{\alpha}_{t-1}\)</span>, this simplifies to our exact reverse variance: <span class="math display">\[\tilde{\beta}_t = \frac{1-\bar{\alpha}_{t-1}}{1-\bar{\alpha}_t} \beta_t\]</span></p>
+<p><strong>Finding the Mean (<span class="math inline">\(\tilde{\mu}_t\)</span>):</strong> Next, extracting the linear <span class="math inline">\(x_{t-1}\)</span> terms gives us the coefficient for the mean: <span class="math display">\[\frac{\tilde{\mu}_t}{\tilde{\beta}_t} = \frac{\sqrt{\alpha_t}}{\beta_t}x_t + \frac{\sqrt{\bar{\alpha}_{t-1}}}{1-\bar{\alpha}_{t-1}}x_0\]</span> Multiplying both sides by our newly found variance <span class="math inline">\(\tilde{\beta}_t\)</span> and canceling the denominators cleanly yields our exact reverse mean: <span class="math display">\[\tilde{\mu}_t(x_t, x_0) = \frac{\sqrt{\alpha_t}(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}x_t + \frac{\sqrt{\bar{\alpha}_{t-1}}\beta_t}{1-\bar{\alpha}_t}x_0\]</span></p>
+</details>
+</div>
+<p>This tells us exactly how to step backwards! But there’s a catch: this tractable posterior requires <span class="math inline">\(x_0\)</span>, and during generation, we start with pure noise. We don’t <em>have</em> the clean image <span class="math inline">\(x_0\)</span>.</p>
+<p>To solve this, we train a neural network (with weights denoted as <span class="math inline">\(\theta\)</span>) to approximate this backward step. Because the amount of noise and the structure of the image change drastically from step <span class="math inline">\(t=1000\)</span> to <span class="math inline">\(t=1\)</span>, the network must be explicitly conditioned on <em>both</em> the current noisy image <span class="math inline">\(x_t\)</span> and the current timestep <span class="math inline">\(t\)</span>.</p>
+<p>We denote the neural network’s approximated distribution as <span class="math inline">\(p_\theta(x_{t-1} | x_t) = \mathcal{N}(x_{t-1}; \mu_\theta(x_t, t), \tilde{\beta}_t \mathbf{I})\)</span>, where <span class="math inline">\(\mu_\theta(x_t, t)\)</span> is the network’s prediction for the mean.</p>
+</section>
+<section id="loss-function" class="level3">
+<h3 class="anchored" data-anchor-id="loss-function">Loss Function</h3>
+<p>To train this network, we need an objective. We want our network’s predicted reverse step <span class="math inline">\(p_\theta(x_{t-1} | x_t)\)</span> to match the true, mathematically ideal reverse step <span class="math inline">\(q(x_{t-1} | x_t, x_0)\)</span> as closely as possible.</p>
+<p>We measure the difference between two probability distributions using the <strong>Kullback-Leibler (KL) divergence</strong>.</p>
+<p><strong>Claim 2:</strong> Because both the true reverse step (<span class="math inline">\(q\)</span>) and the network’s predicted step (<span class="math inline">\(p_\theta\)</span>) are Gaussians with identical, fixed variances (<span class="math inline">\(\tilde{\beta}_t\mathbf{I}\)</span>), minimizing the KL divergence between them reduces perfectly to minimizing the Mean Squared Error (MSE) between their means (<span class="math inline">\(\tilde{\mu}_t(x_t, x_0)\)</span> and <span class="math inline">\(\mu_\theta(x_t, t)\)</span>): <span class="math display">\[D_{KL}(q \| p_\theta) = \frac{1}{2\tilde{\beta}_t} \| \tilde{\mu}_t(x_t, x_0) - \mu_\theta(x_t, t) \|^2\]</span></p>
+<div class="proof-block">
+<details closed="">
+<summary>
+Proof: KL Divergence reduces to Mean Squared Error
+</summary>
+<p>We want to find the KL divergence between our two Gaussian distributions:</p>
+<ol type="1">
+<li><p>The true posterior: <span class="math inline">\(q(x) = \mathcal{N}(x; \tilde{\mu}_t(x_t, x_0), \tilde{\beta}_t \mathbf{I})\)</span></p></li>
+<li><p>The network’s prediction: <span class="math inline">\(p_\theta(x) = \mathcal{N}(x; \mu_\theta(x_t, t), \tilde{\beta}_t \mathbf{I})\)</span> <em>(Note: We use <span class="math inline">\(x\)</span> here as shorthand for <span class="math inline">\(x_{t-1}\)</span>)</em></p></li>
+</ol>
+<p>The formula for KL divergence is the expected log difference between the distributions: <span class="math display">\[D_{KL}(q \| p_\theta) = \mathbb{E}_{q} \left[ \log q(x) - \log p_\theta(x) \right]\]</span></p>
+<p>A Gaussian PDF includes a normalizing constant <span class="math inline">\(C\)</span> that depends entirely on the variance. Since both distributions share the same variance <span class="math inline">\(\tilde{\beta}_t\)</span>, this constant <span class="math inline">\(C\)</span> is identical for both: <span class="math display">\[\log q(x) = -\frac{1}{2\tilde{\beta}_t} \| x - \tilde{\mu}_t(x_t, x_0) \|^2 + C\]</span> <span class="math display">\[\log p_\theta(x) = -\frac{1}{2\tilde{\beta}_t} \| x - \mu_\theta(x_t, t) \|^2 + C\]</span></p>
+<p>Subtracting the two logs cancels out <span class="math inline">\(C\)</span>: <span class="math display">\[\log q(x) - \log p_\theta(x) = \frac{1}{2\tilde{\beta}_t} \left( \| x - \mu_\theta(x_t, t) \|^2 - \| x - \tilde{\mu}_t(x_t, x_0) \|^2 \right)\]</span></p>
+<p>To simplify this, we can expand <span class="math inline">\(\| x - \mu_\theta(x_t, t) \|^2\)</span> by adding and subtracting the true mean <span class="math inline">\(\tilde{\mu}_t(x_t, x_0)\)</span>: <span class="math display">\[\| x - \mu_\theta(x_t, t) \|^2 = \| (x - \tilde{\mu}_t(x_t, x_0)) + (\tilde{\mu}_t(x_t, x_0) - \mu_\theta(x_t, t)) \|^2\]</span> Expanding this polynomial gives us three terms: <span class="math display">\[= \| x - \tilde{\mu}_t(x_t, x_0) \|^2 + 2(x - \tilde{\mu}_t(x_t, x_0))^T(\tilde{\mu}_t(x_t, x_0) - \mu_\theta(x_t, t)) + \| \tilde{\mu}_t(x_t, x_0) - \mu_\theta(x_t, t) \|^2\]</span></p>
+<p>Substituting this expanded polynomial back into our log difference equation, the <span class="math inline">\(\| x - \tilde{\mu}_t(x_t, x_0) \|^2\)</span> terms instantly cancel each other out: <span class="math display">\[\log q(x) - \log p_\theta(x) = \frac{1}{2\tilde{\beta}_t} \left( 2(x - \tilde{\mu}_t(x_t, x_0))^T(\tilde{\mu}_t(x_t, x_0) - \mu_\theta(x_t, t)) + \| \tilde{\mu}_t(x_t, x_0) - \mu_\theta(x_t, t) \|^2 \right)\]</span></p>
+<p>Finally, we take the expectation of this expression with respect to the true distribution <span class="math inline">\(q(x)\)</span>. Because the expected value (the mean) of <span class="math inline">\(x\)</span> under distribution <span class="math inline">\(q\)</span> is exactly <span class="math inline">\(\tilde{\mu}_t(x_t, x_0)\)</span>, the expectation of the term <span class="math inline">\((x - \tilde{\mu}_t(x_t, x_0))\)</span> perfectly evaluates to <span class="math inline">\(0\)</span>. The cross-term entirely vanishes!</p>
+<p>What remains is solely the difference between the means, independent of <span class="math inline">\(x\)</span>: <span class="math display">\[D_{KL}(q \| p_\theta) = \frac{1}{2\tilde{\beta}_t} \| \tilde{\mu}_t(x_t, x_0) - \mu_\theta(x_t, t) \|^2\]</span></p>
+</details>
+</div>
+<p>To calculate the true target mean <span class="math inline">\(\tilde{\mu}_t(x_t, x_0)\)</span>, the network mathematically has to estimate the completely clean, original image <span class="math inline">\(x_0\)</span>. At early timesteps (when the image is only slightly blurry), this is doable. But at late timesteps (when the image is near-total static), asking the network to perfectly hallucinate the final, pristine image <span class="math inline">\(x_0\)</span> in a single leap is impossibly hard. The model’s guesses swing wildly, leading to chaotic, high-variance gradients that aggressively destabilize training.</p>
+<p>Instead of asking the model what the final perfect picture looks like, we can reparameterize the objective. We reframe the question to: <strong>“What specific pattern of static is currently obfuscating this image?”</strong> Unlike the highly complex distribution of real images, the noise <span class="math inline">\(\epsilon\)</span> is always drawn from a simple standard normal distribution. Therefore, the target the network is trying to predict (<span class="math inline">\(\epsilon\)</span>) is strictly bounded and statistically consistent across all timesteps. It is far easier and numerically stable for the network, which we will now denote as predicting noise via <span class="math inline">\(\epsilon_\theta(x_t, t)\)</span>, to iteratively identify and scrape off bounded layers of static than to blindly guess a masterpiece from pure noise.</p>
+<p><strong>Claim 3:</strong> By reparameterizing the network to predict the noise <span class="math inline">\(\epsilon_\theta(x_t, t)\)</span> instead of directly predicting the mean <span class="math inline">\(\mu_\theta(x_t, t)\)</span>, the squared distance between the true and predicted means is strictly proportional to the squared distance between the true noise <span class="math inline">\(\epsilon\)</span> and the predicted noise <span class="math inline">\(\epsilon_\theta(x_t, t)\)</span>: <span class="math display">\[\|\tilde{\mu}_t(x_t, x_0) - \mu_\theta(x_t, t)\|^2 = \frac{\beta_t^2}{\alpha_t(1-\bar{\alpha}_t)} \|\epsilon - \epsilon_\theta(x_t, t)\|^2\]</span></p>
+<div class="proof-block">
+<details closed="">
+<summary>
+Proof: Converting Mean Prediction to Noise Prediction
+</summary>
+<p>Currently, our loss relies on the difference in means: <span class="math inline">\(\| \tilde{\mu}_t(x_t, x_0) - \mu_\theta(x_t, t) \|^2\)</span>. Let’s look closely at the true mean <span class="math inline">\(\tilde{\mu}_t(x_t, x_0)\)</span>. It requires the clean image <span class="math inline">\(x_0\)</span>. However, from our forward process shortcut, we know that: <span class="math display">\[x_t = \sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon\]</span></p>
+<p>We can rearrange this to solve for the clean image <span class="math inline">\(x_0\)</span>: <span class="math display">\[x_0 = \frac{1}{\sqrt{\bar{\alpha}_t}}(x_t - \sqrt{1-\bar{\alpha}_t}\epsilon)\]</span></p>
+<p>Now, substitute this <span class="math inline">\(x_0\)</span> definition into our previously derived equation for the true mean <span class="math inline">\(\tilde{\mu}_t\)</span>: <span class="math display">\[\tilde{\mu}_t(x_t, x_0) = \frac{\sqrt{\alpha_t}(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}x_t + \frac{\sqrt{\bar{\alpha}_{t-1}}\beta_t}{1-\bar{\alpha}_t} \left( \frac{1}{\sqrt{\bar{\alpha}_t}}(x_t - \sqrt{1-\bar{\alpha}_t}\epsilon) \right)\]</span></p>
+<p>With some algebraic grouping (recognizing that <span class="math inline">\(\bar{\alpha}_t = \alpha_t \bar{\alpha}_{t-1}\)</span>), this cleanly simplifies to showing that the true mean is just a function of the true noise <span class="math inline">\(\epsilon\)</span>: <span class="math display">\[\tilde{\mu}_t(x_t, \epsilon) = \frac{1}{\sqrt{\alpha_t}} \left( x_t - \frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon \right)\]</span></p>
+<p>Since <span class="math inline">\(x_t\)</span> and <span class="math inline">\(t\)</span> are known inputs during training, we can configure our neural network to output exactly the same structure, predicting the noise term <span class="math inline">\(\epsilon_\theta(x_t, t)\)</span> instead of the whole mean: <span class="math display">\[\mu_\theta(x_t, t) = \frac{1}{\sqrt{\alpha_t}} \left( x_t - \frac{\beta_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon_\theta(x_t, t) \right)\]</span></p>
+<p>Now, let’s subtract the network’s prediction from the true target mean. The <span class="math inline">\(x_t\)</span> terms cancel out, leaving: <span class="math display">\[\tilde{\mu}_t(x_t, x_0) - \mu_\theta(x_t, t) = -\frac{\beta_t}{\sqrt{\alpha_t(1-\bar{\alpha}_t)}} (\epsilon - \epsilon_\theta(x_t, t))\]</span></p>
+<p>Finally, we plug this back into our simplified KL Divergence loss from Claim 2, remembering to square it: <span class="math display">\[D_{KL} = \frac{1}{2\tilde{\beta}_t} \left\| -\frac{\beta_t}{\sqrt{\alpha_t(1-\bar{\alpha}_t)}} (\epsilon - \epsilon_\theta(x_t, t)) \right\|^2\]</span> <span class="math display">\[D_{KL} = \frac{\beta_t^2}{2\tilde{\beta}_t \alpha_t (1-\bar{\alpha}_t)} \| \epsilon - \epsilon_\theta(x_t, t) \|^2\]</span></p>
+</details>
+</div>
+<p>Empirically, researchers found that the complicated coefficient <span class="math inline">\(\frac{\beta_t^2}{2\tilde{\beta}_t \alpha_t (1-\bar{\alpha}_t)}\)</span> focuses too much of the model’s capacity on extremely noisy timesteps that are hard to learn. Dropping this complex weight entirely makes training much more stable and produces higher-quality images. This leaves us with an elegantly simple Mean Squared Error (MSE) objective: <span class="math display">\[\mathcal{L}_\text{simple}(\theta) = \mathbb{E}_{t, x_0, \epsilon} \left[ \| \epsilon - \epsilon_\theta(x_t, t) \|^2 \right]\]</span> <em>(In plain English: “Minimize the squared difference between the true noise <span class="math inline">\(\epsilon\)</span> and the noise our network <span class="math inline">\(\theta\)</span> predicted, given <span class="math inline">\(x_t\)</span> at timestep <span class="math inline">\(t\)</span>”).</em></p>
+</section>
+<section id="inference" class="level3">
+<h3 class="anchored" data-anchor-id="inference">Inference</h3>
+<p>Now that we have a trained neural network <span class="math inline">\(\epsilon_\theta\)</span> that can estimate the noise added to an image at any timestep <span class="math inline">\(t\)</span>, how do we actually generate a new image from scratch? We perform the reverse Markov chain iteratively.</p>
+<p>The sampling algorithm proceeds as follows:</p>
+<ol type="1">
+<li><p><strong>Start with pure noise:</strong> Sample an initial state <span class="math inline">\(x_T\)</span> from a standard normal distribution: <span class="math display">\[x_T \sim \mathcal{N}(\mathbf{0}, \mathbf{I})\]</span></p></li>
+<li><p><strong>Iteratively denoise:</strong> Loop backwards through time, taking one small step at a time for <span class="math inline">\(t = T, T-1, \dots, 1\)</span>. At each step, we sample the previous, slightly cleaner state <span class="math inline">\(x_{t-1}\)</span> from our network’s learned distribution <span class="math inline">\(p_\theta(x_{t-1} | x_t)\)</span>.</p>
+<p>Because <span class="math inline">\(p_\theta(x_{t-1} | x_t) = \mathcal{N}(x_{t-1}; \mu_\theta(x_t, t), \sigma_t^2 \mathbf{I})\)</span>, we can use the reparameterization trick to draw a sample. We calculate the mean <span class="math inline">\(\mu_\theta(x_t, t)\)</span> using our network’s noise prediction <span class="math inline">\(\epsilon_\theta(x_t, t)\)</span>, and then inject a small amount of random noise <span class="math inline">\(z\)</span> scaled by variance <span class="math inline">\(\sigma_t\)</span>:</p>
+<p><span class="math display">\[x_{t-1} = \frac{1}{\sqrt{\alpha_t}} \left( x_t - \frac{1 - \alpha_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon_\theta(x_t, t) \right) + \sigma_t z\]</span></p>
+<p>Where:</p>
+<ul>
+<li><span class="math inline">\(z \sim \mathcal{N}(\mathbf{0}, \mathbf{I})\)</span> if <span class="math inline">\(t &gt; 1\)</span> (we add noise to prevent the model from collapsing to an average, blurry state during the intermediate steps).</li>
+<li><span class="math inline">\(z = \mathbf{0}\)</span> if <span class="math inline">\(t = 1\)</span> (at the final step, we do not add any noise because we want the crisp, final image).</li>
+<li>The variance <span class="math inline">\(\sigma_t^2\)</span> is typically chosen as either <span class="math inline">\(\tilde{\beta}_t\)</span> or <span class="math inline">\(\beta_t\)</span>.</li>
+</ul></li>
+<li><p><strong>Return final image:</strong> Once the loop reaches <span class="math inline">\(t=0\)</span>, the resulting <span class="math inline">\(x_0\)</span> is our generated image.</p></li>
+</ol>
+</section>
+<section id="conditioning-and-guidance" class="level3">
+<h3 class="anchored" data-anchor-id="conditioning-and-guidance">Conditioning and Guidance</h3>
+<p>Once we have a trained diffusion model, it can generate highly realistic images from pure noise. But what if we want to generate a <em>specific</em> image, like “A dog in a bed wearing a hat”? We can <strong>condition</strong> the diffusion process on text (denoted as condition <span class="math inline">\(c\)</span>).</p>
+<p>I like to think of this text conditioning in the context of watching clouds with a friend. If a cloud is just random noise, it looks like nothing. But the moment a friend says, “Doesn’t that look like a turtle?”, your brain immediately latches onto the shapes and starts to see a turtle. In the same way, if we tell a diffusion model that a matrix of random noise is a turtle, the model uses that text condition <span class="math inline">\(c\)</span> as a map for which noise to remove to reveal the turtle.</p>
+<center>
+<img src="images/diffusion_training.png" width="750">
+</center>
+<p>As shown in the <strong>training image</strong> above, we provide the model with an image and a corresponding text description. Both are passed through pretrained encoders (like VAEs or CLIP) to map them into a compressed latent space. We apply noise to the image’s latent representation. Crucially, when we ask the diffusion model to predict the noise <span class="math inline">\(\epsilon\)</span>, we also pass it the encoded text. Through mechanisms like cross-attention, the model learns the statistical relationship between specific words and specific visual features it needs to de-noise.</p>
+<center>
+<img src="images/diffusion_testing.png" width="750">
+</center>
+<p>The <strong>testing image</strong> illustrates how this works during inference. We start with pure random noise and our encoded text prompt. The diffusion model iteratively predicts and removes the noise, at every step querying the text embedding to ensure the geometry it is carving out matches the prompt. Once the latent noise has been fully sculpted into a latent image, a pretrained decoder translates it back into pixel space.</p>
+<p>To make the model follow the prompt strictly, modern architectures use <strong>Classifier-Free Guidance (CFG)</strong>. We ask the model to make two predictions simultaneously during the inference loop:</p>
+<ol type="1">
+<li><p>A prediction <em>with</em> the text prompt: <span class="math inline">\(\epsilon_\theta(x_t, t, c)\)</span></p></li>
+<li><p>A prediction <em>without</em> any text prompt (an unconditional guess): <span class="math inline">\(\epsilon_\theta(x_t, t, \emptyset)\)</span></p></li>
+</ol>
+<p>We then calculate the final noise prediction (<span class="math inline">\(\tilde{\epsilon}_\theta\)</span>) by moving <em>away</em> from the unconditional guess and strictly <em>toward</em> the conditioned guess. The strength of this effect is governed by a guidance scale <span class="math inline">\(w\)</span>: <span class="math display">\[\tilde{\epsilon}_\theta = (1+w)\epsilon_\theta(x_t, t, c) - w \epsilon_\theta(x_t, t, \emptyset)\]</span></p>
+<p>By amplifying the difference between the conditioned and unconditioned states, we force the model to vividly hallucinate exactly what we asked for.</p>
+
+
+
+</section>
+
+</main> <!-- /main -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const wordsPerMinute = 200;
+  const text = document.body.innerText;
+  const words = text.trim().split(/\s+/).length;
+  const readingTime = Math.ceil(words / wordsPerMinute);
+
+  const readTimeEl = document.createElement("div");
+  readTimeEl.innerText = `⏱️ ${readingTime} min read`;
+
+  // Style it to appear centered
+  readTimeEl.style.fontSize = "0.9em";
+  readTimeEl.style.margin = "1em auto";
+  readTimeEl.style.textAlign = "left";
+  readTimeEl.style.width = "100%";
+
+  const title = document.querySelector("h1");
+  if (title) {
+    title.parentNode.insertBefore(readTimeEl, title.nextSibling);
+  }
+});
+</script>
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+        const codeEl = trigger.previousElementSibling.cloneNode(true);
+        for (const childEl of codeEl.children) {
+          if (isCodeAnnotation(childEl)) {
+            childEl.remove();
+          }
+        }
+        return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

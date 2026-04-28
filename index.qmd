@@ -160,8 +160,9 @@ output:
   </tr>
   <tr>
     <td>Week 15 (4/28 and 4/30)</td>
-    <td><a href="">Diffusion</a></td>
-    <td><a href="">Diffusion</a></td>
+    <td><a href="notes/Diffusion.html">Diffusion</a></td>
+    <td><a href="notes/Diffusion.html">Diffusion</a></td>
+    <td><a href="slides/Week15.pdf">Slides</a></td>
     <td></td>
   </tr>
   <tr>
