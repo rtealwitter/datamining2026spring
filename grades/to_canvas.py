@@ -100,14 +100,14 @@ def build_canvas_dataframe(df):
         # Copy scores
         for a in score_columns:
             val = row.get(a, "")
-            # Try to coerce to float (Canvas likes numbers); keep blank if non-numeric
+            # Try to coerce to float (Canvas likes numbers); replace missing with 0
             try:
                 if pd.isna(val) or str(val).strip() == "":
-                    out[a] = ""
+                    out[a] = 0.0
                 else:
                     out[a] = float(val)
             except Exception:
-                out[a] = "" if pd.isna(val) else val
+                out[a] = 0.0 if pd.isna(val) or str(val).strip() == "" else val
         out_rows.append(out)
 
     out_df = pd.DataFrame(out_rows, columns=out_cols)
@@ -147,7 +147,23 @@ def main(in_path, out_path):
 
     # Write CSV exactly as Canvas expects (comma-separated, UTF-8, no index)
     out_df.to_csv(out_path, index=False)
-    print(f"✔ Wrote Canvas import CSV to: {out_path}")
+    print(f"✔ Wrote Canvas import CSV to: {out_path}\n")
+
+    # --- Print Output Statistics ---
+    total_students = len(df)
+    print(f"Total number of students: {total_students}")
+
+    # Check if Midterm columns exist to perform the comparison safely
+    if "Midterm 1" in df.columns and "Midterm 2" in df.columns:
+        # Convert to numeric, coercing errors to NaN, then fill NaNs with 0
+        m1_scores = pd.to_numeric(df["Midterm 1"], errors="coerce").fillna(0)
+        m2_scores = pd.to_numeric(df["Midterm 2"], errors="coerce").fillna(0)
+        
+        # Calculate how many students improved
+        improved_count = (m2_scores > m1_scores).sum()
+        print(f"Students with Midterm 2 > Midterm 1: {improved_count}")
+    else:
+        print("Note: 'Midterm 1' and/or 'Midterm 2' columns were not found in the CSV. Skipped comparison.")
 
 
 if __name__ == "__main__":
