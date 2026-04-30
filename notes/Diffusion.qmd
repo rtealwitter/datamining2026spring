@@ -197,20 +197,35 @@ $$\mathcal{L}_\text{simple}(\theta) = \mathbb{E}_{t, x_0, \epsilon} \left[ \| \e
 
 Now that we have a trained neural network $\epsilon_\theta$ that can estimate the noise added to an image at any timestep $t$, how do we actually generate a new image from scratch? We perform the reverse Markov chain iteratively. 
 
+Instead of treating this backward step as a black-box calculation, it is highly intuitive to think of the model performing two distinct actions at every timestep:
+
+**Hallucinate the final image:** Look at the current noisy state $x_t$ and make a best guess for what the perfectly clean, final image looks like. We denote this guess as $\hat{x}_0$.
+
+**Take a mathematical half-step:** Use the exact formulas from our true forward process to add noise *back* onto that perfect hallucination until it reaches the slightly noisy state $x_{t-1}$.
+
 The sampling algorithm proceeds as follows:
 
 1. **Start with pure noise:** Sample an initial state $x_T$ from a standard normal distribution:
    $$x_T \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$$
 
-2. **Iteratively denoise:** Loop backwards through time, taking one small step at a time for $t = T, T-1, \dots, 1$. At each step, we sample the previous, slightly cleaner state $x_{t-1}$ from our network's learned distribution $p_\theta(x_{t-1} | x_t)$. 
+2. **Iteratively denoise:** Loop backwards through time for $t = T, T-1, \dots, 1$. At each step:
    
-   Because $p_\theta(x_{t-1} | x_t) = \mathcal{N}(x_{t-1}; \mu_\theta(x_t, t), \sigma_t^2 \mathbf{I})$, we can use the reparameterization trick to draw a sample. We calculate the mean $\mu_\theta(x_t, t)$ using our network's noise prediction $\epsilon_\theta(x_t, t)$, and then inject a small amount of random noise $z$ scaled by variance $\sigma_t$:
-   
-   $$x_{t-1} = \frac{1}{\sqrt{\alpha_t}} \left( x_t - \frac{1 - \alpha_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon_\theta(x_t, t) \right) + \sigma_t z$$
+   **a. Predict the clean image ($\hat{x}_0$):**
+   Using our network's prediction of the noise $\epsilon_\theta(x_t, t)$, we algebraically back out what the clean image must be based on our forward process equation ($x_t = \sqrt{\bar{\alpha}_t}x_0 + \sqrt{1-\bar{\alpha}_t}\epsilon$):
+   $$\hat{x}_0 = \frac{1}{\sqrt{\bar{\alpha}_t}}(x_t - \sqrt{1-\bar{\alpha}_t}\epsilon_\theta(x_t, t))$$
+
+   **b. Compute the sampling mean:**
+   Now that we have a guess for the clean image, we plug $\hat{x}_0$ directly into the exact mean of our true tractable posterior from Claim 1 ($\tilde{\mu}_t(x_t, x_0)$):
+   $$\mu_\theta(x_t, t) = \frac{\sqrt{\alpha_t}(1-\bar{\alpha}_{t-1})}{1-\bar{\alpha}_t}x_t + \frac{\sqrt{\bar{\alpha}_{t-1}}\beta_t}{1-\bar{\alpha}_t}\hat{x}_0$$
+   *(Note: If you substitute the equation for $\hat{x}_0$ into this mean equation, the algebra elegantly collapses into a single step: $\frac{1}{\sqrt{\alpha_t}} \left( x_t - \frac{1 - \alpha_t}{\sqrt{1-\bar{\alpha}_t}}\epsilon_\theta(x_t, t) \right)$).*
+
+   **c. Sample with variance:**
+   Finally, we draw our sample $x_{t-1}$ from the distribution $\mathcal{N}(\mu_\theta(x_t, t), \sigma_t^2 \mathbf{I})$ using the reparameterization trick:
+   $$x_{t-1} = \mu_\theta(x_t, t) + \sigma_t z$$
 
    Where:
-   * $z \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$ if $t > 1$ (we add noise to prevent the model from collapsing to an average, blurry state during the intermediate steps).
-   * $z = \mathbf{0}$ if $t = 1$ (at the final step, we do not add any noise because we want the crisp, final image).
+   * $z \sim \mathcal{N}(\mathbf{0}, \mathbf{I})$ if $t > 1$. We inject this noise to prevent the model from collapsing to a blurry, averaged state during the intermediate steps.
+   * $z = \mathbf{0}$ if $t = 1$. At the final step, we want the crisp, final image without any added noise.
    * The variance $\sigma_t^2$ is typically chosen as either $\tilde{\beta}_t$ or $\beta_t$.
 
 3. **Return final image:** Once the loop reaches $t=0$, the resulting $x_0$ is our generated image.

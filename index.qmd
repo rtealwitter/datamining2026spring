@@ -163,7 +163,7 @@ output:
     <td><a href="notes/Diffusion.html">Diffusion</a></td>
     <td><a href="notes/Diffusion.html">Diffusion</a></td>
     <td><a href="slides/Week15.pdf">Slides</a></td>
-    <td><a href="https://colab.research.google.com/drive/1HY4ojNT01_6hsuHGY_vmJ5nah0pBM6L2?usp=sharing">Problem 20</a></td>
+    <td><a href="https://colab.research.google.com/drive/1HY4ojNT01_6hsuHGY_vmJ5nah0pBM6L2?usp=sharing">Problem 20</a>, <a href="https://colab.research.google.com/drive/1PgERMG2mmB4ZJZMJYtLLkgSCDJUhYTtp?usp=sharing">Problem 21</a>td>
   </tr>
   <tr>
     <td>Week 16 (5/5 and 5/7)</td>
