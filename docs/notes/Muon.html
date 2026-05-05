@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>CSCI 145: Data Mining</title>
+<title>Muon Optimizer</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -23,24 +23,24 @@ ul.task-list li input[type="checkbox"] {
 </style>
 
 
-<script src="site_libs/quarto-nav/quarto-nav.js"></script>
-<script src="site_libs/quarto-nav/headroom.min.js"></script>
-<script src="site_libs/clipboard/clipboard.min.js"></script>
-<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
-<script src="site_libs/quarto-search/fuse.min.js"></script>
-<script src="site_libs/quarto-search/quarto-search.js"></script>
-<meta name="quarto:offset" content="./">
-<link href="./eve.ico" rel="icon">
-<script src="site_libs/quarto-html/quarto.js" type="module"></script>
-<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
-<script src="site_libs/quarto-html/popper.min.js"></script>
-<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
-<script src="site_libs/quarto-html/anchor.min.js"></script>
-<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
-<link href="site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
-<script src="site_libs/bootstrap/bootstrap.min.js"></script>
-<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
-<link href="site_libs/bootstrap/bootstrap-c5a5d5e27fcc88644031c24cff017230.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../eve.ico" rel="icon">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-ea385d0e468b0dd5ea5bf0780b1290d9.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-c5a5d5e27fcc88644031c24cff017230.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
 <script id="quarto-search-options" type="application/json">{
   "location": "navbar",
   "copy-button": false,
@@ -68,7 +68,7 @@ ul.task-list li input[type="checkbox"] {
     "search-label": "Search"
   }
 }</script>
-<link rel="shortcut icon" href="./eve.ico">
+<link rel="shortcut icon" href="../eve.ico">
 <script id="MathJax-script" async="" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
 </script>
 
@@ -113,7 +113,7 @@ window.Quarto = {
 };
 </script>
 
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="../styles.css">
 </head>
 
 <body class="nav-fixed quarto-light">
@@ -123,7 +123,7 @@ window.Quarto = {
     <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
       <div class="navbar-container container-fluid">
       <div class="navbar-brand-container mx-auto">
-    <a class="navbar-brand" href="./index.html">
+    <a class="navbar-brand" href="../index.html">
     <span class="navbar-title">Spring 2026</span>
     </a>
   </div>
@@ -141,7 +141,7 @@ window.Quarto = {
 <span class="menu-text">Gradescope</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./syllabus.html"> 
+    <a class="nav-link" href="../syllabus.html"> 
 <span class="menu-text">Syllabus</span></a>
   </li>  
   <li class="nav-item">
@@ -159,18 +159,29 @@ window.Quarto = {
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-full page-navbar">
 <!-- sidebar -->
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link active" data-scroll-target="#motivation">Motivation</a></li>
+  <li><a href="#framing-the-optimization-problem" id="toc-framing-the-optimization-problem" class="nav-link" data-scroll-target="#framing-the-optimization-problem">Framing the Optimization Problem</a></li>
+  <li><a href="#the-optimal-solution" id="toc-the-optimal-solution" class="nav-link" data-scroll-target="#the-optimal-solution">The Optimal Solution</a></li>
+  <li><a href="#polynomial-approximation-newton-schulz" id="toc-polynomial-approximation-newton-schulz" class="nav-link" data-scroll-target="#polynomial-approximation-newton-schulz">Polynomial Approximation (Newton-Schulz)</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
-<main class="content column-page" id="quarto-document-content">
+<main class="content column-page-left" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title"><strong>CSCI 145: Data Mining</strong></h1>
+<h1 class="title"><strong>Muon Optimizer</strong></h1>
 </div>
 
 
 
-<div class="quarto-title-meta column-page">
+<div class="quarto-title-meta column-page-left">
 
     
   
@@ -182,344 +193,85 @@ window.Quarto = {
 </header>
 
 
-<center>
-<em>A course on the mathematical foundations of machine learning.</em>
-</center>
-<p><br></p>
-<div class="row">
-<div class="col" data-markdown="1">
-<p><strong>Instructor</strong>: <a href="https://www.rtealwitter.com/">R. Teal Witter</a>. Please call me Teal.</p>
-<p><strong>Class Times</strong>: Tuesdays and Thursdays from 4:15 to 5:30pm in Kravis 164.</p>
-<p><strong>Office Hours</strong>: Mondays and Thursdays from 12:30 to 2:00pm in Adams 213.</p>
-<p><strong>Problem Sets</strong>: Your primary opportunity to learn the material will be on problem sets. You may work with others to solve the problems, but you must write your solutions by yourself, and explicitly acknowledge any outside help (e.g., websites, people, LLMs).</p>
+<section id="motivation" class="level3">
+<h3 class="anchored" data-anchor-id="motivation">Motivation</h3>
+<p>When building a rigorous mathematical understanding of deep learning, optimization is usually introduced via standard gradient descent. If we have a weight matrix <span class="math inline">\(\mathbf{W} \in \mathbb{R}^{n \times d}\)</span> (where we assume <span class="math inline">\(n \ge d\)</span> without loss of generality) and its gradient <span class="math inline">\(\mathbf{G} = \nabla_{\mathbf{W}} \mathcal{L} \in \mathbb{R}^{n \times d}\)</span>, standard SGD essentially flattens the matrix into a 1D vector and steps in the opposite direction.</p>
+<p>However, neural network weights are not just random collections of independent numbers; they are linear operators that transform activations from one dimensional space to another. Treating them as flattened 1D vectors ignores their fundamental geometry.</p>
+<p>The <strong>Muon</strong> optimizer (MomentUm Orthogonalized by Newton-Schulz) upgrades our concept of “steepest descent” from the geometry of vectors to the geometry of matrices. By rigorously respecting the matrix structure of network weights, Muon accounts for skewed singular value distributions, which are a massive source of ill-conditioning when training deep networks.</p>
+</section>
+<section id="framing-the-optimization-problem" class="level3">
+<h3 class="anchored" data-anchor-id="framing-the-optimization-problem">Framing the Optimization Problem</h3>
+<p>To see why Muon is necessary, we must build the foundation of optimization from the ground up. At its core, the goal of any optimization step <span class="math inline">\(\Delta\mathbf{W} \in \mathbb{R}^{n \times d}\)</span> is to maximize the drop in our loss function. We want the difference between our current loss and our new loss to be as large and positive as possible: <span class="math display">\[\arg\max_{\Delta\mathbf{W}} \mathcal{L}(\mathbf{W}) - \mathcal{L}(\mathbf{W} + \Delta\mathbf{W})\]</span></p>
+<p>To evaluate this for a matrix-variate function without actually taking the step, we use the first-order Taylor series expansion. For matrices, this approximation relies on the <strong>Frobenius inner product</strong>, denoted as <span class="math inline">\(\langle \cdot, \cdot \rangle_F\)</span>, which serves as the high-dimensional equivalent of the standard dot product: <span class="math display">\[\mathcal{L}(\mathbf{W} + \Delta\mathbf{W}) \approx \mathcal{L}(\mathbf{W}) + \langle \nabla_{\mathbf{W}} \mathcal{L}, \Delta\mathbf{W} \rangle_F\]</span></p>
+<p>If we substitute this approximation back into our original goal, the <span class="math inline">\(\mathcal{L}(\mathbf{W})\)</span> terms cancel out: <span class="math display">\[\mathcal{L}(\mathbf{W}) - \mathcal{L}(\mathbf{W} + \Delta\mathbf{W}) \approx -\langle \nabla_{\mathbf{W}} \mathcal{L}, \Delta\mathbf{W} \rangle_F\]</span></p>
+<p>Mathematically, the Frobenius inner product of two <span class="math inline">\(n \times d\)</span> matrices <span class="math inline">\(\mathbf{A}\)</span> and <span class="math inline">\(\mathbf{B}\)</span> is defined by the trace of their product: <span class="math inline">\(\langle \mathbf{A}, \mathbf{B} \rangle_F = \text{Tr}(\mathbf{A}^\top \mathbf{B})\)</span>. If we let <span class="math inline">\(\mathbf{G}\)</span> represent our gradient matrix (<span class="math inline">\(\nabla_{\mathbf{W}} \mathcal{L}\)</span>), the expected drop in loss simplifies to: <span class="math display">\[\mathcal{L}(\mathbf{W}) - \mathcal{L}(\mathbf{W} + \Delta\mathbf{W}) \approx -\text{Tr}(\mathbf{G}^\top \Delta\mathbf{W})\]</span></p>
+<p>To <em>maximize</em> this drop (making the negative trace as large as possible), we must equivalently <em>minimize</em> the positive trace: <span class="math inline">\(\min_{\Delta\mathbf{W}} \text{Tr}(\mathbf{G}^\top \Delta\mathbf{W})\)</span>. This expression represents the directional derivative, effectively asking: <em>“Which direction points the steepest way down the loss landscape?”</em></p>
+<p>If we try to solve this without any boundaries, the math will dictate taking an infinitely large step to achieve an infinitely large drop. However, the linear Taylor approximation only holds true locally; if the step is too large, the landscape curves and the approximation completely breaks down. Therefore, we must apply a constraint to limit the step size to some small radius <span class="math inline">\(\epsilon\)</span>.</p>
+<p>Muon restricts this step size using the <strong>Spectral norm</strong>, which measures the matrix’s largest singular value: <span class="math inline">\(\|\Delta\mathbf{W}\|_2 \leq \epsilon\)</span>. This rigorously bounds the maximum amount the weight update is allowed to stretch any input vector.</p>
+<p>Our fully framed optimization problem becomes: <span class="math display">\[\min_{\Delta\mathbf{W}} \text{Tr}(\mathbf{G}^\top \Delta\mathbf{W}) \quad \text{subject to} \quad \|\Delta\mathbf{W}\|_2 \leq \epsilon\]</span></p>
+<p>Now that the problem is properly framed, we can clearly see where standard optimization falls short. <strong>Standard SGD</strong> applies its step-size constraint using the <em>Frobenius norm</em>, which bounds the sum of the squared changes: <span class="math inline">\(\|\Delta\mathbf{W}\|_F \leq \epsilon\)</span>. While computationally simple, treating the matrix like a flattened 1D vector is an arbitrary geometric choice. Muon’s spectral constraint asks a mathematically superior question that respects the weight matrix’s nature as a linear operator: <em>“What is the steepest descent direction that doesn’t stretch the input space beyond a factor of <span class="math inline">\(\epsilon\)</span>?”</em></p>
+</section>
+<section id="the-optimal-solution" class="level3">
+<h3 class="anchored" data-anchor-id="the-optimal-solution">The Optimal Solution</h3>
+<p>What is the mathematically optimal step under this spectral constraint? By utilizing Singular Value Decomposition (SVD), we can prove that the optimal step relies exclusively on the pure orthogonal direction of the gradient, entirely ignoring its magnitude.</p>
+<p><strong>Claim:</strong> Given the SVD of the gradient <span class="math inline">\(\mathbf{G} = \sum_{k=1}^d \sigma_k \mathbf{u}_k \mathbf{v}_k^\top\)</span>, the optimal update direction <span class="math inline">\(\Delta\mathbf{W}^*\)</span> that minimizes the trace under a spectral norm constraint is the polar factor of the gradient: <span class="math display">\[\Delta\mathbf{W}^* = -\epsilon \sum_{k=1}^d \mathbf{u}_k \mathbf{v}_k^\top\]</span></p>
+<div class="proof-block">
+<details open="">
+<summary>
+Proof: Steepest Descent via the Spectral Norm
+</summary>
+<p>We want to solve <span class="math inline">\(\min_{\Delta\mathbf{W}} \text{Tr}(\mathbf{G}^\top \Delta\mathbf{W})\)</span> subject to <span class="math inline">\(\|\Delta\mathbf{W}\|_2 \leq \epsilon\)</span>.</p>
+<p>First, express the gradient using its thin SVD in outer product form: <span class="math inline">\(\mathbf{G} = \sum_{k=1}^d \sigma_k \mathbf{u}_k \mathbf{v}_k^\top\)</span>, where <span class="math inline">\(\sigma_k \ge 0\)</span>, and <span class="math inline">\(\mathbf{u}_k \in \mathbb{R}^n, \mathbf{v}_k \in \mathbb{R}^d\)</span> are sets of orthonormal vectors. Let us extend these to form complete orthonormal bases for <span class="math inline">\(\mathbb{R}^n\)</span> and <span class="math inline">\(\mathbb{R}^d\)</span>.</p>
+<p>Because these bases are complete, any proposed update matrix <span class="math inline">\(\Delta\mathbf{W} \in \mathbb{R}^{n \times d}\)</span> can be perfectly expressed as a linear combination of all possible outer products between the two bases: <span class="math display">\[\Delta\mathbf{W} = \sum_{i=1}^n \sum_{j=1}^d c_{ij} \mathbf{u}_i \mathbf{v}_j^\top\]</span></p>
+<p>Substitute both outer product expansions into our objective: <span class="math display">\[\text{Tr}(\mathbf{G}^\top \Delta\mathbf{W}) = \text{Tr}\left( \left(\sum_{k=1}^d \sigma_k \mathbf{v}_k \mathbf{u}_k^\top\right) \left(\sum_{i=1}^n \sum_{j=1}^d c_{ij} \mathbf{u}_i \mathbf{v}_j^\top\right) \right)\]</span></p>
+<p>Because the left basis vectors <span class="math inline">\(\mathbf{u}\)</span> are orthonormal, their inner product <span class="math inline">\(\mathbf{u}_k^\top \mathbf{u}_i\)</span> is <span class="math inline">\(1\)</span> exactly when <span class="math inline">\(k=i\)</span>, and <span class="math inline">\(0\)</span> otherwise. This immediately collapses the inner multiplication: <span class="math display">\[= \text{Tr}\left( \sum_{k=1}^d \sum_{j=1}^d \sigma_k c_{kj} \mathbf{v}_k \mathbf{v}_j^\top \right)\]</span></p>
+<p>By the linearity of the trace, we apply it directly to the outer product <span class="math inline">\(\mathbf{v}_k \mathbf{v}_j^\top\)</span>. The trace of an outer product <span class="math inline">\(\text{Tr}(\mathbf{v}_k \mathbf{v}_j^\top)\)</span> is equal to the inner product <span class="math inline">\(\mathbf{v}_j^\top \mathbf{v}_k\)</span>. Because the right basis vectors are also orthonormal, this evaluates to <span class="math inline">\(1\)</span> exactly when <span class="math inline">\(k=j\)</span>, and <span class="math inline">\(0\)</span> otherwise. This eliminates the <span class="math inline">\(j\)</span> summation, leaving a remarkably simple objective: <span class="math display">\[\text{Tr}(\mathbf{G}^\top \Delta\mathbf{W}) = \sum_{k=1}^d \sigma_k c_{kk}\]</span></p>
+<p>Now we must apply our constraint, <span class="math inline">\(\|\Delta\mathbf{W}\|_2 \le \epsilon\)</span>, from first principles. By definition, the spectral norm requires that for <em>any</em> unit vector <span class="math inline">\(\mathbf{x}\)</span>, the magnitude of the transformed vector cannot exceed <span class="math inline">\(\epsilon\)</span>: <span class="math inline">\(\|\Delta\mathbf{W} \mathbf{x}\|_2 \le \epsilon\)</span>.</p>
+<p>Let’s test this constraint by feeding the right basis vector <span class="math inline">\(\mathbf{v}_k\)</span> into our expanded matrix. Because <span class="math inline">\(\mathbf{v}_j^\top \mathbf{v}_k\)</span> is <span class="math inline">\(1\)</span> only when <span class="math inline">\(j=k\)</span>, the matrix isolated exactly the <span class="math inline">\(k\)</span>-th column of our coefficients: <span class="math display">\[\Delta\mathbf{W} \mathbf{v}_k = \left(\sum_{i=1}^n \sum_{j=1}^d c_{ij} \mathbf{u}_i \mathbf{v}_j^\top\right) \mathbf{v}_k = \sum_{i=1}^n c_{ik} \mathbf{u}_i\]</span></p>
+<p>To find the squared magnitude of this resulting vector, we rely on the fact that the <span class="math inline">\(\mathbf{u}_i\)</span> vectors are orthogonal, allowing us to simply sum their squared components (the Pythagorean theorem in <span class="math inline">\(n\)</span>-dimensions): <span class="math display">\[\|\Delta\mathbf{W} \mathbf{v}_k\|_2^2 = \sum_{i=1}^n c_{ik}^2 \le \epsilon^2\]</span></p>
+<p>Because the sum of squares of <em>all</em> coefficients in the <span class="math inline">\(k\)</span>-th column must be at most <span class="math inline">\(\epsilon^2\)</span>, the squared diagonal coefficient <span class="math inline">\(c_{kk}^2\)</span> is strictly bounded: <span class="math display">\[c_{kk}^2 \le \sum_{i=1}^n c_{ik}^2 \le \epsilon^2 \implies c_{kk} \ge -\epsilon\]</span></p>
+<p>To minimize our simplified objective <span class="math inline">\(\sum_{k=1}^d \sigma_k c_{kk}\)</span> (where singular values <span class="math inline">\(\sigma_k\)</span> are non-negative), we must make each <span class="math inline">\(c_{kk}\)</span> as negative as physically possible. Therefore, the mathematically optimal choice is <span class="math inline">\(c_{kk} = -\epsilon\)</span>.</p>
+<p>However, if <span class="math inline">\(c_{kk}^2 = \epsilon^2\)</span>, our constraint equation (<span class="math inline">\(\sum_{i=1}^n c_{ik}^2 \le \epsilon^2\)</span>) leaves exactly zero budget for any other coefficients in that column. This rigidly forces <span class="math inline">\(c_{ik} = 0\)</span> for all off-diagonal terms where <span class="math inline">\(i \neq k\)</span>.</p>
+<p>By dictating that all diagonal coefficients are <span class="math inline">\(-\epsilon\)</span> and all off-diagonal coefficients are <span class="math inline">\(0\)</span>, the objective perfectly constrains our optimal matrix step to the pure polar factor: <span class="math display">\[\Delta\mathbf{W}^* = \sum_{k=1}^d (-\epsilon) \mathbf{u}_k \mathbf{v}_k^\top = -\epsilon \sum_{k=1}^d \mathbf{u}_k \mathbf{v}_k^\top\]</span></p>
+</details>
 </div>
-<div class="col" data-markdown="1">
-<p><strong>Quizzes</strong>: There will be short quizzes at the beginning of (randomly) selected classes. These quizzes will test your understanding of the problem sets and the concepts from the prior week.</p>
-<p><strong>Exams</strong>: The two midterm exams are the primary method of assessing your understanding of the material.</p>
-<p><strong>Project</strong>: The project offers a chance to explore an area that interests you, practice writing high quality code, and develop your ability to communicate technical ideas to an audience.</p>
-</div>
-</div>
-<p><strong>Resources</strong>: Most of the material we cover comes from either Chris Musco’s phenomenal <a href="https://www.chrismusco.com/machinelearning2024_grad/">machine learning course</a>, or Chinmay Hegde’s fantastic <a href="https://chinmayhegde.github.io/dl-notes/">deep learning course</a>. While we do not have a textbook, we do have readings for each lecture; I <strong>highly</strong> recommend you do these readings before each class.</p>
-<table style="width: 100%; border-collapse: collapse;">
-<tbody><tr>
-<td>
-Week
-</td>
-<td>
-Tuesday
-</td>
-<td>
-Thursday
-</td>
-<td>
-Slides
-</td>
-<td>
-Assignments
-</td>
-</tr>
-<tr class="section-header">
-<td colspan="5">
-Warm Up
-</td>
-</tr>
-<tr>
-<td>
-Week 1 (1/20 and 1/22)
-</td>
-<td>
-<a href="notes/LinearAlgebra.html">Math Review</a>
-</td>
-<td>
-<a href="notes/LinearAlgebra.html">Linear Algebra</a>
-</td>
-<td>
-<a href="slides/Week01.pdf">Slides</a>
-</td>
-<td>
-<a href="https://colab.research.google.com/drive/13vdcmMG1id_Fmzt50i2PjBzf0N8cZH93?usp=sharing">Problem 1</a>
-</td>
-</tr>
-<tr>
-<td>
-Week 2 (1/27 and 1/29)
-</td>
-<td>
-<a href="notes/PageRank.html">PageRank</a>
-</td>
-<td>
-<a href="notes/PageRank.html">PageRank</a>
-</td>
-<td>
-<a href="slides/Week02.pdf">Slides</a>
-</td>
-<td>
-<a href="https://colab.research.google.com/drive/1GLO44bxqvnbIxy3D_e2jpkeXpP7cu5Gd?usp=sharing">Problem 2</a>, <a href="https://colab.research.google.com/drive/1vZX3Olrk0RMNOr4bCCXjeeEzBNvWd8Hr?usp=sharing">Problem 3</a>
-</td>
-</tr>
-<tr class="section-header">
-<td colspan="5">
-Supervised Learning
-</td>
-</tr>
-<tr>
-<td>
-Week 3 (2/3 and 2/5)
-</td>
-<td>
-<a href="notes/LinearRegression.html">Linear Regression</a>
-</td>
-<td>
-<a href="notes/LinearRegression.html">Linear Regression</a>
-</td>
-<td>
-<a href="slides/Week03.pdf">Slides</a>
-</td>
-<td>
-<a href="https://colab.research.google.com/drive/1tarUmKyGINjCpJAhab2k4kmhKdNeKxMx?usp=sharing">Problem 4</a>, <a href="https://colab.research.google.com/drive/1sDEESMPuqRr-Sxj_sjGC2nr0_v1dGBR2?usp=sharing">Problem 5</a>
-</td>
-</tr>
-<tr>
-<td>
-Week 4 (2/10 and 2/12)
-</td>
-<td>
-<a href="notes/LinearRegression.html">Exact Optimization</a>
-</td>
-<td>
-<a href="notes/GradientDescent.html">Gradient Descent</a>
-</td>
-<td>
-<a href="slides/Week04.pdf">Slides</a>
-</td>
-<td>
-<a href="https://colab.research.google.com/drive/1RgIQa0M5dZBfe4rXCqOcHiRUXhjL6Vwb?usp=sharing">Problem 6</a>
-</td>
-</tr>
-<tr>
-<td>
-Week 5 (2/17 and 2/19)
-</td>
-<td>
-<a href="notes/PolynomialRegression.html">Polynomial Regression</a>
-</td>
-<td>
-<a href="notes/LogisticRegression.html">Probability</a>
-</td>
-<td>
-<a href="slides/Week05.pdf">Slides</a>
-</td>
-<td>
-<a href="https://colab.research.google.com/drive/1txlvdOJV7gRtFiO_95lJI1KxFT37c929?usp=sharing">Problem 7</a>, <a href="https://colab.research.google.com/drive/1IbtzU4uBBDVK0K-9JvXdOYS3pSaUFk0z?usp=sharing">Problem 8</a>
-</td>
-</tr>
-<tr>
-<td>
-Week 6 (2/24 and 2/26)
-</td>
-<td>
-<a href="notes/LogisticRegression.html">Logistic Regression</a>
-</td>
-<td>
-<a href="notes/NeuralNetworks.html">Neural Networks</a>
-</td>
-<td>
-<a href="slides/Week06.pdf">Slides</a>
-</td>
-<td>
-<a href="https://colab.research.google.com/drive/15amS8sXT5H1tyMX5jfdHQ3tNWLXvXUHV?usp=sharing">Problem 9</a>
-</td>
-</tr>
-<tr>
-<td>
-Week 7 (3/3 and 3/5)
-</td>
-<td>
-<a href="notes/NeuralNetworks.html">Backpropagation</a>
-</td>
-<td>
-<i>Midterm Exam</i>
-</td>
-<td>
-<a href="slides/Week07.pdf">Slides</a>
-</td>
-<td>
-</td>
-</tr>
-<tr>
-<td>
-Week 8 (3/10 and 3/12)
-</td>
-<td>
-<a href="https://chinmayhegde.github.io/dl-notes/notes/lecture04/">Convolutional Networks</a>
-</td>
-<td>
-<a href="https://chinmayhegde.github.io/dl-notes/notes/lecture07/">Transformers</a>
-</td>
-<td>
-<a href="slides/Week08.pdf">Slides</a>
-</td>
-<td>
-<a href="https://colab.research.google.com/drive/1sKgfWMsTWHursW1C6LTqclHlRtvtwx0B?usp=sharing">Problem 10</a>, <a href="https://colab.research.google.com/drive/1irS7fNW61umGn3XsUgCWgAq1U5pCbFtk?usp=sharing">Problem 11</a>
-</td>
-</tr>
-<tr>
-<td>
-Week 9 (3/17 and 3/19)
-</td>
-<td>
-<i>Spring Break (No Class)</i>
-</td>
-<td>
-<i>Spring Break (No Class)</i>
-</td>
-<td>
-</td>
-<td>
-</td>
-</tr>
-<tr>
-<td>
-Week 10 (3/24 and 3/26)
-</td>
-<td>
-<a href="notes/DecisionTrees.html">Decision Trees and Random Forests</a>
-</td>
-<td>
-<a href="notes/DecisionTrees.html">Gradient Boosting</a>
-</td>
-<td>
-<a href="slides/Week10.pdf">Slides</a>
-</td>
-<td>
-<a href="https://colab.research.google.com/drive/1TqoG4j07RA7_po7hXYZVVlmVZObWPfcQ?usp=sharing">Problem 12</a>, <a href="https://colab.research.google.com/drive/11hAHPweSn4zG5posjjk47QZWZlHOePRt?usp=sharing">Problem 13</a>
-</td>
-</tr>
-<tr class="section-header">
-<td colspan="5">
-Unsupervised Learning
-</td>
-</tr>
-<tr>
-<td>
-Week 11 (3/31 and 4/2)
-</td>
-<td>
-<a href="notes/Autoencoders.html">Autoencoders</a>
-</td>
-<td>
-<a href="notes/Autoencoders.html">Autoencoders</a>
-</td>
-<td>
-<a href="slides/Week11.pdf">Slides</a>
-</td>
-<td>
-<a href="https://colab.research.google.com/drive/1sGI2sWPGqDkiNz6GVJ5c7hy5Fo21kLaJ?usp=sharing">Problem 14</a>, <a href="https://colab.research.google.com/drive/1ZjCI9-eu721td9B-PQOWk1gaKl1S0QCV?usp=sharing">Problem 15</a>
-</td>
-</tr>
-<tr>
-<td>
-Week 12 (4/7 and 4/9)
-</td>
-<td>
-<a href="notes/Autoencoders.html">Autoencoders</a>
-</td>
-<td>
-<a href="notes/Autoencoders.html">Autoencoders</a>
-</td>
-<td>
-<a href="slides/Week12.pdf">Slides</a>
-</td>
-<td>
-<a href="https://colab.research.google.com/drive/1NidpoSc_ipFlJeOgRd38zJ2WJzuTuF0W?usp=sharing">Problem 16</a>, <a href="https://colab.research.google.com/drive/1ix2f2fy4RDwc5CSbNGXLr7Sw1V9XKSyb?usp=sharing">Problem 17</a>
-</td>
-</tr>
-<tr>
-<td>
-Week 13 (4/14 and 4/16)
-</td>
-<td>
-<a href="https://chinmayhegde.github.io/dl-notes/notes/lecture09/">Reinforcement Learning</a>
-</td>
-<td>
-<a href="https://chinmayhegde.github.io/dl-notes/notes/lecture09/">Reinforcement Learning</a>
-</td>
-<td>
-<a href="slides/Week13.pdf">Slides</a>
-</td>
-<td>
-<a href="https://colab.research.google.com/drive/1X6V8xAbGctbVQAIofzKHmGT1DWzhQB4-?usp=sharing">Problem 18</a>, <a href="https://colab.research.google.com/drive/1C8pLW99gSrhuC7v-bVGV0XOX74Dye9Z_?usp=sharing">Problem 19</a>
-</td>
-</tr>
-<tr>
-<td>
-Week 14 (4/21 and 4/23)
-</td>
-<td>
-<i>Project/Exam Preparation</i>
-</td>
-<td>
-<i>Midterm Exam</i>
-</td>
-<td>
-<a href="project/proposal.pdf">Project Proposal</a> (<a href="project/proposal.tex">TeX</a>)
-</td>
-<td>
-</td>
-</tr>
-<tr>
-<td>
-Week 15 (4/28 and 4/30)
-</td>
-<td>
-<a href="notes/Diffusion.html">Diffusion</a>
-</td>
-<td>
-<a href="notes/Diffusion.html">Diffusion</a>
-</td>
-<td>
-<a href="slides/Week15.pdf">Slides</a>
-</td>
-<td>
-<a href="https://colab.research.google.com/drive/1HY4ojNT01_6hsuHGY_vmJ5nah0pBM6L2?usp=sharing">Problem 20</a>, <a href="https://colab.research.google.com/drive/1PgERMG2mmB4ZJZMJYtLLkgSCDJUhYTtp?usp=sharing">Problem 21</a>td&gt;
-</td></tr>
-<tr>
-<td>
-Week 16 (5/5 and 5/7)
-</td>
-<td>
-<a href="notes/Muon.html">Muon Optimizer</a>
-</td>
-<td>
-<i>Reading Day (No Class)</i>
-</td>
-<td>
-<a href="project/project.pdf">Final Project</a> (<a href="project/project.tex">TeX</a>)
-</td>
-<td>
-</td>
-</tr>
-<tr>
-<td>
-Week 17 (5/12 and 5/14)
-</td>
-<td>
-<i>Presentations 7-10pm (Wed. 5/13)</i>
-</td>
-<td>
-<i>Finals (No Class)</i>
-</td>
-<td>
-</td>
-<td>
-</td>
-</tr>
-</tbody></table>
+<p>By taking this sum of orthogonal outer products, we are effectively extracting the high-dimensional, rectangular equivalent of a “minus sign.” Muon ensures the optimization takes a pure directional step without being warped by the varying magnitudes of the gradient’s singular values <span class="math inline">\(\sigma_i\)</span>.</p>
+</section>
+<section id="polynomial-approximation-newton-schulz" class="level3">
+<h3 class="anchored" data-anchor-id="polynomial-approximation-newton-schulz">Polynomial Approximation (Newton-Schulz)</h3>
+<p>While mathematically beautiful, calculating the exact SVD to isolate this polar factor at every step requires <span class="math inline">\(O(n d^2)\)</span> operations. This is prohibitively slow for the massive weight matrices in modern architectures and entirely impractical for hardware like GPUs.</p>
+<p>The brilliance of the Muon algorithm is how it bypasses this exact calculation. Instead of solving the SVD, Muon approximates the nearest orthogonal matrix using iterative polynomial transformations.</p>
+<p>By taking the gradient (or momentum) matrix <span class="math inline">\(\mathbf{X}_k \in \mathbb{R}^{n \times d}\)</span> and iteratively applying a carefully chosen polynomial, we can aggressively compress the matrix’s singular values toward 1 without ever actually computing them. Muon typically relies on a <strong>Newton-Schulz</strong> quintic (5th-order) polynomial: <span class="math display">\[\mathbf{X}_{k+1} = a \mathbf{X}_k + b \mathbf{X}_k \mathbf{X}_k^\top \mathbf{X}_k + c (\mathbf{X}_k \mathbf{X}_k^\top)^2 \mathbf{X}_k\]</span></p>
+<p>Using specific constants derived via minimax optimization (such as the Remez algorithm in methods like <a href="https://arxiv.org/abs/2505.16932"><em>The Polar Express</em></a>), this polynomial acts as a mathematical forge. Using only highly parallelizable matrix-matrix multiplications, it hammers the singular values of the gradient matrix close to 1 in just a few iterations.</p>
+<p>This provides the best of both worlds: the theoretical optimality of orthogonal spectral descent, executed at the blistering hardware speed of standard SGD.</p>
 
 
 
+</section>
 
 </main> <!-- /main -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const wordsPerMinute = 200;
+  const text = document.body.innerText;
+  const words = text.trim().split(/\s+/).length;
+  const readingTime = Math.ceil(words / wordsPerMinute);
+
+  const readTimeEl = document.createElement("div");
+  readTimeEl.innerText = `⏱️ ${readingTime} min read`;
+
+  // Style it to appear centered
+  readTimeEl.style.fontSize = "0.9em";
+  readTimeEl.style.margin = "1em auto";
+  readTimeEl.style.textAlign = "left";
+  readTimeEl.style.width = "100%";
+
+  const title = document.querySelector("h1");
+  if (title) {
+    title.parentNode.insertBefore(readTimeEl, title.nextSibling);
+  }
+});
+</script>
 <script id="quarto-html-after-body" type="application/javascript">
   window.document.addEventListener("DOMContentLoaded", function (event) {
     const icon = "";

@@ -1,0 +1,104 @@
+---
+title: "**Muon Optimizer**"
+format:
+  html:
+    toc: true
+    math: mathjax
+    include-after-body: readtime.html
+---
+
+### Motivation
+
+When building a rigorous mathematical understanding of deep learning, optimization is usually introduced via standard gradient descent. If we have a weight matrix $\mathbf{W} \in \mathbb{R}^{n \times d}$ (where we assume $n \ge d$ without loss of generality) and its gradient $\mathbf{G} = \nabla_{\mathbf{W}} \mathcal{L} \in \mathbb{R}^{n \times d}$, standard SGD essentially flattens the matrix into a 1D vector and steps in the opposite direction. 
+
+However, neural network weights are not just random collections of independent numbers; they are linear operators that transform activations from one dimensional space to another. Treating them as flattened 1D vectors ignores their fundamental geometry. 
+
+The **Muon** optimizer (MomentUm Orthogonalized by Newton-Schulz) upgrades our concept of "steepest descent" from the geometry of vectors to the geometry of matrices. By rigorously respecting the matrix structure of network weights, Muon accounts for skewed singular value distributions, which are a massive source of ill-conditioning when training deep networks.
+
+### Framing the Optimization Problem
+
+To see why Muon is necessary, we must build the foundation of optimization from the ground up. At its core, the goal of any optimization step $\Delta\mathbf{W} \in \mathbb{R}^{n \times d}$ is to maximize the drop in our loss function. We want the difference between our current loss and our new loss to be as large and positive as possible:
+$$\arg\max_{\Delta\mathbf{W}} \mathcal{L}(\mathbf{W}) - \mathcal{L}(\mathbf{W} + \Delta\mathbf{W})$$
+
+To evaluate this for a matrix-variate function without actually taking the step, we use the first-order Taylor series expansion. For matrices, this approximation relies on the **Frobenius inner product**, denoted as $\langle \cdot, \cdot \rangle_F$, which serves as the high-dimensional equivalent of the standard dot product:
+$$\mathcal{L}(\mathbf{W} + \Delta\mathbf{W}) \approx \mathcal{L}(\mathbf{W}) + \langle \nabla_{\mathbf{W}} \mathcal{L}, \Delta\mathbf{W} \rangle_F$$
+
+If we substitute this approximation back into our original goal, the $\mathcal{L}(\mathbf{W})$ terms cancel out:
+$$\mathcal{L}(\mathbf{W}) - \mathcal{L}(\mathbf{W} + \Delta\mathbf{W}) \approx -\langle \nabla_{\mathbf{W}} \mathcal{L}, \Delta\mathbf{W} \rangle_F$$
+
+Mathematically, the Frobenius inner product of two $n \times d$ matrices $\mathbf{A}$ and $\mathbf{B}$ is defined by the trace of their product: $\langle \mathbf{A}, \mathbf{B} \rangle_F = \text{Tr}(\mathbf{A}^\top \mathbf{B})$. If we let $\mathbf{G}$ represent our gradient matrix ($\nabla_{\mathbf{W}} \mathcal{L}$), the expected drop in loss simplifies to:
+$$\mathcal{L}(\mathbf{W}) - \mathcal{L}(\mathbf{W} + \Delta\mathbf{W}) \approx -\text{Tr}(\mathbf{G}^\top \Delta\mathbf{W})$$
+
+To *maximize* this drop (making the negative trace as large as possible), we must equivalently *minimize* the positive trace: $\min_{\Delta\mathbf{W}} \text{Tr}(\mathbf{G}^\top \Delta\mathbf{W})$. This expression represents the directional derivative, effectively asking: *"Which direction points the steepest way down the loss landscape?"*
+
+If we try to solve this without any boundaries, the math will dictate taking an infinitely large step to achieve an infinitely large drop. However, the linear Taylor approximation only holds true locally; if the step is too large, the landscape curves and the approximation completely breaks down. Therefore, we must apply a constraint to limit the step size to some small radius $\epsilon$. 
+
+Muon restricts this step size using the **Spectral norm**, which measures the matrix's largest singular value: $\|\Delta\mathbf{W}\|_2 \leq \epsilon$. This rigorously bounds the maximum amount the weight update is allowed to stretch any input vector. 
+
+Our fully framed optimization problem becomes:
+$$\min_{\Delta\mathbf{W}} \text{Tr}(\mathbf{G}^\top \Delta\mathbf{W}) \quad \text{subject to} \quad \|\Delta\mathbf{W}\|_2 \leq \epsilon$$
+
+Now that the problem is properly framed, we can clearly see where standard optimization falls short. **Standard SGD** applies its step-size constraint using the *Frobenius norm*, which bounds the sum of the squared changes: $\|\Delta\mathbf{W}\|_F \leq \epsilon$. While computationally simple, treating the matrix like a flattened 1D vector is an arbitrary geometric choice. Muon's spectral constraint asks a mathematically superior question that respects the weight matrix's nature as a linear operator: *"What is the steepest descent direction that doesn't stretch the input space beyond a factor of $\epsilon$?"*
+
+### The Optimal Solution
+
+What is the mathematically optimal step under this spectral constraint? By utilizing Singular Value Decomposition (SVD), we can prove that the optimal step relies exclusively on the pure orthogonal direction of the gradient, entirely ignoring its magnitude.
+
+**Claim:** Given the SVD of the gradient $\mathbf{G} = \sum_{k=1}^d \sigma_k \mathbf{u}_k \mathbf{v}_k^\top$, the optimal update direction $\Delta\mathbf{W}^*$ that minimizes the trace under a spectral norm constraint is the polar factor of the gradient:
+$$\Delta\mathbf{W}^* = -\epsilon \sum_{k=1}^d \mathbf{u}_k \mathbf{v}_k^\top$$
+
+::: {.proof-block}
+<details open>
+<summary>Proof: Steepest Descent via the Spectral Norm</summary>
+
+We want to solve $\min_{\Delta\mathbf{W}} \text{Tr}(\mathbf{G}^\top \Delta\mathbf{W})$ subject to $\|\Delta\mathbf{W}\|_2 \leq \epsilon$.
+
+First, express the gradient using its thin SVD in outer product form: $\mathbf{G} = \sum_{k=1}^d \sigma_k \mathbf{u}_k \mathbf{v}_k^\top$, where $\sigma_k \ge 0$, and $\mathbf{u}_k \in \mathbb{R}^n, \mathbf{v}_k \in \mathbb{R}^d$ are sets of orthonormal vectors. Let us extend these to form complete orthonormal bases for $\mathbb{R}^n$ and $\mathbb{R}^d$.
+
+Because these bases are complete, any proposed update matrix $\Delta\mathbf{W} \in \mathbb{R}^{n \times d}$ can be perfectly expressed as a linear combination of all possible outer products between the two bases:
+$$\Delta\mathbf{W} = \sum_{i=1}^n \sum_{j=1}^d c_{ij} \mathbf{u}_i \mathbf{v}_j^\top$$
+
+Substitute both outer product expansions into our objective:
+$$\text{Tr}(\mathbf{G}^\top \Delta\mathbf{W}) = \text{Tr}\left( \left(\sum_{k=1}^d \sigma_k \mathbf{v}_k \mathbf{u}_k^\top\right) \left(\sum_{i=1}^n \sum_{j=1}^d c_{ij} \mathbf{u}_i \mathbf{v}_j^\top\right) \right)$$
+
+Because the left basis vectors $\mathbf{u}$ are orthonormal, their inner product $\mathbf{u}_k^\top \mathbf{u}_i$ is $1$ exactly when $k=i$, and $0$ otherwise. This immediately collapses the inner multiplication:
+$$= \text{Tr}\left( \sum_{k=1}^d \sum_{j=1}^d \sigma_k c_{kj} \mathbf{v}_k \mathbf{v}_j^\top \right)$$
+
+By the linearity of the trace, we apply it directly to the outer product $\mathbf{v}_k \mathbf{v}_j^\top$. The trace of an outer product $\text{Tr}(\mathbf{v}_k \mathbf{v}_j^\top)$ is equal to the inner product $\mathbf{v}_j^\top \mathbf{v}_k$. Because the right basis vectors are also orthonormal, this evaluates to $1$ exactly when $k=j$, and $0$ otherwise. This eliminates the $j$ summation, leaving a remarkably simple objective:
+$$\text{Tr}(\mathbf{G}^\top \Delta\mathbf{W}) = \sum_{k=1}^d \sigma_k c_{kk}$$
+
+Now we must apply our constraint, $\|\Delta\mathbf{W}\|_2 \le \epsilon$, from first principles. By definition, the spectral norm requires that for *any* unit vector $\mathbf{x}$, the magnitude of the transformed vector cannot exceed $\epsilon$: $\|\Delta\mathbf{W} \mathbf{x}\|_2 \le \epsilon$.
+
+Let's test this constraint by feeding the right basis vector $\mathbf{v}_k$ into our expanded matrix. Because $\mathbf{v}_j^\top \mathbf{v}_k$ is $1$ only when $j=k$, the matrix isolated exactly the $k$-th column of our coefficients:
+$$\Delta\mathbf{W} \mathbf{v}_k = \left(\sum_{i=1}^n \sum_{j=1}^d c_{ij} \mathbf{u}_i \mathbf{v}_j^\top\right) \mathbf{v}_k = \sum_{i=1}^n c_{ik} \mathbf{u}_i$$
+
+To find the squared magnitude of this resulting vector, we rely on the fact that the $\mathbf{u}_i$ vectors are orthogonal, allowing us to simply sum their squared components (the Pythagorean theorem in $n$-dimensions):
+$$\|\Delta\mathbf{W} \mathbf{v}_k\|_2^2 = \sum_{i=1}^n c_{ik}^2 \le \epsilon^2$$
+
+Because the sum of squares of *all* coefficients in the $k$-th column must be at most $\epsilon^2$, the squared diagonal coefficient $c_{kk}^2$ is strictly bounded:
+$$c_{kk}^2 \le \sum_{i=1}^n c_{ik}^2 \le \epsilon^2 \implies c_{kk} \ge -\epsilon$$
+
+To minimize our simplified objective $\sum_{k=1}^d \sigma_k c_{kk}$ (where singular values $\sigma_k$ are non-negative), we must make each $c_{kk}$ as negative as physically possible. Therefore, the mathematically optimal choice is $c_{kk} = -\epsilon$.
+
+However, if $c_{kk}^2 = \epsilon^2$, our constraint equation ($\sum_{i=1}^n c_{ik}^2 \le \epsilon^2$) leaves exactly zero budget for any other coefficients in that column. This rigidly forces $c_{ik} = 0$ for all off-diagonal terms where $i \neq k$.
+
+By dictating that all diagonal coefficients are $-\epsilon$ and all off-diagonal coefficients are $0$, the objective perfectly constrains our optimal matrix step to the pure polar factor:
+$$\Delta\mathbf{W}^* = \sum_{k=1}^d (-\epsilon) \mathbf{u}_k \mathbf{v}_k^\top = -\epsilon \sum_{k=1}^d \mathbf{u}_k \mathbf{v}_k^\top$$
+
+</details>
+:::
+
+By taking this sum of orthogonal outer products, we are effectively extracting the high-dimensional, rectangular equivalent of a "minus sign." Muon ensures the optimization takes a pure directional step without being warped by the varying magnitudes of the gradient's singular values $\sigma_i$.
+
+### Polynomial Approximation (Newton-Schulz)
+
+While mathematically beautiful, calculating the exact SVD to isolate this polar factor at every step requires $O(n d^2)$ operations. This is prohibitively slow for the massive weight matrices in modern architectures and entirely impractical for hardware like GPUs.
+
+The brilliance of the Muon algorithm is how it bypasses this exact calculation. Instead of solving the SVD, Muon approximates the nearest orthogonal matrix using iterative polynomial transformations. 
+
+By taking the gradient (or momentum) matrix $\mathbf{X}_k \in \mathbb{R}^{n \times d}$ and iteratively applying a carefully chosen polynomial, we can aggressively compress the matrix's singular values toward 1 without ever actually computing them. Muon typically relies on a **Newton-Schulz** quintic (5th-order) polynomial:
+$$\mathbf{X}_{k+1} = a \mathbf{X}_k + b \mathbf{X}_k \mathbf{X}_k^\top \mathbf{X}_k + c (\mathbf{X}_k \mathbf{X}_k^\top)^2 \mathbf{X}_k$$
+
+Using specific constants derived via minimax optimization (such as the Remez algorithm in methods like [*The Polar Express*](https://arxiv.org/abs/2505.16932)), this polynomial acts as a mathematical forge. Using only highly parallelizable matrix-matrix multiplications, it hammers the singular values of the gradient matrix close to 1 in just a few iterations. 
+
+This provides the best of both worlds: the theoretical optimality of orthogonal spectral descent, executed at the blistering hardware speed of standard SGD.

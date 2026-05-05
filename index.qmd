@@ -167,14 +167,14 @@ output:
   </tr>
   <tr>
     <td>Week 16 (5/5 and 5/7)</td>
-    <td><a href="">Muon</a></td>
+    <td><a href="notes/Muon.html">Muon Optimizer</a></td>
     <td><i>Reading Day (No Class)</i></td>
     <td><a href="project/project.pdf">Final Project</a> (<a href="project/project.tex">TeX</a>)</td>
     <td></td>
   </tr>
   <tr>
     <td>Week 17 (5/12 and 5/14)</td>
-    <td><i>Project Presentation 7-10pm on Wednesday 5/13</i></td>
+    <td><i>Presentations 7-10pm (Wed. 5/13)</i></td>
     <td><i>Finals (No Class)</i></td>
     <td></td>
     <td></td>
