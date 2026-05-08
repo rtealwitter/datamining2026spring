@@ -231,7 +231,7 @@ f(\mathbf{x}) = w_0 + w_1 x_1 + w_2 x_2 + w_3 x_1 x_2 + w_4 x_1^2 + w_5 x_2^2
 </section>
 <section id="regularization" class="level3">
 <h3 class="anchored" data-anchor-id="regularization">Regularization</h3>
-<p>So what model achieves lowest generalization error? According to <a href="https://en.wikipedia.org/wiki/Occam%27s_razor">Occam’s razor</a>, the simplest model that explains the data is often the best choice. However, we’ll need to define what we mean by “simple”.</p>
+<p>So what model achieves the lowest generalization error? According to <a href="https://en.wikipedia.org/wiki/Occam%27s_razor">Occam’s razor</a>, the simplest model that explains the data is often the best choice. However, we’ll need to define what we mean by “simple”.</p>
 <p>In polynomial regression, we can think of the degree of the polynomial as a measure of complexity. However, this is not a very general measure of complexity, and it ignores how each degree is used.</p>
 <p>In the example above, we fit the data with a degree-1, degree-2, and degree-10 polynomial. Let’s inspect the weights learned by each model. The histogram (below) shows that the degree-1 and degree-2 polynomials have small weights, while the degree-10 polynomial has some very large weights. This suggests that the degree-10 polynomial is a far more complex model, as it can achieve large changes in the output for small changes in the input.</p>
 <center>

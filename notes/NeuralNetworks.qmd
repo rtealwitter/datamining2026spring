@@ -45,7 +45,7 @@ Neural networks are remarkably flexible, with many different architectural optio
 
 - The **loss function** to measure the error between the predicted and true labels. We can use the same loss functions we have seen before: cross-entropy for classification and squared error for regression. 
 
-Tensorflow offers an excellent visualization of common neural network architectures, which you can play around with [here](https://playground.tensorflow.org/).
+TensorFlow offers an excellent visualization of common neural network architectures, which you can play around with [here](https://playground.tensorflow.org/).
 
 
 Beyond these options, there are several types of neural network architectures that connect neurons in different ways:
@@ -98,7 +98,7 @@ Backpropagation is simply an application of the multivariate chain rule, and is 
 
 During the forward pass, we successively compute the outputs, and feed them into the *next* layer.
 Consider one of the functions in the neural network:
-The function $v : \mathbb{R}^{d} \to \mathbb{R}$ maps the input parameters $u_1, \ldots, u_d$ to an output, which itself is passed to another function.
+The function $v : \mathbb{R}^{d} \to \mathbb{R}$ maps the input values $u_1, \ldots, u_d$ to an output, which itself is passed to another function.
 (In general, $d$ could be 1, e.g., if $v$ were an activation function.)
 When we compute $v(u_1, \ldots, u_d)$, we crucially only need to know the values of parameters $u_1, \ldots, u_d$, rather than any of the parameters that we used to compute $u_1, \ldots, u_d$.
 
@@ -108,12 +108,12 @@ The time complexity of the forward pass is linear in the number of times a param
 
 The backward pass is the reverse of the forward pass: we successively compute the gradients, and feed them into the *prior* layer.
 Suppose the parameter $u$ is used in $n$ different functions $v_1, \ldots, v_n$.
-By the multivariate chain rule, the derivative of the loss function with respect to $u$ is given by
+By the multivariate chain rule, the partial derivative of the loss function with respect to $u$ is given by
 $$
 \frac{\partial \mathcal{L}}{\partial u} = \frac{\partial \mathcal{L}}{\partial v_1} \cdot \frac{\partial v_1}{\partial u} + \ldots + \frac{\partial \mathcal{L}}{\partial v_n} \cdot \frac{\partial v_n}{\partial u}.
 $$
 When we compute this partial derivative, we crucially only need to know the partial derivatives $\frac{\partial \mathcal{L}}{\partial v_1}, \ldots, \frac{\partial \mathcal{L}}{\partial v_n}$, and the partial derivatives $\frac{\partial v_1}{\partial u}, \ldots, \frac{\partial v_n}{\partial u}$.
-By the time we reach $u$ in the backward pass, the first set of partial derivatives are already known from the prior layer, and the second set of partial derivatives only depend on how $u$ is used in the functions $v_1, \ldots, v_n$.
+By the time we reach $u$ in the backward pass, the first set of partial derivatives is already known from the prior layer, and the second set of partial derivatives only depend on how $u$ is used in the functions $v_1, \ldots, v_n$.
 
 Like the forward pass, the time complexity of the backward pass is linear in the number of times a parameter appears in a function, which itself is linear in the number of parameters.
 
@@ -123,7 +123,7 @@ Neural networks have been studied since the 1950s, and the backpropagation algor
 So why did it take so long for neural networks to become popular?
 The answer is that neural networks require *many* parameters to be effective, and for a long time, we did not have the computational resources to train them at sufficient scale.
 A breakthrough in the 2010s made neural networks practical:
-Originally intended for matrix multiplication in graphics rendering, the development of Graphical Processing Units (GPUs) allowed us to efficiently implement backpropagation.
+Originally intended for matrix multiplication in graphics rendering, the development of Graphics Processing Units (GPUs) allowed us to efficiently implement backpropagation.
 
 Consider two adjacent layers of neurons: $\mathbf{u} \in \mathbb{R}^d$ and $\mathbf{v} \in \mathbb{R}^n$ in a fully connected neural network.
 Suppose the weight matrix between the two layers is $\mathbf{W} \in \mathbb{R}^{n \times d}$.

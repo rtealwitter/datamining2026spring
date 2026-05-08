@@ -32,7 +32,7 @@ We can reason through several properties of probabilities:
   $$\Pr(A \cup B) = \Pr(A) + \Pr(B) - \Pr(A \cap B).$$
   This means that the probability of either event occurring is the sum of the probabilities of each event minus the probability of both events occurring together (we subtract the event that both occur because it is counted twice in the sum).
 
-**Complement Rule** The *complement* of an event $A$ is the event that $A$ does not occur, denoted as $\neg A$. Since either $A$ occurs or $\neg A$ occurs, we have that $Pr(A) + \Pr(\neg A) = 1$. Rearranging this gives us that $\Pr(\neg A) = 1 - \Pr(A)$.  
+**Complement Rule** The *complement* of an event $A$ is the event that $A$ does not occur, denoted as $\neg A$. Since either $A$ occurs or $\neg A$ occurs, we have that $\Pr(A) + \Pr(\neg A) = 1$. Rearranging this gives us that $\Pr(\neg A) = 1 - \Pr(A)$.  
 
 **Independence** Two events $A$ and $B$ are *independent* if the occurrence of one event does not affect the probability of the other event occurring. In this case, we have that $\Pr(A \cap B) = \Pr(A) \Pr(B)$. Equivalently, $\Pr(A | B) = \Pr(A)$ and $\Pr(B | A) = \Pr(B)$, do you see why this follows?
 

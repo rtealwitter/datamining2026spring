@@ -204,7 +204,7 @@ window.Quarto = {
 <p>Like gradient descent, decision trees use a <em>greedy</em> approach to learning. As we build the tree, we recursively evaluate the data at each leaf, choosing the feature and threshold that best separates the classes. Let <span class="math inline">\(\ell\)</span> be a leaf <em>after</em> the split at the <em>prior</em> leaf, and <span class="math inline">\(p^{(\ell)}_c\)</span> be the proportion of points in leaf <span class="math inline">\(\ell\)</span> that are of class <span class="math inline">\(c\)</span>. Without loss of generality, suppose that <span class="math inline">\(c=0\)</span> is the majority class. (Soon, we’ll consider weighted points, in which case we will define the weighted majority.) If we reach leaf <span class="math inline">\(\ell\)</span>, we predict that the point belongs to the majority class.</p>
 <p>The question is what split minimizes the loss of the resulting predictions. In particular, we’d like to minimize the <em>expected</em> loss of the predictions where the expectation is taken over the proportion of points that make it to the leaf <span class="math inline">\(p^{(\ell)}\)</span>: <span class="math display">\[
 \mathbb{E}_\ell[\mathcal{L}(\ell)] = \sum_\ell \mathcal{L}(\ell) \cdot p^{(\ell)}.
-\]</span> There are several ways to define the loss of a leaf, but several common ones are:</p>
+\]</span> There are several ways to define the loss of a leaf, including:</p>
 <p><strong>Error Rate</strong>: The error rate is the proportion of points in the leaf that are not of the predicted majority class. That is, <span class="math display">\[
 \mathcal{L}_\text{error}(\ell) = 1 - p^{(\ell)}_0.
 \]</span></p>
@@ -233,7 +233,7 @@ F_t(x) = \alpha_1 f_1(x) + \alpha_2 f_2(x) + \ldots + \alpha_t f_t(x)
 <p>Using the multiplication property of exponents, and the definition of <span class="math inline">\(F_t\)</span>, we can rewrite the loss as <span class="math display">\[
 \mathcal{L}(F_t) = \sum_{i=1}^n e^{-y^{(i)} (F_{t-1}(\mathbf{x}^{(i)}) + \alpha_t f_t(\mathbf{x}^{(i)}))}
 = \sum_{i=1}^n e^{-y^{(i)} F_{t-1}(\mathbf{x}^{(i)})} e^{-y^{(i)} \alpha_t f_t(\mathbf{x}^{(i)})}.
-\]</span> Let <span class="math inline">\(w^{(i)}_{t-1} = e^{-y^{(i)} F_{t-1}(\mathbf{x}^{(i)})}\)</span> be the weight of the <span class="math inline">\(i\)</span>th training example at iteration <span class="math inline">\(t\)</span>. Notice that these weights are independent of the new model <span class="math inline">\(f_t\)</span> and the new weight <span class="math inline">\(\alpha_t\)</span>. Then, partitioning the summation, we can write the error as <span class="math display">\[
+\]</span> Let <span class="math inline">\(w^{(i)}_{t-1} = e^{-y^{(i)} F_{t-1}(\mathbf{x}^{(i)})}\)</span> be the weight of the <span class="math inline">\(i\)</span>th training example at iteration <span class="math inline">\(t\)</span>. Notice that these weights are independent of the new model <span class="math inline">\(f_t\)</span> and the new weight <span class="math inline">\(\alpha_t\)</span>. Then, partitioning the summation, we can write the loss as <span class="math display">\[
 \begin{align}
 \mathcal{L}(F_t) &amp;=
 \sum_{i: y^{(i)} = f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1} e^{-\alpha_t} + \sum_{i: y^{(i)} \neq f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1} e^{\alpha_t}
@@ -241,7 +241,7 @@ F_t(x) = \alpha_1 f_1(x) + \alpha_2 f_2(x) + \ldots + \alpha_t f_t(x)
 \\&amp;= \sum_{i=1}^n w^{(i)}_{t-1} e^{-\alpha_t} + (e^{\alpha_t} - e^{-\alpha_t}) \sum_{i: y^{(i)} \neq f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1}.
 \end{align}
 \]</span></p>
-<p>With <span class="math inline">\(F_{t-1}\)</span> fixed, minimizing <span class="math inline">\(\mathcal{L}(F_t)\)</span> is equivalent to minimizing the weighted error of the new model <span class="math inline">\(f_t\)</span> i.e., the sum of the weights for all misclassified points. Once we learn a decision tree <span class="math inline">\(f_t\)</span> that minimizes the weighted error, we can find the optimal weight <span class="math inline">\(\alpha_t\)</span> by differentiating the loss with respect to <span class="math inline">\(\alpha_t\)</span> and setting it to zero. In particular, we have <span class="math display">\[
+<p>With <span class="math inline">\(F_{t-1}\)</span> fixed, minimizing <span class="math inline">\(\mathcal{L}(F_t)\)</span> is equivalent to minimizing the weighted error of the new model <span class="math inline">\(f_t\)</span>, i.e., the sum of the weights for all misclassified points. Once we learn a decision tree <span class="math inline">\(f_t\)</span> that minimizes the weighted error, we can find the optimal weight <span class="math inline">\(\alpha_t\)</span> by differentiating the loss with respect to <span class="math inline">\(\alpha_t\)</span> and setting it to zero. In particular, we have <span class="math display">\[
 \frac{\partial \mathcal{L}(F_t)}{\partial \alpha_t}
 = \sum_{i : y^{(i)} = f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1} (-e^{-\alpha_t})
 + \sum_{i : y^{(i)} \neq f_t(\mathbf{x}^{(i)})} w^{(i)}_{t-1} e^{\alpha_t}

@@ -16,7 +16,7 @@ Luckily, we've been learning about the very mathematical ideas that make machine
 Consider a function ${f}: \mathbb{R} \to \mathbb{R}$.
 The mapping notation means that ${f}$ takes a single real number as input and outputs a single real number.
 In general, mathematicians tell us to be careful about whether we can differentiate a function.
-But, we're computer scientists so we'll risk it for the biscuit.
+But we're computer scientists, so we'll risk it for the biscuit.
 
 Let $x \in \mathbb{R}$ be the input to ${f}$.
 The derivative of ${f}$ with respect to its input $x$ is mathematically denoted by $f'(x) = \frac{\partial}{\partial x}[{f}(x)]$.
@@ -102,7 +102,7 @@ Just like the derivative in one dimension, the gradient contains information abo
 
 ### Vector and Matrix Multiplication
 
-Vector and matrix multiplication lives at the heart of machine learning.
+Vector and matrix multiplication live at the heart of machine learning.
 In fact, neural networks only really started to take off when researchers realized that the Graphics Processing Unit (GPU) could be used to perform gradient updates in addition to the matrix multiplication it was designed to do for gaming.
 
 Consider two vectors $\mathbf{u} \in \mathbb{R}^d$ and $\mathbf{v} \in \mathbb{R}^d$.

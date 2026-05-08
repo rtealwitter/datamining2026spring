@@ -35,7 +35,7 @@ In particular, we'd like to minimize the *expected* loss of the predictions wher
 $$
 \mathbb{E}_\ell[\mathcal{L}(\ell)] = \sum_\ell \mathcal{L}(\ell) \cdot p^{(\ell)}.
 $$
-There are several ways to define the loss of a leaf, but several common ones are:
+There are several ways to define the loss of a leaf, including:
 
 **Error Rate**:
 The error rate is the proportion of points in the leaf that are not of the predicted majority class.
@@ -104,7 +104,7 @@ $$
 $$
 Let $w^{(i)}_{t-1} = e^{-y^{(i)} F_{t-1}(\mathbf{x}^{(i)})}$ be the weight of the $i$th training example at iteration $t$.
 Notice that these weights are independent of the new model $f_t$ and the new weight $\alpha_t$.
-Then, partitioning the summation, we can write the error as
+Then, partitioning the summation, we can write the loss as
 $$
 \begin{align}
 \mathcal{L}(F_t) &=
@@ -114,7 +114,7 @@ $$
 \end{align}
 $$
 
-With $F_{t-1}$ fixed, minimizing $\mathcal{L}(F_t)$ is equivalent to minimizing the weighted error of the new model $f_t$ i.e., the sum of the weights for all misclassified points.
+With $F_{t-1}$ fixed, minimizing $\mathcal{L}(F_t)$ is equivalent to minimizing the weighted error of the new model $f_t$, i.e., the sum of the weights for all misclassified points.
 Once we learn a decision tree $f_t$ that minimizes the weighted error, we can find the optimal weight $\alpha_t$ by differentiating the loss with respect to $\alpha_t$ and setting it to zero.
 In particular, we have
 $$

@@ -79,7 +79,7 @@ Our solution is to use a separate test set that is only used once at the very en
 
 ### Regularization
 
-So what model achieves lowest generalization error?
+So what model achieves the lowest generalization error?
 According to [Occam's razor](https://en.wikipedia.org/wiki/Occam%27s_razor), the simplest model that explains the data is often the best choice.
 However, we'll need to define what we mean by "simple".
 
